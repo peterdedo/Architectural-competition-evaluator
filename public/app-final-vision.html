@@ -814,28 +814,45 @@
         // Navigation setup
         function setupNavigation() {
             const navItems = document.querySelectorAll('.nav-item');
+            console.log('Setting up navigation for', navItems.length, 'items');
             navItems.forEach(item => {
-                item.addEventListener('click', () => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
                     const section = item.dataset.section;
+                    console.log('Clicked navigation item:', section);
                     showSection(section);
                 });
             });
         }
 
         function showSection(sectionId) {
+            console.log('Showing section:', sectionId);
+            
             // Hide all sections
             document.querySelectorAll('.section-content').forEach(section => {
                 section.classList.remove('active');
             });
 
             // Show selected section
-            document.getElementById(sectionId).classList.add('active');
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                console.log('Section shown:', sectionId);
+            } else {
+                console.error('Section not found:', sectionId);
+            }
 
             // Update navigation
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
             });
-            document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+            const navItem = document.querySelector(`[data-section="${sectionId}"]`);
+            if (navItem) {
+                navItem.classList.add('active');
+                console.log('Navigation updated for:', sectionId);
+            } else {
+                console.error('Navigation item not found for:', sectionId);
+            }
 
             // Update content header
             updateContentHeader(sectionId);
