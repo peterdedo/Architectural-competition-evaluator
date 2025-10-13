@@ -369,11 +369,50 @@
             justify-content: space-between;
             align-items: center;
             transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
         }
 
         .criteria-item:hover {
             border-color: #667eea;
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        .criterion-card {
+            position: relative;
+        }
+
+        .criterion-card .checkbox {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .criterion-card.selected .checkbox {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .criterion-card.selected .checkbox::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .criterion-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
         }
 
         .criteria-info {
@@ -702,6 +741,13 @@
                 <div class="section-content" id="criteria">
                     <h2 style="margin-bottom: 20px;">Výběr hodnoticích kritérií</h2>
                     <p style="margin-bottom: 20px; color: #718096;">Vyberte kritéria, která chcete použít pro hodnocení. Můžete libovolná kritéria odstranit.</p>
+                    
+                    <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+                        <button class="btn btn-secondary" onclick="selectAllCriteria()">✅ Vybrat vše</button>
+                        <button class="btn btn-secondary" onclick="deselectAllCriteria()">❌ Zrušit výběr</button>
+                        <span id="selectedCount" style="margin-left: 20px; font-weight: 600; color: #4a5568;">Vybráno: 0</span>
+                    </div>
+                    
                     <div class="criteria-grid" id="criteriaGrid">
                         <!-- Criteria will be loaded here -->
                     </div>
@@ -1314,14 +1360,15 @@ Formát odpovědi:
                 <div class="criteria-group">
                     <h3>${group.icon} ${group.name}</h3>
                     ${group.criteria.map(criterion => `
-                        <div class="criteria-item">
+                        <div class="criteria-item criterion-card ${selectedCriteria.includes(criterion.id) ? 'selected' : ''}" 
+                             onclick="toggleCriterion('${criterion.id}')" data-key="${criterion.id}">
+                            <div class="checkbox"></div>
                             <div class="criteria-info">
                                 <div class="criteria-name">${criterion.name}</div>
                                 <div class="criteria-description">${criterion.description}</div>
                             </div>
                             <div class="criteria-actions">
-                                <span class="criteria-weight">${criterion.weight}</span>
-                                <button class="remove-btn" onclick="removeCriterion('${criterion.id}')">✕</button>
+                                <span class="criteria-weight">Váha: ${criterion.weight}</span>
                             </div>
                         </div>
                     `).join('')}
@@ -1329,6 +1376,7 @@ Formát odpovědi:
             `).join('');
             
             criteriaGrid.innerHTML = criteriaHtml;
+            updateSelectedCount();
         }
 
         function removeCriterion(criterionId) {
@@ -1541,6 +1589,53 @@ Formát odpovědi:
             `;
             
             comparisonContent.innerHTML = comparisonHtml;
+        }
+
+        // Criteria selection functions
+        function toggleCriterion(criterionId) {
+            const index = selectedCriteria.indexOf(criterionId);
+            if (index > -1) {
+                selectedCriteria.splice(index, 1);
+            } else {
+                selectedCriteria.push(criterionId);
+            }
+            
+            // Update visual state
+            const card = document.querySelector(`[data-key="${criterionId}"]`);
+            if (card) {
+                card.classList.toggle('selected');
+            }
+            
+            updateSelectedCount();
+        }
+
+        function selectAllCriteria() {
+            selectedCriteria = criteria.flatMap(g => g.criteria).map(c => c.id);
+            
+            // Update visual state
+            document.querySelectorAll('.criterion-card').forEach(card => {
+                card.classList.add('selected');
+            });
+            
+            updateSelectedCount();
+        }
+
+        function deselectAllCriteria() {
+            selectedCriteria = [];
+            
+            // Update visual state
+            document.querySelectorAll('.criterion-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const countElement = document.getElementById('selectedCount');
+            if (countElement) {
+                countElement.textContent = `Vybráno: ${selectedCriteria.length}`;
+            }
         }
 
         // Utility functions
