@@ -373,11 +373,49 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            cursor: pointer;
         }
 
         .criteria-item:hover {
             transform: translateX(5px);
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .criterion-card {
+            position: relative;
+        }
+
+        .criterion-card .checkbox {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .criterion-card.selected .checkbox {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .criterion-card.selected .checkbox::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .criterion-card.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
         }
 
         .criteria-item h4 {
@@ -763,6 +801,11 @@
         <div id="criteria" class="section">
             <div class="card">
                 <h3>📋 Hodnotiace kritériá</h3>
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-secondary" onclick="selectAllCriteria()">✅ Vybrat vše</button>
+                    <button class="btn btn-secondary" onclick="deselectAllCriteria()">❌ Zrušit výběr</button>
+                    <span id="selectedCount" style="margin-left: 20px; font-weight: 600;">Vybráno: 0</span>
+                </div>
                 <div id="criteriaContent">
                     <div class="loading">
                         <div class="spinner"></div>
@@ -844,6 +887,7 @@
         let proposals = [];
         let criteria = [];
         let uploadedFiles = [];
+        let selectedCriteria = new Set();
         let AppState = {
             currentSection: 'upload'
         };
@@ -1210,6 +1254,10 @@ ${fileContent.substring(0, 8000)}`
             ];
             
             proposals = demoData;
+            
+            // Select all criteria by default
+            selectAllCriteria();
+            
             showSection('results');
             renderResults();
             showToast('📊 Demo dáta načítané', 'success');
@@ -1364,7 +1412,9 @@ ${fileContent.substring(0, 8000)}`
                                 <span class="criteria-weight">Celková váha: ${group.criteria.reduce((sum, c) => sum + c.weight, 0)}</span>
                             </div>
                             ${group.criteria.map(criterion => `
-                                <div class="criteria-item">
+                                <div class="criteria-item criterion-card ${selectedCriteria.has(criterion.id) ? 'selected' : ''}" 
+                                     onclick="toggleCriterion('${criterion.id}')" data-key="${criterion.id}">
+                                    <div class="checkbox"></div>
                                     <div class="criteria-header">
                                         <h4>${criterion.name}</h4>
                                         <span class="criteria-weight-badge">Váha: ${criterion.weight}</span>
@@ -1379,6 +1429,7 @@ ${fileContent.substring(0, 8000)}`
             `;
             
             criteriaContent.innerHTML = criteriaHtml;
+            updateSelectedCount();
         }
 
         // Load proposals
@@ -1654,6 +1705,57 @@ ${fileContent.substring(0, 8000)}`
             }
         }
 
+
+        // Criteria selection functions
+        function toggleCriterion(criterionId) {
+            if (selectedCriteria.has(criterionId)) {
+                selectedCriteria.delete(criterionId);
+            } else {
+                selectedCriteria.add(criterionId);
+            }
+            
+            // Update visual state
+            const card = document.querySelector(`[data-key="${criterionId}"]`);
+            if (card) {
+                card.classList.toggle('selected');
+            }
+            
+            updateSelectedCount();
+        }
+
+        function selectAllCriteria() {
+            selectedCriteria.clear();
+            criteria.forEach(group => {
+                group.criteria.forEach(criterion => {
+                    selectedCriteria.add(criterion.id);
+                });
+            });
+            
+            // Update visual state
+            document.querySelectorAll('.criterion-card').forEach(card => {
+                card.classList.add('selected');
+            });
+            
+            updateSelectedCount();
+        }
+
+        function deselectAllCriteria() {
+            selectedCriteria.clear();
+            
+            // Update visual state
+            document.querySelectorAll('.criterion-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const countElement = document.getElementById('selectedCount');
+            if (countElement) {
+                countElement.textContent = `Vybráno: ${selectedCriteria.size}`;
+            }
+        }
 
         // Toast notifications
         function showToast(message, type = 'success') {
