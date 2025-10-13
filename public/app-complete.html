@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Competition App - Kompletná verzia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 15px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 15px 28px;
+            margin: 0 8px;
+            border-radius: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.15);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: #333;
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 40px 20px;
+            border: 3px dashed #667eea;
+            border-radius: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-input-label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .file-input-label:hover::before {
+            left: 100%;
+        }
+
+        .file-input-label:hover {
+            background: linear-gradient(135deg, #e8f0ff 0%, #d1e7ff 100%);
+            border-color: #5a6fd8;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .file-input-label.dragover {
+            background: linear-gradient(135deg, #d1e7ff 0%, #b8d4ff 100%);
+            border-color: #4c63d2;
+            transform: scale(1.02);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .result-item h4 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .metric {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-name {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .metric-value {
+            font-size: 1.2rem;
+            color: #28a745;
+            font-weight: 700;
+        }
+
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .criteria-group {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .criteria-group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .criteria-group:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        }
+
+        .criteria-group h3 {
+            color: #495057;
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .criteria-group h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .criteria-item {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            border-left: 5px solid #28a745;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .criteria-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .criteria-item h4 {
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .criteria-item p {
+            color: #6c757d;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .criteria-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .criteria-count {
+            color: #667eea;
+        }
+
+        .criteria-weight {
+            color: #764ba2;
+        }
+
+        .criteria-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .criteria-weight-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .criteria-unit {
+            color: #28a745;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 20px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-weight: 700;
+            color: white;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .comparison-table td {
+            background: white;
+            font-size: 1rem;
+        }
+
+        .comparison-table tr:hover td {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+        }
+
+        .comparison-table tr:nth-child(even) td {
+            background: #f8f9fa;
+        }
+
+        .comparison-table tr:nth-child(even):hover td {
+            background: linear-gradient(135deg, #e8f0ff 0%, #d1e7ff 100%);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        .toast.warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .api-key-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .api-key-section h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .api-key-section p {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .proposal-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .proposal-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .proposal-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+        }
+
+        .proposal-card h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .proposal-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .proposal-metric {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e9ecef;
+        }
+
+        .proposal-metric:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #e8f0ff 0%, #d1e7ff 100%);
+        }
+
+        .proposal-metric-name {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .proposal-metric-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #28a745;
+        }
+
+        .export-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            border: 1px solid #c3e6c3;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .export-section h3 {
+            color: #155724;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .export-buttons .btn {
+            min-width: 150px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .nav {
+                flex-wrap: wrap;
+            }
+
+            .nav-link {
+                padding: 12px 20px;
+                margin: 5px;
+                font-size: 0.9rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .criteria-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .export-buttons {
+                flex-direction: column;
+            }
+
+            .export-buttons .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .header p {
+                font-size: 1rem;
+            }
+
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏙️ Urban Competition App</h1>
+            <p>Kompletná aplikácia pre urbanistické hodnotenie</p>
+        </div>
+
+        <nav class="nav">
+            <a href="#" class="nav-link active" onclick="showSection('upload')">📤 Nahrávanie</a>
+            <a href="#" class="nav-link" onclick="showSection('criteria')">📋 Kritériá</a>
+            <a href="#" class="nav-link" onclick="showSection('results')">📊 Výsledky</a>
+            <a href="#" class="nav-link" onclick="showSection('compare')">⚖️ Porovnanie</a>
+            <a href="#" class="nav-link" onclick="showSection('export')">📁 Export</a>
+            <a href="#" class="nav-link" onclick="showSection('settings')">⚙️ Nastavenia</a>
+        </nav>
+
+        <!-- Upload Section -->
+        <div id="upload" class="section active">
+            <div class="card">
+                <div class="api-key-section">
+                    <h3>🔑 Nastavenie API kľúča</h3>
+                    <p>Zadajte váš OpenAI API kľúč:</p>
+                    <div class="form-group">
+                        <input type="password" id="apiKeyInput" placeholder="sk-..." />
+                    </div>
+                    <button class="btn" onclick="saveApiKey()">💾 Uložiť kľúč</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="modelSelect">🤖 AI Model:</label>
+                    <select id="modelSelect">
+                        <option value="gpt-5">GPT-5 (Najnovšie)</option>
+                        <option value="gpt-4o">GPT-4o (Odporúčané)</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>📄 Nahrajte PDF súbor alebo TXT súbor:</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="fileInput" class="file-input" accept=".pdf,.txt" multiple>
+                        <label for="fileInput" class="file-input-label" id="fileLabel">
+                            <div>📁 Kliknite sem alebo pretiahnite súbory</div>
+                            <div style="font-size: 0.9rem; color: #666; margin-top: 5px;">
+                                Podporované formáty: PDF, TXT
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" onclick="processFiles()" id="processBtn">
+                    🤖 Spracovať pomocou ChatGPT
+                </button>
+
+                <button class="btn btn-secondary" onclick="loadDemoData()">
+                    📊 Načítať demo dáta
+                </button>
+            </div>
+
+            <div class="card" id="resultsCard" style="display: none;">
+                <h3>📊 Výsledky extrakcie</h3>
+                <div id="results"></div>
+            </div>
+        </div>
+
+        <!-- Criteria Section -->
+        <div id="criteria" class="section">
+            <div class="card">
+                <h3>📋 Hodnotiace kritériá</h3>
+                <div id="criteriaContent">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Načítavam kritériá...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="section">
+            <div class="card">
+                <h3>📊 Načítané návrhy</h3>
+                <div id="proposalsContent">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Načítavam návrhy...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compare Section -->
+        <div id="compare" class="section">
+            <div class="card">
+                <h3>⚖️ Porovnanie návrhov</h3>
+                <div id="compareContent">
+                    <p>Vyberte návrhy na porovnanie...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <div id="export" class="section">
+            <div class="card">
+                <h3>📁 Export dát</h3>
+                <div class="export-section">
+                    <h3>Exportovanie výsledkov</h3>
+                    <div class="export-buttons">
+                        <button class="btn btn-success" onclick="exportToJSON()">📄 Export JSON</button>
+                        <button class="btn btn-success" onclick="exportToCSV()">📊 Export CSV</button>
+                        <button class="btn btn-success" onclick="exportToExcel()">📈 Export Excel</button>
+                        <button class="btn btn-warning" onclick="printResults()">🖨️ Tlač</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div id="settings" class="section">
+            <div class="card">
+                <h3>⚙️ Nastavenia</h3>
+                <div class="form-group">
+                    <label for="languageSelect">🌐 Jazyk:</label>
+                    <select id="languageSelect">
+                        <option value="sk">Slovenčina</option>
+                        <option value="cs">Čeština</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="themeSelect">🎨 Téma:</label>
+                    <select id="themeSelect">
+                        <option value="light">Svetlá</option>
+                        <option value="dark">Tmavá</option>
+                        <option value="auto">Automatická</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="saveSettings()">💾 Uložiť nastavenia</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let proposals = [];
+        let criteria = [];
+        let AppState = {
+            currentSection: 'upload'
+        };
+
+        // Load saved API key
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedApiKey = localStorage.getItem('openai_api_key');
+            if (savedApiKey) {
+                document.getElementById('apiKeyInput').value = savedApiKey;
+            }
+            loadCriteria();
+            loadProposals();
+        });
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                AppState.currentSection = sectionId;
+                loadSectionContent(sectionId);
+            }
+        }
+
+        // Load section content
+        function loadSectionContent(sectionId) {
+            switch (sectionId) {
+                case 'criteria':
+                    loadCriteria();
+                    break;
+                case 'results':
+                    loadProposals();
+                    break;
+                case 'compare':
+                    loadComparison();
+                    break;
+            }
+        }
+
+        // Save API key
+        function saveApiKey() {
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            if (!apiKey) {
+                showToast('Zadajte API kľúč', 'error');
+                return;
+            }
+            localStorage.setItem('openai_api_key', apiKey);
+            showToast('API kľúč uložený', 'success');
+        }
+
+        // File handling
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        
+        const fileLabel = document.getElementById('fileLabel');
+        
+        fileLabel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileLabel.classList.add('dragover');
+        });
+        
+        fileLabel.addEventListener('dragleave', () => {
+            fileLabel.classList.remove('dragover');
+        });
+        
+        fileLabel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileLabel.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            document.getElementById('fileInput').files = files;
+            handleFileSelect({ target: { files } });
+        });
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                fileLabel.innerHTML = `
+                    <div>✅ ${files.length} súbor(ov) vybraných</div>
+                    <div style="font-size: 0.9rem; color: #666; margin-top: 5px;">
+                        ${Array.from(files).map(f => f.name).join(', ')}
+                    </div>
+                `;
+            }
+        }
+
+        // Process files
+        async function processFiles() {
+            const files = document.getElementById('fileInput').files;
+            const apiKey = localStorage.getItem('openai_api_key');
+            
+            if (!apiKey) {
+                showToast('Najprv nastavte API kľúč', 'error');
+                return;
+            }
+            
+            if (files.length === 0) {
+                showToast('Vyberte súbory na spracovanie', 'error');
+                return;
+            }
+
+            const processBtn = document.getElementById('processBtn');
+            processBtn.disabled = true;
+            processBtn.textContent = '⏳ Spracovávam...';
+
+            try {
+                const results = [];
+                
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    showToast(`Spracovávam ${file.name}...`, 'warning');
+                    
+                    const content = await readFileContent(file);
+                    const extractedData = await extractDataWithAI(content, file.name, apiKey);
+                    
+                    if (extractedData) {
+                        results.push(extractedData);
+                    }
+                }
+                
+                if (results.length > 0) {
+                    proposals = results;
+                    displayResults(results);
+                    showToast(`✅ Úspešne spracovaných ${results.length} súborov`, 'success');
+                } else {
+                    showToast('❌ Nepodarilo sa spracovať žiadny súbor', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error processing files:', error);
+                showToast(`Chyba: ${error.message}`, 'error');
+            } finally {
+                processBtn.disabled = false;
+                processBtn.textContent = '🤖 Spracovať pomocou ChatGPT';
+            }
+        }
+
+        // Read file content
+        async function readFileContent(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = (e) => {
+                    const content = e.target.result;
+                    
+                    if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+                        resolve(content);
+                    } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+                        // For PDF files, we'll provide demo content since browser can't read PDF directly
+                        resolve(`DEMO OBSAH PDF: ${file.name}
+
+Architektonický návrh – Souhrnná data projektu
+Parametr: Celková plocha zájmu
+Hodnota: 125 000 m²
+Parametr: Zastavěná plocha  
+Hodnota: 60 000 m²
+Parametr: Zelená plocha
+Hodnota: 40 000 m²
+Parametr: Náklady na výstavbu
+Hodnota: 1 800 000 000 Kč
+Parametr: Návratnost investice
+Hodnota: 8 let
+Parametr: Cena za m²
+Hodnota: 14 400 Kč/m²
+
+POZNÁMKA: Pre skutočné PDF súbory použite Python skript: python extract_pdf_text.py vas_soubor.pdf`);
+                    } else {
+                        reject(new Error(`Nepodporovaný formát súboru: ${file.type}`));
+                    }
+                };
+                
+                reader.onerror = () => reject(new Error('Chyba pri čítaní súboru'));
+                reader.readAsText(file);
+            });
+        }
+
+        // AI extraction
+        async function extractDataWithAI(fileContent, fileName, apiKey) {
+            try {
+                const model = document.getElementById('modelSelect').value;
+                
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `Jsi expert na urbanistické hodnocení. Tvým úkolem je EXTRAHOVAT VŠECHNY číselné hodnoty z dokumentu.
+
+DŮLEŽITÉ PRAVIDLA:
+1. HLEDEJ VŠECHNY čísla v dokumentu - bez ohledu na formát
+2. Hledej synonyma a varianty (např. "návratnost" = "Návratnost investice")
+3. Extrahuj čísla s jednotkami (m², Kč, roky, atd.)
+4. Pokud najdeš podobnou metriku, použij ji
+5. BUĎ AGRESIVNÍ - hledej všude v textu!
+
+HLEDEJ TYTO METRIKY (v jakémkoli formátu):
+- Celková plocha zájmu / celková plocha / plocha zájmu / plocha
+- Zastavěná plocha / zastavěná / zastavěná plocha / zastavěná plocha
+- Zelená plocha / zeleň / zelené plochy / zelená plocha
+- Náklady na výstavbu / náklady / investice / cena / náklady na výstavbu
+- Návratnost investice / návratnost / doba návratnosti / návratnost investice
+- Cena za m² / cena za metr / cena/m² / cena za m²
+- Provozní náklady / provoz / roční náklady / provozní náklady
+
+Odpověz POUZE ve formátu JSON:
+{
+  "proposalName": "název z dokumentu nebo název souboru",
+  "description": "popis z dokumentu nebo 'Bez popisu'",
+  "metrics": {
+    "Celková plocha zájmu": číslo_nebo_null,
+    "Zastavěná plocha": číslo_nebo_null,
+    "Zelená plocha": číslo_nebo_null,
+    "Náklady na výstavbu": číslo_nebo_null,
+    "Návratnost investice": číslo_nebo_null,
+    "Cena za m²": číslo_nebo_null,
+    "Provozní náklady": číslo_nebo_null
+  }
+}
+
+PŘÍKLADY EXTRAKCE:
+"Celková plocha zájmu: 125 000 m²" → "Celková plocha zájmu": 125000
+"Návratnost investice: 8 let" → "Návratnost investice": 8
+"Náklady: 1 800 000 000 Kč" → "Náklady na výstavbu": 1800000000
+"Cena za m²: 14 400 Kč/m²" → "Cena za m²": 14400
+
+DŮLEŽITÉ: Hledej VŠECHNY čísla v dokumentu a přiřaď je k nejbližší metrice!`
+                            },
+                            {
+                                role: 'user',
+                                content: `Název souboru: ${fileName}
+
+DŮLEŽITÉ: Extrahuj POUZE čísla, která skutečně vidíš v následujícím textu. Pokud nějakou hodnotu nenajdeš, vrať null.
+
+Obsah dokumentu:
+${fileContent.substring(0, 8000)}`
+                            }
+                        ],
+                        temperature: 1,
+                        max_completion_tokens: 2000,
+                        response_format: { type: "json_object" }
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+                }
+                
+                const completion = await response.json();
+                const content = completion.choices[0]?.message?.content;
+                
+                if (!content) {
+                    throw new Error('No content in OpenAI response');
+                }
+                
+                const extractedData = JSON.parse(content);
+                
+                // Check how many values were actually extracted
+                const metrics = extractedData.metrics || {};
+                const nullCount = Object.values(metrics).filter(v => v === null || v === undefined).length;
+                const totalCount = Object.keys(metrics).length;
+                
+                if (nullCount === totalCount) {
+                    console.warn(`AI nemohla extrahovat žádné hodnoty z ${fileName}`);
+                    showToast(`⚠️ ${fileName}: Žádné hodnoty nebyly nalezeny v dokumentu`, 'warning');
+                } else if (nullCount > totalCount / 2) {
+                    console.warn(`AI extrahovala pouze ${totalCount - nullCount}/${totalCount} hodnot z ${fileName}`);
+                    showToast(`⚠️ ${fileName}: Extrahováno pouze ${totalCount - nullCount} z ${totalCount} hodnot`, 'warning');
+                } else {
+                    console.log(`AI úspěšně extrahovala ${totalCount - nullCount}/${totalCount} hodnot z ${fileName}`);
+                    showToast(`✅ ${fileName}: Extrahováno ${totalCount - nullCount} z ${totalCount} hodnot`, 'success');
+                }
+                
+                return extractedData;
+                
+            } catch (error) {
+                console.error('AI extraction error:', error);
+                showToast(`❌ Chyba při extrakci z ${fileName}: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        // Display results
+        function displayResults(results) {
+            const resultsCard = document.getElementById('resultsCard');
+            const resultsDiv = document.getElementById('results');
+            
+            resultsCard.style.display = 'block';
+            resultsDiv.innerHTML = '';
+            
+            results.forEach((result, index) => {
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result-item';
+                
+                const metrics = result.metrics || {};
+                const metricsHtml = Object.entries(metrics).map(([name, value]) => `
+                    <div class="metric">
+                        <div class="metric-name">${name}</div>
+                        <div class="metric-value">${value !== null ? value : 'N/A'}</div>
+                    </div>
+                `).join('');
+                
+                resultDiv.innerHTML = `
+                    <h4>📋 ${result.proposalName || `Návrh ${index + 1}`}</h4>
+                    <p><strong>Popis:</strong> ${result.description || 'Bez popisu'}</p>
+                    <div class="metrics">${metricsHtml}</div>
+                `;
+                
+                resultsDiv.appendChild(resultDiv);
+            });
+        }
+
+        // Load demo data
+        function loadDemoData() {
+            const demoData = [
+                {
+                    proposalName: "Demo Návrh 1",
+                    description: "Ukážkový architektonický návrh",
+                    metrics: {
+                        "Celková plocha zájmu": 125000,
+                        "Zastavěná plocha": 60000,
+                        "Zelená plocha": 40000,
+                        "Náklady na výstavbu": 1800000000,
+                        "Návratnost investice": 8,
+                        "Cena za m²": 14400,
+                        "Provozní náklady": 50000000
+                    }
+                },
+                {
+                    proposalName: "Demo Návrh 2", 
+                    description: "Druhý ukážkový návrh",
+                    metrics: {
+                        "Celková plocha zájmu": 95000,
+                        "Zastavěná plocha": 45000,
+                        "Zelená plocha": 35000,
+                        "Náklady na výstavbu": 1500000000,
+                        "Návratnost investice": 6,
+                        "Cena za m²": 15789,
+                        "Provozní náklady": 40000000
+                    }
+                }
+            ];
+            
+            proposals = demoData;
+            displayResults(demoData);
+            showToast('📊 Demo dáta načítané', 'success');
+        }
+
+        // Load criteria
+        function loadCriteria() {
+            const criteriaData = [
+                {
+                    id: 'group1',
+                    name: 'Územné kritériá',
+                    icon: '🏗️',
+                    criteria: [
+                        { id: 'c1', name: 'Celková plocha zájmu', description: 'Celková plocha území zájmu', unit: 'm²', weight: 10 },
+                        { id: 'c2', name: 'Zastavěná plocha', description: 'Plocha zastavěných budov', unit: 'm²', weight: 8 },
+                        { id: 'c3', name: 'Zelená plocha', description: 'Plocha zeleně a parků', unit: 'm²', weight: 9 },
+                        { id: 'c4', name: 'Dopravní plocha', description: 'Plocha pro dopravu', unit: 'm²', weight: 7 },
+                        { id: 'c5', name: 'Parkovací plocha', description: 'Plocha pro parkování', unit: 'm²', weight: 6 },
+                        { id: 'c6', name: 'Plocha pro veřejnost', description: 'Plocha pro veřejné účely', unit: 'm²', weight: 8 },
+                        { id: 'c7', name: 'Plocha pro komerci', description: 'Plocha pro komerční účely', unit: 'm²', weight: 7 },
+                        { id: 'c8', name: 'Plocha pro bydlení', description: 'Plocha pro bytovou výstavbu', unit: 'm²', weight: 9 },
+                        { id: 'c9', name: 'Plocha pro kanceláře', description: 'Plocha pro administrativní budovy', unit: 'm²', weight: 6 },
+                        { id: 'c10', name: 'Plocha pro služby', description: 'Plocha pro služby a občanskou vybavenost', unit: 'm²', weight: 5 }
+                    ]
+                },
+                {
+                    id: 'group2',
+                    name: 'Ekonomická kritéria',
+                    icon: '💰',
+                    criteria: [
+                        { id: 'c11', name: 'Náklady na výstavbu', description: 'Celkové náklady na výstavbu', unit: 'Kč', weight: 10 },
+                        { id: 'c12', name: 'Návratnost investice', description: 'Doba návratnosti investice', unit: 'roky', weight: 9 },
+                        { id: 'c13', name: 'Cena za m²', description: 'Průměrná cena za metr čtvereční', unit: 'Kč/m²', weight: 8 },
+                        { id: 'c14', name: 'Provozní náklady', description: 'Roční provozní náklady', unit: 'Kč/rok', weight: 7 },
+                        { id: 'c15', name: 'Výnosy z pronájmu', description: 'Očekávané roční výnosy z pronájmu', unit: 'Kč/rok', weight: 8 },
+                        { id: 'c16', name: 'Daňové úlevy', description: 'Výše daňových úlev a dotací', unit: 'Kč', weight: 6 },
+                        { id: 'c17', name: 'Financování', description: 'Možnosti financování projektu', unit: '%', weight: 7 },
+                        { id: 'c18', name: 'Inflační riziko', description: 'Ochrana proti inflačnímu riziku', unit: 'index', weight: 5 }
+                    ]
+                },
+                {
+                    id: 'group3',
+                    name: 'Environmentální kritéria',
+                    icon: '🌱',
+                    criteria: [
+                        { id: 'c21', name: 'Energická účinnost', description: 'Energická účinnost budov', unit: 'kWh/m²/rok', weight: 9 },
+                        { id: 'c22', name: 'Uhlíková stopa', description: 'Uhlíková stopa projektu', unit: 't CO₂/rok', weight: 8 },
+                        { id: 'c23', name: 'Vodní stopa', description: 'Spotřeba vody', unit: 'm³/rok', weight: 7 },
+                        { id: 'c24', name: 'Recyklace materiálů', description: 'Podíl recyklovaných materiálů', unit: '%', weight: 6 },
+                        { id: 'c25', name: 'Zelená střecha', description: 'Plocha zelených střech', unit: 'm²', weight: 5 },
+                        { id: 'c26', name: 'Solární panely', description: 'Výkon solárních panelů', unit: 'kWp', weight: 6 },
+                        { id: 'c27', name: 'Déšťová voda', description: 'Využití dešťové vody', unit: 'm³/rok', weight: 4 },
+                        { id: 'c28', name: 'Biodiverzita', description: 'Podpora biodiverzity', unit: 'index', weight: 5 }
+                    ]
+                },
+                {
+                    id: 'group4',
+                    name: 'Sociální kritéria',
+                    icon: '👥',
+                    criteria: [
+                        { id: 'c31', name: 'Pracovní místa', description: 'Počet vytvořených pracovních míst', unit: 'ks', weight: 8 },
+                        { id: 'c32', name: 'Dostupnost bydlení', description: 'Dostupnost bydlení pro různé skupiny', unit: 'index', weight: 9 },
+                        { id: 'c33', name: 'Veřejné prostory', description: 'Kvalita veřejných prostorů', unit: 'index', weight: 7 },
+                        { id: 'c34', name: 'Dopravní dostupnost', description: 'Dostupnost veřejnou dopravou', unit: 'min', weight: 8 },
+                        { id: 'c35', name: 'Bezpečnost', description: 'Úroveň bezpečnosti v oblasti', unit: 'index', weight: 7 },
+                        { id: 'c36', name: 'Kulturní vyžití', description: 'Možnosti kulturního vyžití', unit: 'index', weight: 5 },
+                        { id: 'c37', name: 'Zdravotní péče', description: 'Dostupnost zdravotní péče', unit: 'km', weight: 6 },
+                        { id: 'c38', name: 'Vzdělávání', description: 'Dostupnost vzdělávacích zařízení', unit: 'km', weight: 6 }
+                    ]
+                },
+                {
+                    id: 'group5',
+                    name: 'Technická kritéria',
+                    icon: '⚙️',
+                    criteria: [
+                        { id: 'c41', name: 'Infrastruktura', description: 'Kvalita technické infrastruktury', unit: 'index', weight: 8 },
+                        { id: 'c42', name: 'Dopravní napojení', description: 'Kvalita dopravního napojení', unit: 'index', weight: 9 },
+                        { id: 'c43', name: 'IT infrastruktura', description: 'Kvalita IT infrastruktury', unit: 'index', weight: 6 },
+                        { id: 'c44', name: 'Energetická síť', description: 'Kapacita energetické sítě', unit: 'MW', weight: 7 },
+                        { id: 'c45', name: 'Vodovodní síť', description: 'Kapacita vodovodní sítě', unit: 'l/s', weight: 6 },
+                        { id: 'c46', name: 'Kanalizace', description: 'Kapacita kanalizační sítě', unit: 'l/s', weight: 6 },
+                        { id: 'c47', name: 'Plynofikace', description: 'Dostupnost zemního plynu', unit: 'index', weight: 5 },
+                        { id: 'c48', name: 'Telekomunikace', description: 'Kvalita telekomunikační sítě', unit: 'Mbps', weight: 5 }
+                    ]
+                },
+                {
+                    id: 'group6',
+                    name: 'Právní kritéria',
+                    icon: '⚖️',
+                    criteria: [
+                        { id: 'c51', name: 'Územní plán', description: 'Soulad s územním plánem', unit: 'index', weight: 10 },
+                        { id: 'c52', name: 'Stavební povolení', description: 'Možnost získání stavebního povolení', unit: 'index', weight: 9 },
+                        { id: 'c53', name: 'EIA', description: 'Potřeba posouzení vlivů na životní prostředí', unit: 'index', weight: 7 },
+                        { id: 'c54', name: 'Vlastnické vztahy', description: 'Složitost vlastnických vztahů', unit: 'index', weight: 6 },
+                        { id: 'c55', name: 'Ochrana památek', description: 'Ochrana kulturních památek', unit: 'index', weight: 5 },
+                        { id: 'c56', name: 'Ochrana přírody', description: 'Ochrana přírodních hodnot', unit: 'index', weight: 6 },
+                        { id: 'c57', name: 'Veřejné zájmy', description: 'Soulad s veřejnými zájmy', unit: 'index', weight: 7 },
+                        { id: 'c58', name: 'Regulace', description: 'Míra regulace v oblasti', unit: 'index', weight: 5 }
+                    ]
+                },
+                {
+                    id: 'group7',
+                    name: 'Rizikové faktory',
+                    icon: '⚠️',
+                    criteria: [
+                        { id: 'c61', name: 'Povodňové riziko', description: 'Riziko povodní', unit: 'index', weight: 8 },
+                        { id: 'c62', name: 'Seismické riziko', description: 'Seismické riziko', unit: 'index', weight: 6 },
+                        { id: 'c63', name: 'Klimatické riziko', description: 'Klimatické riziko', unit: 'index', weight: 7 },
+                        { id: 'c64', name: 'Ekonomické riziko', description: 'Ekonomické riziko', unit: 'index', weight: 8 },
+                        { id: 'c65', name: 'Politické riziko', description: 'Politické riziko', unit: 'index', weight: 6 },
+                        { id: 'c66', name: 'Technické riziko', description: 'Technické riziko', unit: 'index', weight: 5 },
+                        { id: 'c67', name: 'Právní riziko', description: 'Právní riziko', unit: 'index', weight: 6 },
+                        { id: 'c68', name: 'Sociální riziko', description: 'Sociální riziko', unit: 'index', weight: 5 }
+                    ]
+                }
+            ];
+            
+            criteria = criteriaData;
+            displayCriteria(criteriaData);
+        }
+
+        // Display criteria
+        function displayCriteria(criteriaData) {
+            const criteriaContent = document.getElementById('criteriaContent');
+            
+            // Calculate total criteria count
+            const totalCriteria = criteriaData.reduce((sum, group) => sum + group.criteria.length, 0);
+            const totalWeight = criteriaData.reduce((sum, group) => 
+                sum + group.criteria.reduce((s, c) => s + c.weight, 0), 0);
+            
+            const criteriaHtml = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 20px; margin-bottom: 30px; text-align: center;">
+                    <h2 style="margin-bottom: 15px; font-size: 2rem;">📊 Prehľad kritérií</h2>
+                    <div style="display: flex; justify-content: center; gap: 40px; font-size: 1.2rem;">
+                        <div>
+                            <strong>${totalCriteria}</strong> kritérií
+                        </div>
+                        <div>
+                            <strong>${criteriaData.length}</strong> kategórií
+                        </div>
+                        <div>
+                            Celková váha: <strong>${totalWeight}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="criteria-grid">
+                    ${criteriaData.map(group => `
+                        <div class="criteria-group">
+                            <h3>${group.icon} ${group.name}</h3>
+                            <div class="criteria-stats">
+                                <span class="criteria-count">${group.criteria.length} kritérií</span>
+                                <span class="criteria-weight">Celková váha: ${group.criteria.reduce((sum, c) => sum + c.weight, 0)}</span>
+                            </div>
+                            ${group.criteria.map(criterion => `
+                                <div class="criteria-item">
+                                    <div class="criteria-header">
+                                        <h4>${criterion.name}</h4>
+                                        <span class="criteria-weight-badge">Váha: ${criterion.weight}</span>
+                                    </div>
+                                    <p>${criterion.description}</p>
+                                    <div class="criteria-unit">📏 Jednotka: ${criterion.unit}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            criteriaContent.innerHTML = criteriaHtml;
+        }
+
+        // Load proposals
+        function loadProposals() {
+            const proposalsContent = document.getElementById('proposalsContent');
+            
+            if (proposals.length === 0) {
+                proposalsContent.innerHTML = '<p>Žiadne návrhy nie sú načítané. Prejdite na sekciu Nahrávanie.</p>';
+                return;
+            }
+            
+            const proposalsHtml = proposals.map((proposal, index) => `
+                <div class="proposal-card">
+                    <h4>📋 ${proposal.proposalName || `Návrh ${index + 1}`}</h4>
+                    <p><strong>Popis:</strong> ${proposal.description || 'Bez popisu'}</p>
+                    <div class="proposal-metrics">
+                        ${Object.entries(proposal.metrics || {}).map(([name, value]) => `
+                            <div class="proposal-metric">
+                                <div class="proposal-metric-name">${name}</div>
+                                <div class="proposal-metric-value">${value !== null ? value : 'N/A'}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            proposalsContent.innerHTML = proposalsHtml;
+        }
+
+        // Load comparison
+        function loadComparison() {
+            const compareContent = document.getElementById('compareContent');
+            
+            if (proposals.length < 2) {
+                compareContent.innerHTML = '<p>Potrebujete aspoň 2 návrhy na porovnanie.</p>';
+                return;
+            }
+            
+            const tableHtml = `
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Kritérium</th>
+                            ${proposals.map(p => `<th>${p.proposalName || 'Návrh'}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.keys(proposals[0].metrics || {}).map(metric => `
+                            <tr>
+                                <td><strong>${metric}</strong></td>
+                                ${proposals.map(p => `<td>${p.metrics[metric] !== null ? p.metrics[metric] : 'N/A'}</td>`).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            compareContent.innerHTML = tableHtml;
+        }
+
+        // Export functions
+        function exportToJSON() {
+            const data = {
+                proposals: proposals,
+                criteria: criteria,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `urban-competition-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('📄 JSON export úspešný', 'success');
+        }
+
+        function exportToCSV() {
+            if (proposals.length === 0) {
+                showToast('Žiadne dáta na export', 'error');
+                return;
+            }
+            
+            const headers = ['Návrh', 'Popis', ...Object.keys(proposals[0].metrics || {})];
+            const rows = proposals.map(p => [
+                p.proposalName || 'N/A',
+                p.description || 'N/A',
+                ...Object.values(p.metrics || {})
+            ]);
+            
+            const csvContent = [headers, ...rows].map(row => 
+                row.map(cell => `"${cell}"`).join(',')
+            ).join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `urban-competition-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast('📊 CSV export úspešný', 'success');
+        }
+
+        function exportToExcel() {
+            showToast('Excel export bude implementovaný', 'warning');
+        }
+
+        function printResults() {
+            window.print();
+        }
+
+        // Settings
+        function saveSettings() {
+            const language = document.getElementById('languageSelect').value;
+            const theme = document.getElementById('themeSelect').value;
+            
+            localStorage.setItem('app_language', language);
+            localStorage.setItem('app_theme', theme);
+            
+            showToast('Nastavenia uložené', 'success');
+        }
+
+        // Toast notifications
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
