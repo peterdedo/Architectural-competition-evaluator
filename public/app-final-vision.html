@@ -454,12 +454,18 @@
             }
             
             console.log('Analysis completed, results:', analysisResults);
+            
+            // Zobraz výsledky
             displayResults();
+            
+            // Ak sú aspoň 2 projekty, zobraz porovnanie
             if (analysisResults.length > 1) {
                 setTimeout(() => {
                     showSection('comparison');
                     displayComparison();
-                }, 2000);
+                }, 1000);
+            } else {
+                showToast('Analýza dokončena!', 'success');
             }
         }
         
@@ -475,24 +481,43 @@
                 return;
             }
             
-            analysisResults.forEach(result => {
-                let html = `<h3>📄 ${result.projectName}</h3>
-                    <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
-                        <tr><th style="padding:10px; background:#667eea; color:white;">Kritérium</th>
-                            <th style="padding:10px; background:#667eea; color:white;">Hodnota</th></tr>`;
+            analysisResults.forEach((result, index) => {
+                let html = `<div style="margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+                    <h3 style="color: #333; margin-bottom: 15px;">📄 ${result.projectName}</h3>
+                    <table style="width:100%; border-collapse: collapse; margin-bottom: 15px;">
+                        <thead>
+                            <tr style="background: #667eea; color: white;">
+                                <th style="padding:12px; text-align: left;">Kritérium</th>
+                                <th style="padding:12px; text-align: right;">Hodnota</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
                 
                 for (const key of selectedCriteria) {
                     const c = CRITERIA[key];
                     const val = result.data[key];
-                    html += `<tr>
-                        <td style="padding:10px; border:1px solid #ddd;">${c.name}</td>
-                        <td style="padding:10px; border:1px solid #ddd;">${val || '-'} ${c.unit}</td>
+                    const displayVal = val !== null && val !== undefined ? val : '-';
+                    html += `<tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding:10px; font-weight: 500;">${c.name}</td>
+                        <td style="padding:10px; text-align: right; color: #666;">${displayVal} ${c.unit}</td>
                     </tr>`;
                 }
                 
-                html += `</table>`;
+                html += `</tbody></table>
+                    <div style="font-size: 0.9rem; color: #666; text-align: right;">
+                        Projekt ${index + 1} z ${analysisResults.length}
+                    </div>
+                </div>`;
                 container.innerHTML += html;
             });
+            
+            // Pridaj tlačidlo na export
+            container.innerHTML += `
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-success" onclick="exportResults()" style="margin-right: 10px;">📥 Export JSON</button>
+                    <button class="btn btn-primary" onclick="showSection('comparison')" ${analysisResults.length < 2 ? 'disabled' : ''}>🔬 Porovnání</button>
+                </div>
+            `;
         }
         
         function displayComparison() {
