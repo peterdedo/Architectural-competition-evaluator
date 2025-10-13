@@ -803,7 +803,11 @@
             loadCriteria();
             setupFileUpload();
             initializePDFJS();
-            setupNavigation();
+            
+            // Setup navigation with delay to ensure DOM is ready
+            setTimeout(() => {
+                setupNavigation();
+            }, 100);
         });
 
         // Initialize PDF.js
