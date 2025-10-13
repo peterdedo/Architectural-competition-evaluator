@@ -748,12 +748,8 @@
                     </div>
                 </div>
 
-                <button class="btn btn-success" onclick="processFiles()" id="processBtn">
-                    🤖 Spracovať pomocou ChatGPT
-                </button>
-
-                <button class="btn btn-secondary" onclick="loadDemoData()">
-                    📊 Načítať demo dáta
+                <button class="btn btn-success" onclick="loadDemoData()" id="processBtn">
+                    🚀 Analyzovat
                 </button>
             </div>
 
@@ -871,7 +867,12 @@
         // Navigation
         function showSection(sectionId) {
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            event.target.classList.add('active');
+            
+            // Find and activate the corresponding nav link
+            const navLink = document.querySelector(`[onclick*="${sectionId}"]`);
+            if (navLink) {
+                navLink.classList.add('active');
+            }
             
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
@@ -1209,7 +1210,8 @@ ${fileContent.substring(0, 8000)}`
             ];
             
             proposals = demoData;
-            displayResults(demoData);
+            showSection('results');
+            renderResults();
             showToast('📊 Demo dáta načítané', 'success');
         }
 
