@@ -818,13 +818,16 @@
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded fired');
             loadApiConfig();
             loadCriteria();
             setupFileUpload();
             initializePDFJS();
             
             // Setup navigation with delay to ensure DOM is ready
+            console.log('Setting up navigation with setTimeout...');
             setTimeout(() => {
+                console.log('setTimeout fired, calling setupNavigation');
                 setupNavigation();
             }, 500);
         });
