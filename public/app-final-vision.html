@@ -815,7 +815,7 @@
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
 
-        // Navigation setup
+        // Navigation setup - moved to global scope
         function setupNavigation() {
             const navItems = document.querySelectorAll('.nav-item');
             console.log('Setting up navigation for', navItems.length, 'items');
@@ -1746,5 +1746,6 @@ Formát odpovědi:
     </script>
 </body>
 </html>
+
 
 
