@@ -1761,17 +1761,94 @@ Formát odpovědi:
             }, 3000);
         }
 
-        // Manually initialize app when script loads
-        console.log('Script loaded, initializing app...');
-        setTimeout(() => {
-            console.log('Initializing app with timeout...');
-            loadApiConfig();
-            loadCriteria();
-            setupFileUpload();
-            initializePDFJS();
-            setupNavigation();
-            console.log('App initialized successfully');
-        }, 100);
+    </script>
+
+    <!-- Manual initialization script -->
+    <script>
+        console.log('Manual initialization script loaded');
+        
+        // Wait for DOM to be ready
+        function initializeAppManually() {
+            console.log('Initializing app manually...');
+            
+            try {
+                // Setup navigation
+                const navItems = document.querySelectorAll('.nav-item');
+                console.log('Setting up navigation for', navItems.length, 'items');
+                navItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = item.dataset.section;
+                        console.log('Clicked navigation item:', section);
+                        
+                        // Hide all sections
+                        document.querySelectorAll('.section-content').forEach(section => {
+                            section.classList.remove('active');
+                        });
+
+                        // Show selected section
+                        const targetSection = document.getElementById(section);
+                        if (targetSection) {
+                            targetSection.classList.add('active');
+                            console.log('Section shown:', section);
+                        } else {
+                            console.error('Section not found:', section);
+                        }
+
+                        // Update navigation
+                        document.querySelectorAll('.nav-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        item.classList.add('active');
+                    });
+                });
+                
+                // Load criteria
+                const criteriaData = [
+                    {
+                        id: 'group1',
+                        name: 'Funkční kritéria',
+                        icon: '🏗️',
+                        criteria: [
+                            { id: 'c1', name: 'Celková plocha zájmu', description: 'Celková plocha území', unit: 'm²', weight: 10 },
+                            { id: 'c2', name: 'Zastavěná plocha', description: 'Plocha zastavěných budov', unit: 'm²', weight: 8 },
+                            { id: 'c3', name: 'Zelená plocha', description: 'Plocha zeleně a parků', unit: 'm²', weight: 9 },
+                            { id: 'c4', name: 'Dopravní plocha', description: 'Plocha pro dopravu', unit: 'm²', weight: 7 },
+                            { id: 'c5', name: 'Parkovací plocha', description: 'Plocha pro parkování', unit: 'm²', weight: 6 }
+                        ]
+                    },
+                    {
+                        id: 'group2',
+                        name: 'Ekonomická kritéria',
+                        icon: '💰',
+                        criteria: [
+                            { id: 'c11', name: 'Náklady na výstavbu', description: 'Celkové náklady na výstavbu', unit: 'Kč', weight: 10 },
+                            { id: 'c12', name: 'Návratnost investice', description: 'Doba návratnosti investice', unit: 'roky', weight: 9 },
+                            { id: 'c13', name: 'Cena za m²', description: 'Průměrná cena za metr čtvereční', unit: 'Kč/m²', weight: 8 },
+                            { id: 'c14', name: 'Provozní náklady', description: 'Roční provozní náklady', unit: 'Kč/rok', weight: 7 },
+                            { id: 'c15', name: 'Údržbové náklady', description: 'Roční údržbové náklady', unit: 'Kč/rok', weight: 6 }
+                        ]
+                    }
+                ];
+                
+                // Set global criteria variable
+                window.criteria = criteriaData;
+                window.selectedCriteria = criteriaData.flatMap(g => g.criteria).map(c => c.id);
+                
+                console.log('Criteria data loaded:', criteriaData.length, 'groups');
+                console.log('App initialized successfully');
+                
+            } catch (error) {
+                console.error('Error initializing app:', error);
+            }
+        }
+        
+        // Initialize immediately
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeAppManually);
+        } else {
+            initializeAppManually();
+        }
     </script>
 </body>
 </html>
