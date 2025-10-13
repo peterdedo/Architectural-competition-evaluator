@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urban Competition App - Kompletná verzia</title>
+    <title>Urban Competition App - Vision AI verzia</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -840,9 +841,13 @@
     </div>
 
     <script>
+        // Initialize PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
         // Global state
         let proposals = [];
         let criteria = [];
+        let uploadedFiles = [];
         let AppState = {
             currentSection: 'upload'
         };
@@ -855,6 +860,12 @@
             }
             loadCriteria();
             loadProposals();
+            
+            // Add event listener for file input
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.addEventListener('change', handleFileUpload);
+            }
         });
 
         // Navigation
@@ -1491,6 +1502,156 @@ ${fileContent.substring(0, 8000)}`
             
             showToast('Nastavenia uložené', 'success');
         }
+
+        // Vision API functions
+        function handleFileUpload(event) {
+            const files = Array.from(event.target.files);
+            uploadedFiles = files;
+            
+            const fileLabel = document.getElementById('fileLabel');
+            if (files.length > 0) {
+                fileLabel.innerHTML = `
+                    <div>📁 ${files.length} súbor(ov) vybraných</div>
+                    <div style="font-size: 0.9rem; color: #666; margin-top: 5px;">
+                        ${files.map(f => f.name).join(', ')}
+                    </div>
+                `;
+                document.getElementById('processBtn').disabled = false;
+            }
+        }
+
+        async function processFiles() {
+            if (uploadedFiles.length === 0) {
+                showToast('Najprv nahrajte súbory', 'warning');
+                return;
+            }
+
+            const apiKey = document.getElementById('apiKeyInput').value;
+            if (!apiKey) {
+                showToast('Zadajte OpenAI API kľúč', 'error');
+                return;
+            }
+
+            showToast('Spracovávam súbory pomocou Vision AI...', 'info');
+            
+            for (const file of uploadedFiles) {
+                try {
+                    if (file.type === 'application/pdf') {
+                        await processPDFWithVision(file, apiKey);
+                    } else if (file.type === 'text/plain') {
+                        await processTextFile(file, apiKey);
+                    }
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    showToast(`Chyba pri spracovaní ${file.name}: ${error.message}`, 'error');
+                }
+            }
+            
+            showToast('Spracovanie dokončené!', 'success');
+            showSection('results');
+            renderResults();
+        }
+
+        async function processPDFWithVision(file, apiKey) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            
+            // Convert first 3 pages to images
+            const images = [];
+            for (let i = 1; i <= Math.min(pdf.numPages, 3); i++) {
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 2.0 });
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                images.push(canvas.toDataURL('image/png').split(',')[1]);
+            }
+            
+            // Call Vision API
+            const criteriaList = criteria.map(c => `${c.name} (${c.unit}) -> "${c.key}"`).join(', ');
+            
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o',
+                    messages: [{
+                        role: 'user',
+                        content: [
+                            { type: 'text', text: `Extrahuj z dokumentu tieto kritériá: ${criteriaList}. Vráť JSON s kľúčmi a číselnými hodnotami.` },
+                            ...images.map(img => ({ type: 'image_url', image_url: { url: `data:image/png;base64,${img}` }}))
+                        ]
+                    }],
+                    max_tokens: 2000,
+                    temperature: 0
+                })
+            });
+            
+            if (!response.ok) throw new Error(response.statusText);
+            
+            const data = await response.json();
+            const content = data.choices[0].message.content;
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            
+            if (jsonMatch) {
+                const extractedData = JSON.parse(jsonMatch[0]);
+                const newProposal = {
+                    id: 'p' + Date.now() + Math.random().toString(36).substr(2, 9),
+                    proposalName: file.name.replace('.pdf', ''),
+                    description: 'Vision AI extrahovaný návrh',
+                    metrics: extractedData
+                };
+                
+                proposals.push(newProposal);
+                showToast(`PDF ${file.name} spracovaný úspešne`, 'success');
+            }
+        }
+
+        async function processTextFile(file, apiKey) {
+            const text = await file.text();
+            
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o',
+                    messages: [{
+                        role: 'user',
+                        content: `Extrahuj z textu tieto kritériá: ${criteria.map(c => `${c.name} (${c.unit}) -> "${c.key}"`).join(', ')}. Vráť JSON s kľúčmi a číselnými hodnotami.\n\nText:\n${text}`
+                    }],
+                    max_tokens: 2000,
+                    temperature: 0
+                })
+            });
+            
+            if (!response.ok) throw new Error(response.statusText);
+            
+            const data = await response.json();
+            const content = data.choices[0].message.content;
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            
+            if (jsonMatch) {
+                const extractedData = JSON.parse(jsonMatch[0]);
+                const newProposal = {
+                    id: 'p' + Date.now() + Math.random().toString(36).substr(2, 9),
+                    proposalName: file.name.replace('.txt', ''),
+                    description: 'AI extrahovaný návrh',
+                    metrics: extractedData
+                };
+                
+                proposals.push(newProposal);
+                showToast(`TXT ${file.name} spracovaný úspešne`, 'success');
+            }
+        }
+
 
         // Toast notifications
         function showToast(message, type = 'success') {
