@@ -1300,14 +1300,19 @@ Formát odpovědi:
             const criteriaData = [
                 {
                     id: 'group1',
-                    name: 'Územné kritéria',
+                    name: 'Funkční kritéria',
                     icon: '🏗️',
                     criteria: [
-                        { id: 'c1', name: 'Celková plocha zájmu', description: 'Celková plocha území zájmu', unit: 'm²', weight: 10 },
+                        { id: 'c1', name: 'Celková plocha zájmu', description: 'Celková plocha území', unit: 'm²', weight: 10 },
                         { id: 'c2', name: 'Zastavěná plocha', description: 'Plocha zastavěných budov', unit: 'm²', weight: 8 },
                         { id: 'c3', name: 'Zelená plocha', description: 'Plocha zeleně a parků', unit: 'm²', weight: 9 },
                         { id: 'c4', name: 'Dopravní plocha', description: 'Plocha pro dopravu', unit: 'm²', weight: 7 },
-                        { id: 'c5', name: 'Parkovací plocha', description: 'Plocha pro parkování', unit: 'm²', weight: 6 }
+                        { id: 'c5', name: 'Parkovací plocha', description: 'Plocha pro parkování', unit: 'm²', weight: 6 },
+                        { id: 'c6', name: 'Plocha pro veřejnost', description: 'Plocha přístupná veřejnosti', unit: 'm²', weight: 8 },
+                        { id: 'c7', name: 'Plocha pro komerci', description: 'Plocha pro komerční účely', unit: 'm²', weight: 7 },
+                        { id: 'c8', name: 'Plocha pro bydlení', description: 'Plocha pro bydlení', unit: 'm²', weight: 9 },
+                        { id: 'c9', name: 'Plocha pro kanceláře', description: 'Plocha pro kanceláře', unit: 'm²', weight: 6 },
+                        { id: 'c10', name: 'Plocha pro služby', description: 'Plocha pro služby', unit: 'm²', weight: 5 }
                     ]
                 },
                 {
@@ -1319,7 +1324,12 @@ Formát odpovědi:
                         { id: 'c12', name: 'Návratnost investice', description: 'Doba návratnosti investice', unit: 'roky', weight: 9 },
                         { id: 'c13', name: 'Cena za m²', description: 'Průměrná cena za metr čtvereční', unit: 'Kč/m²', weight: 8 },
                         { id: 'c14', name: 'Provozní náklady', description: 'Roční provozní náklady', unit: 'Kč/rok', weight: 7 },
-                        { id: 'c15', name: 'Výnosy z pronájmu', description: 'Očekávané roční výnosy z pronájmu', unit: 'Kč/rok', weight: 8 }
+                        { id: 'c15', name: 'Údržbové náklady', description: 'Roční údržbové náklady', unit: 'Kč/rok', weight: 6 },
+                        { id: 'c16', name: 'Energické náklady', description: 'Roční energetické náklady', unit: 'Kč/rok', weight: 6 },
+                        { id: 'c17', name: 'Daňové zatížení', description: 'Roční daňové zatížení', unit: 'Kč/rok', weight: 5 },
+                        { id: 'c18', name: 'Pojištění', description: 'Roční pojištění', unit: 'Kč/rok', weight: 5 },
+                        { id: 'c19', name: 'Financování', description: 'Náklady na financování', unit: 'Kč/rok', weight: 6 },
+                        { id: 'c20', name: 'Marketing', description: 'Náklady na marketing', unit: 'Kč/rok', weight: 4 }
                     ]
                 },
                 {
@@ -1330,7 +1340,13 @@ Formát odpovědi:
                         { id: 'c21', name: 'Energická účinnost', description: 'Energická účinnost budov', unit: 'kWh/m²/rok', weight: 9 },
                         { id: 'c22', name: 'Uhlíková stopa', description: 'Uhlíková stopa projektu', unit: 't CO₂/rok', weight: 8 },
                         { id: 'c23', name: 'Vodní stopa', description: 'Spotřeba vody', unit: 'm³/rok', weight: 7 },
-                        { id: 'c24', name: 'Recyklace materiálů', description: 'Podíl recyklovaných materiálů', unit: '%', weight: 6 }
+                        { id: 'c24', name: 'Recyklace', description: 'Podíl recyklovaných materiálů', unit: '%', weight: 6 },
+                        { id: 'c25', name: 'Zelená střecha', description: 'Podíl zelených střech', unit: '%', weight: 5 },
+                        { id: 'c26', name: 'Solární panely', description: 'Podíl solárních panelů', unit: '%', weight: 5 },
+                        { id: 'c27', name: 'Větrná energie', description: 'Podíl větrné energie', unit: '%', weight: 4 },
+                        { id: 'c28', name: 'Geotermální energie', description: 'Podíl geotermální energie', unit: '%', weight: 4 },
+                        { id: 'c29', name: 'Bioplyn', description: 'Podíl bioplynu', unit: '%', weight: 4 },
+                        { id: 'c30', name: 'Úspora energie', description: 'Úspora energie oproti standardu', unit: '%', weight: 6 }
                     ]
                 },
                 {
@@ -1338,11 +1354,68 @@ Formát odpovědi:
                     name: 'Sociální kritéria',
                     icon: '👥',
                     criteria: [
-                        { id: 'c31', name: 'Pracovní místa', description: 'Počet vytvořených pracovních míst', unit: 'ks', weight: 8 },
-                        { id: 'c32', name: 'Dostupnost bydlení', description: 'Dostupnost bydlení pro různé skupiny', unit: 'index', weight: 9 },
-                        { id: 'c33', name: 'Veřejné prostory', description: 'Kvalita veřejných prostorů', unit: 'index', weight: 7 },
-                        { id: 'c34', name: 'Dopravní dostupnost', description: 'Dostupnost veřejnou dopravou', unit: 'min', weight: 8 },
-                        { id: 'c35', name: 'Bezpečnost', description: 'Úroveň bezpečnosti v oblasti', unit: 'index', weight: 7 }
+                        { id: 'c31', name: 'Počet obyvatel', description: 'Celkový počet obyvatel', unit: 'osoby', weight: 8 },
+                        { id: 'c32', name: 'Hustota obyvatel', description: 'Hustota obyvatel na km²', unit: 'osoby/km²', weight: 7 },
+                        { id: 'c33', name: 'Počet pracovních míst', description: 'Celkový počet pracovních míst', unit: 'místa', weight: 8 },
+                        { id: 'c34', name: 'Hustota pracovních míst', description: 'Hustota pracovních míst na km²', unit: 'místa/km²', weight: 7 },
+                        { id: 'c35', name: 'Počet škol', description: 'Počet škol v oblasti', unit: 'ks', weight: 6 },
+                        { id: 'c36', name: 'Počet školek', description: 'Počet školek v oblasti', unit: 'ks', weight: 6 },
+                        { id: 'c37', name: 'Počet zdravotních zařízení', description: 'Počet zdravotních zařízení', unit: 'ks', weight: 7 },
+                        { id: 'c38', name: 'Počet sportovních zařízení', description: 'Počet sportovních zařízení', unit: 'ks', weight: 5 },
+                        { id: 'c39', name: 'Počet kulturních zařízení', description: 'Počet kulturních zařízení', unit: 'ks', weight: 5 },
+                        { id: 'c40', name: 'Počet obchodů', description: 'Počet obchodů v oblasti', unit: 'ks', weight: 4 }
+                    ]
+                },
+                {
+                    id: 'group5',
+                    name: 'Dopravní kritéria',
+                    icon: '🚗',
+                    criteria: [
+                        { id: 'c41', name: 'Dopravní dostupnost', description: 'Dopravní dostupnost oblasti', unit: 'index', weight: 8 },
+                        { id: 'c42', name: 'Počet autobusových zastávek', description: 'Počet autobusových zastávek', unit: 'ks', weight: 6 },
+                        { id: 'c43', name: 'Počet tramvajových zastávek', description: 'Počet tramvajových zastávek', unit: 'ks', weight: 6 },
+                        { id: 'c44', name: 'Počet vlakových zastávek', description: 'Počet vlakových zastávek', unit: 'ks', weight: 7 },
+                        { id: 'c45', name: 'Počet metra stanic', description: 'Počet metra stanic', unit: 'ks', weight: 7 },
+                        { id: 'c46', name: 'Počet parkovacích míst', description: 'Počet parkovacích míst', unit: 'místa', weight: 6 },
+                        { id: 'c47', name: 'Počet cyklostezek', description: 'Počet cyklostezek', unit: 'km', weight: 5 },
+                        { id: 'c48', name: 'Počet chodníků', description: 'Počet chodníků', unit: 'km', weight: 4 },
+                        { id: 'c49', name: 'Počet mostů', description: 'Počet mostů', unit: 'ks', weight: 5 },
+                        { id: 'c50', name: 'Počet tunelů', description: 'Počet tunelů', unit: 'ks', weight: 5 }
+                    ]
+                },
+                {
+                    id: 'group6',
+                    name: 'Technická kritéria',
+                    icon: '⚙️',
+                    criteria: [
+                        { id: 'c51', name: 'Vodovodní síť', description: 'Délka vodovodní sítě', unit: 'km', weight: 6 },
+                        { id: 'c52', name: 'Kanalizační síť', description: 'Délka kanalizační sítě', unit: 'km', weight: 6 },
+                        { id: 'c53', name: 'Elektrická síť', description: 'Délka elektrické sítě', unit: 'km', weight: 6 },
+                        { id: 'c54', name: 'Plynová síť', description: 'Délka plynové sítě', unit: 'km', weight: 5 },
+                        { id: 'c55', name: 'Telekomunikační síť', description: 'Délka telekomunikační sítě', unit: 'km', weight: 5 },
+                        { id: 'c56', name: 'Počet transformátorů', description: 'Počet transformátorů', unit: 'ks', weight: 4 },
+                        { id: 'c57', name: 'Počet čerpadel', description: 'Počet čerpadel', unit: 'ks', weight: 4 },
+                        { id: 'c58', name: 'Počet komínů', description: 'Počet komínů', unit: 'ks', weight: 3 },
+                        { id: 'c59', name: 'Počet antén', description: 'Počet antén', unit: 'ks', weight: 3 },
+                        { id: 'c60', name: 'Počet kamer', description: 'Počet kamer', unit: 'ks', weight: 4 }
+                    ]
+                },
+                {
+                    id: 'group7',
+                    name: 'Bezpečnostní kritéria',
+                    icon: '🛡️',
+                    criteria: [
+                        { id: 'c61', name: 'Počet hasičských stanic', description: 'Počet hasičských stanic', unit: 'ks', weight: 6 },
+                        { id: 'c62', name: 'Počet policejních stanic', description: 'Počet policejních stanic', unit: 'ks', weight: 6 },
+                        { id: 'c63', name: 'Počet nemocnic', description: 'Počet nemocnic', unit: 'ks', weight: 7 },
+                        { id: 'c64', name: 'Počet záchranek', description: 'Počet záchranek', unit: 'ks', weight: 6 },
+                        { id: 'c65', name: 'Počet bezpečnostních kamer', description: 'Počet bezpečnostních kamer', unit: 'ks', weight: 4 },
+                        { id: 'c66', name: 'Počet alarmů', description: 'Počet alarmů', unit: 'ks', weight: 4 },
+                        { id: 'c67', name: 'Počet evakuačních východů', description: 'Počet evakuačních východů', unit: 'ks', weight: 5 },
+                        { id: 'c68', name: 'Počet hasicích přístrojů', description: 'Počet hasicích přístrojů', unit: 'ks', weight: 4 },
+                        { id: 'c69', name: 'Počet detektorů kouře', description: 'Počet detektorů kouře', unit: 'ks', weight: 4 },
+                        { id: 'c70', name: 'Počet detektorů plynu', description: 'Počet detektorů plynu', unit: 'ks', weight: 3 },
+                        { id: 'c71', name: 'Počet záložních generátorů', description: 'Počet záložních generátorů', unit: 'ks', weight: 4 }
                     ]
                 }
             ];
