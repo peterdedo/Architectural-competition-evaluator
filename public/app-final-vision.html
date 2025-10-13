@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analýza Urbanistických Projektů - Vision AI</title>
+    <title>Analýza Urbanistických Projektů - Kompletní</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -27,7 +27,6 @@
         .nav-item {
             padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
             cursor: pointer; transition: all 0.3s;
-            display: flex; align-items: center; gap: 15px;
         }
         .nav-item:hover { background: rgba(255,255,255,0.1); }
         .nav-item.active { background: #667eea; border-left: 4px solid white; }
@@ -37,7 +36,7 @@
         .btn {
             padding: 12px 30px; border: none; border-radius: 8px;
             font-size: 1rem; font-weight: 600; cursor: pointer;
-            transition: all 0.3s; margin-right: 10px;
+            transition: all 0.3s; margin: 5px;
         }
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -47,24 +46,67 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
         }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-success { background: #28a745; color: white; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .form-group { margin-bottom: 20px; }
-        label {
-            display: block; margin-bottom: 8px;
-            color: #2c3e50; font-weight: 600;
-        }
+        label { display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600; }
         input, select {
             width: 100%; padding: 12px 15px;
             border: 2px solid #e0e0e0; border-radius: 8px;
-            font-size: 1rem; transition: border-color 0.3s;
+            font-size: 1rem;
         }
-        input:focus, select:focus {
-            outline: none; border-color: #667eea;
+        input:focus, select:focus { outline: none; border-color: #667eea; }
+        .files-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px; margin-top: 20px;
         }
-        .info-box {
-            padding: 15px; background: #e7f3ff;
-            border-left: 4px solid #2196F3;
-            border-radius: 8px; margin-bottom: 20px;
+        .file-card {
+            padding: 15px; background: #f8f9fa;
+            border: 2px solid #e0e0e0; border-radius: 12px;
+        }
+        .file-card.completed { border-color: #28a745; background: #f0fff4; }
+        .criteria-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px; margin-top: 20px;
+        }
+        .criterion-card {
+            padding: 15px; background: white;
+            border: 2px solid #e0e0e0; border-radius: 8px;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .criterion-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+        }
+        .criterion-card.selected {
+            border-color: #667eea; background: #f0f3ff;
+        }
+        .criterion-card .checkbox {
+            float: right; width: 20px; height: 20px;
+            border: 2px solid #667eea; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .criterion-card.selected .checkbox::after {
+            content: '✓'; color: #667eea; font-weight: bold;
+        }
+        .comparison-table {
+            width: 100%; border-collapse: collapse; margin-top: 20px;
+        }
+        .comparison-table th {
+            background: #2c3e50; color: white;
+            padding: 15px; text-align: left;
+        }
+        .comparison-table td {
+            padding: 12px 15px; border: 1px solid #e0e0e0;
+        }
+        .comparison-table .best {
+            background: #d4edda !important; color: #155724; font-weight: 600;
+        }
+        .comparison-table .worst {
+            background: #f8d7da !important; color: #721c24; font-weight: 600;
         }
         .toast {
             position: fixed; top: 20px; right: 20px;
@@ -78,31 +120,33 @@
             from { transform: translateX(400px); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+        .info-box {
+            padding: 15px; background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            border-radius: 8px; margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🏙️ Analýza Urbanistických Projektů</h1>
-            <p class="subtitle">Vision AI - Bez hallucinací!</p>
+            <p class="subtitle">Vision AI + Selekce Kritérií + Porovnání</p>
         </header>
         <div class="main-content">
             <div class="sidebar">
-                <div class="nav-item active" onclick="showSection('config')">
-                    <div>1. Konfigurace API</div>
-                </div>
-                <div class="nav-item" onclick="showSection('upload')">
-                    <div>2. Nahrání Dokumentů</div>
-                </div>
-                <div class="nav-item" onclick="showSection('results')">
-                    <div>3. Výsledky</div>
-                </div>
+                <div class="nav-item active" onclick="showSection('config')">1. Konfigurace API</div>
+                <div class="nav-item" onclick="showSection('upload')">2. Nahrání Dokumentů</div>
+                <div class="nav-item" onclick="showSection('criteria')">3. Výběr Kritérií</div>
+                <div class="nav-item" onclick="showSection('results')">4. Výsledky</div>
+                <div class="nav-item" onclick="showSection('comparison')">5. Porovnání</div>
             </div>
             <div class="content-area">
+                <!-- Config -->
                 <div class="section active" id="section-config">
                     <h2>⚙️ Konfigurace API</h2>
                     <div class="info-box">
-                        <strong>💡 Vision AI:</strong> Aplikace používá GPT-4 Vision, který vidí PDF jako obrázky - stejně jako ChatGPT UI. Díky tomu nemůže hallucinate!
+                        <strong>💡 Vision AI:</strong> GPT-4 Vision vidí PDF jako obrázky (jako ChatGPT UI) - nemůže hallucinate!
                     </div>
                     <div class="form-group">
                         <label>OpenAI API Klíč:</label>
@@ -115,24 +159,63 @@
                             <option value="gpt-4o">GPT-4o (Vision)</option>
                         </select>
                     </div>
-                    <button class="btn btn-primary" onclick="saveConfig()">💾 Uložit</button>
+                    <button class="btn btn-primary" onclick="saveConfig()">💾 Uložit a pokračovat</button>
                 </div>
+                
+                <!-- Upload -->
                 <div class="section" id="section-upload">
-                    <h2>📄 Nahrání PDF</h2>
-                    <input type="file" id="fileInput" accept=".pdf" onchange="handleFile(this.files[0])">
-                    <div id="fileInfo"></div>
-                    <button class="btn btn-primary" onclick="analyze()" id="analyzeBtn" disabled>🚀 Analyzovat</button>
+                    <h2>📄 Nahrání Dokumentů</h2>
+                    <input type="file" id="fileInput" accept=".pdf" multiple onchange="handleFiles(this.files)">
+                    <div id="filesGrid" class="files-grid"></div>
+                    <button class="btn btn-primary" onclick="convertAllFiles()" id="convertBtn" disabled>🔄 Konvertovat PDF</button>
                 </div>
+                
+                <!-- Criteria -->
+                <div class="section" id="section-criteria">
+                    <h2>📋 Výběr Kritérií</h2>
+                    <div>
+                        <button class="btn btn-secondary" onclick="selectAll()">✅ Vybrat vše</button>
+                        <button class="btn btn-secondary" onclick="deselectAll()">❌ Zrušit výběr</button>
+                        <span id="selectedCount" style="margin-left: 20px; font-weight: 600;">Vybráno: 0</span>
+                    </div>
+                    <div id="criteriaGrid" class="criteria-grid"></div>
+                    <button class="btn btn-primary" onclick="startAnalysis()" style="margin-top: 20px;">🚀 Analyzovat</button>
+                </div>
+                
+                <!-- Results -->
                 <div class="section" id="section-results">
-                    <h2>📊 Výsledky</h2>
+                    <h2>📊 Výsledky Analýzy</h2>
                     <div id="resultsContainer"></div>
+                </div>
+                
+                <!-- Comparison -->
+                <div class="section" id="section-comparison">
+                    <h2>🔬 Porovnání Projektů</h2>
+                    <div id="comparisonContainer"></div>
+                    <button class="btn btn-success" onclick="exportResults()">📥 Export JSON</button>
                 </div>
             </div>
         </div>
     </div>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        let apiKey = '', gptModel = 'gpt-4-turbo', pdfFile = null, pageImages = [];
+        let apiKey = '', gptModel = 'gpt-4-turbo';
+        let projects = [];
+        let selectedCriteria = new Set();
+        let analysisResults = [];
+        
+        const CRITERIA = {
+            'celkova_plocha': { name: 'Celková plocha zájmu', unit: 'm²' },
+            'zastavena_plocha': { name: 'Zastavěná plocha', unit: 'm²' },
+            'zelena_plocha': { name: 'Zelená plocha', unit: 'm²' },
+            'dopravni_plocha': { name: 'Dopravní plocha', unit: 'm²' },
+            'parkovaci_plocha': { name: 'Parkovací plocha', unit: 'm²' },
+            'naklady': { name: 'Náklady na výstavbu', unit: 'Kč', lower_better: true },
+            'navratnost': { name: 'Návratnost investice', unit: 'roky', lower_better: true },
+            'cena_m2': { name: 'Cena za m²', unit: 'Kč/m²' },
+            'energie': { name: 'Energická účinnost', unit: 'kWh/m²/rok', lower_better: true },
+            'co2': { name: 'Uhlíková stopa', unit: 't CO₂/rok', lower_better: true }
+        };
         
         function showToast(msg, type = 'success') {
             const toast = document.createElement('div');
@@ -159,82 +242,255 @@
             setTimeout(() => showSection('upload'), 500);
         }
         
-        async function handleFile(file) {
-            if (!file) return;
-            pdfFile = file;
-            document.getElementById('fileInfo').innerHTML = `<p>📄 ${file.name}</p>`;
+        function handleFiles(files) {
+            projects = Array.from(files).map((file, i) => ({
+                id: Date.now() + i,
+                name: file.name.replace('.pdf', ''),
+                file: file,
+                images: [],
+                status: 'pending'
+            }));
             
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            pageImages = [];
+            const grid = document.getElementById('filesGrid');
+            grid.innerHTML = '';
+            projects.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'file-card';
+                card.id = `file-${p.id}`;
+                card.innerHTML = `<div>📄 ${p.name}</div><div style="color:#666; font-size:0.9rem;">Připraven</div>`;
+                grid.appendChild(card);
+            });
             
-            for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
-                const page = await pdf.getPage(i);
-                const viewport = page.getViewport({ scale: 2.0 });
-                const canvas = document.createElement('canvas');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-                pageImages.push(canvas.toDataURL('image/png').split(',')[1]);
-            }
-            
-            document.getElementById('analyzeBtn').disabled = false;
-            showToast(`Připraveno ${pageImages.length} stránek`, 'success');
+            document.getElementById('convertBtn').disabled = false;
         }
         
-        async function analyze() {
-            if (!apiKey) return showToast('Nastavte API klíč', 'error');
+        async function convertAllFiles() {
+            for (const project of projects) {
+                const card = document.getElementById(`file-${project.id}`);
+                try {
+                    const arrayBuffer = await project.file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    
+                    for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) {
+                        const page = await pdf.getPage(i);
+                        const viewport = page.getViewport({ scale: 2.0 });
+                        const canvas = document.createElement('canvas');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                        project.images.push(canvas.toDataURL('image/png').split(',')[1]);
+                    }
+                    
+                    project.status = 'converted';
+                    card.className = 'file-card completed';
+                    card.innerHTML = `<div>📄 ${project.name}</div><div style="color:#28a745; font-size:0.9rem;">✅ ${project.images.length} stránek</div>`;
+                } catch (error) {
+                    showToast(`Chyba: ${project.name}`, 'error');
+                }
+            }
             
-            const messages = [{
-                role: 'user',
-                content: [
-                    { type: 'text', text: 'Extrahuj z dokumentu: celková plocha (m²), zastavěná plocha (m²), zelená plocha (m²), náklady (Kč). Vrať JSON: {"celkova_plocha": number, "zastavena_plocha": number, "zelena_plocha": number, "naklady": number}' },
-                    ...pageImages.map(img => ({ type: 'image_url', image_url: { url: `data:image/png;base64,${img}` }}))
-                ]
-            }];
+            renderCriteria();
+            setTimeout(() => showSection('criteria'), 1000);
+        }
+        
+        function renderCriteria() {
+            const grid = document.getElementById('criteriaGrid');
+            grid.innerHTML = '';
             
-            try {
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: gptModel,
-                        messages: messages,
-                        max_tokens: 1000,
-                        temperature: 0
-                    })
+            Object.entries(CRITERIA).forEach(([key, c]) => {
+                const card = document.createElement('div');
+                card.className = 'criterion-card selected';
+                card.dataset.key = key;
+                card.innerHTML = `
+                    <div class="checkbox"></div>
+                    <h4>${c.name}</h4>
+                    <div style="color:#666; font-size:0.9rem;">${c.unit}</div>
+                `;
+                card.onclick = () => toggleCriterion(key);
+                grid.appendChild(card);
+                selectedCriteria.add(key);
+            });
+            
+            updateCount();
+        }
+        
+        function toggleCriterion(key) {
+            const card = document.querySelector(`[data-key="${key}"]`);
+            if (selectedCriteria.has(key)) {
+                selectedCriteria.delete(key);
+                card.classList.remove('selected');
+            } else {
+                selectedCriteria.add(key);
+                card.classList.add('selected');
+            }
+            updateCount();
+        }
+        
+        function selectAll() {
+            selectedCriteria = new Set(Object.keys(CRITERIA));
+            document.querySelectorAll('.criterion-card').forEach(c => c.classList.add('selected'));
+            updateCount();
+        }
+        
+        function deselectAll() {
+            selectedCriteria.clear();
+            document.querySelectorAll('.criterion-card').forEach(c => c.classList.remove('selected'));
+            updateCount();
+        }
+        
+        function updateCount() {
+            document.getElementById('selectedCount').textContent = `Vybráno: ${selectedCriteria.size}`;
+        }
+        
+        async function startAnalysis() {
+            if (selectedCriteria.size === 0) return showToast('Vyberte kritéria', 'error');
+            
+            analysisResults = [];
+            showSection('results');
+            
+            const criteriaList = Array.from(selectedCriteria)
+                .map(k => `${CRITERIA[k].name} (${CRITERIA[k].unit}) -> "${k}"`)
+                .join(', ');
+            
+            for (const project of projects) {
+                try {
+                    const messages = [{
+                        role: 'user',
+                        content: [
+                            { type: 'text', text: `Extrahuj z dokumentu: ${criteriaList}. Vrať JSON s klíči a číselnými hodnotami.` },
+                            ...project.images.map(img => ({ type: 'image_url', image_url: { url: `data:image/png;base64,${img}` }}))
+                        ]
+                    }];
+                    
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: gptModel,
+                            messages: messages,
+                            max_tokens: 2000,
+                            temperature: 0
+                        })
+                    });
+                    
+                    if (!response.ok) throw new Error(response.statusText);
+                    
+                    const data = await response.json();
+                    const content = data.choices[0].message.content;
+                    const jsonMatch = content.match(/\{[\s\S]*\}/);
+                    
+                    if (jsonMatch) {
+                        const results = JSON.parse(jsonMatch[0]);
+                        analysisResults.push({
+                            projectId: project.id,
+                            projectName: project.name,
+                            data: results
+                        });
+                    }
+                } catch (error) {
+                    showToast(`Chyba: ${project.name}`, 'error');
+                }
+            }
+            
+            displayResults();
+            if (analysisResults.length > 1) {
+                setTimeout(() => {
+                    showSection('comparison');
+                    displayComparison();
+                }, 2000);
+            }
+        }
+        
+        function displayResults() {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '';
+            
+            analysisResults.forEach(result => {
+                let html = `<h3>📄 ${result.projectName}</h3>
+                    <table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
+                        <tr><th style="padding:10px; background:#667eea; color:white;">Kritérium</th>
+                            <th style="padding:10px; background:#667eea; color:white;">Hodnota</th></tr>`;
+                
+                for (const key of selectedCriteria) {
+                    const c = CRITERIA[key];
+                    const val = result.data[key];
+                    html += `<tr>
+                        <td style="padding:10px; border:1px solid #ddd;">${c.name}</td>
+                        <td style="padding:10px; border:1px solid #ddd;">${val || '-'} ${c.unit}</td>
+                    </tr>`;
+                }
+                
+                html += `</table>`;
+                container.innerHTML += html;
+            });
+        }
+        
+        function displayComparison() {
+            if (analysisResults.length < 2) {
+                document.getElementById('comparisonContainer').innerHTML = 
+                    '<div class="info-box">Pro porovnání je potřeba alespoň 2 projekty.</div>';
+                return;
+            }
+            
+            let html = '<table class="comparison-table"><thead><tr><th>Kritérium</th>';
+            
+            analysisResults.forEach(r => {
+                html += `<th>${r.projectName}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            for (const key of selectedCriteria) {
+                const c = CRITERIA[key];
+                const lowerBetter = c.lower_better || false;
+                
+                html += `<tr><td><strong>${c.name}</strong><br><small>${c.unit}</small></td>`;
+                
+                const values = analysisResults.map(r => r.data[key]).filter(v => v !== null && v !== undefined);
+                const maxVal = Math.max(...values);
+                const minVal = Math.min(...values);
+                
+                analysisResults.forEach(r => {
+                    const val = r.data[key];
+                    let className = '';
+                    
+                    if (val !== null && val !== undefined && values.length > 1) {
+                        if (lowerBetter) {
+                            if (val === minVal) className = 'best';
+                            if (val === maxVal) className = 'worst';
+                        } else {
+                            if (val === maxVal) className = 'best';
+                            if (val === minVal) className = 'worst';
+                        }
+                    }
+                    
+                    html += `<td class="${className}">${val || '-'}</td>`;
                 });
                 
-                if (!response.ok) throw new Error(response.statusText);
-                
-                const data = await response.json();
-                const content = data.choices[0].message.content;
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                
-                if (jsonMatch) {
-                    const results = JSON.parse(jsonMatch[0]);
-                    displayResults(results);
-                    showSection('results');
-                }
-            } catch (error) {
-                showToast('Chyba: ' + error.message, 'error');
+                html += '</tr>';
             }
+            
+            html += '</tbody></table>';
+            document.getElementById('comparisonContainer').innerHTML = html;
         }
         
-        function displayResults(results) {
-            const html = `
-                <table style="width:100%; border-collapse: collapse;">
-                    <tr><th style="padding:10px; background:#667eea; color:white;">Kritérium</th><th style="padding:10px; background:#667eea; color:white;">Hodnota</th></tr>
-                    <tr><td style="padding:10px; border:1px solid #ddd;">Celková plocha</td><td style="padding:10px; border:1px solid #ddd;">${results.celkova_plocha || '-'} m²</td></tr>
-                    <tr><td style="padding:10px; border:1px solid #ddd;">Zastavěná plocha</td><td style="padding:10px; border:1px solid #ddd;">${results.zastavena_plocha || '-'} m²</td></tr>
-                    <tr><td style="padding:10px; border:1px solid #ddd;">Zelená plocha</td><td style="padding:10px; border:1px solid #ddd;">${results.zelena_plocha || '-'} m²</td></tr>
-                    <tr><td style="padding:10px; border:1px solid #ddd;">Náklady</td><td style="padding:10px; border:1px solid #ddd;">${results.naklady || '-'} Kč</td></tr>
-                </table>
-            `;
-            document.getElementById('resultsContainer').innerHTML = html;
+        function exportResults() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                model: gptModel,
+                criteria: Array.from(selectedCriteria),
+                projects: analysisResults
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analyza-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast('Export dokončen!', 'success');
         }
         
         window.addEventListener('load', () => {
