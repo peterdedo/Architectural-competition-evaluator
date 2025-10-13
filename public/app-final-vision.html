@@ -1760,9 +1760,22 @@ Formát odpovědi:
                 toast.classList.remove('show');
             }, 3000);
         }
+
+        // Manually initialize app when script loads
+        console.log('Script loaded, initializing app...');
+        setTimeout(() => {
+            console.log('Initializing app with timeout...');
+            loadApiConfig();
+            loadCriteria();
+            setupFileUpload();
+            initializePDFJS();
+            setupNavigation();
+            console.log('App initialized successfully');
+        }, 100);
     </script>
 </body>
 </html>
+
 
 
 
