@@ -453,6 +453,7 @@
                 }
             }
             
+            console.log('Analysis completed, results:', analysisResults);
             displayResults();
             if (analysisResults.length > 1) {
                 setTimeout(() => {
@@ -465,6 +466,14 @@
         function displayResults() {
             const container = document.getElementById('resultsContainer');
             container.innerHTML = '';
+            
+            console.log('Displaying results:', analysisResults.length, 'results');
+            console.log('Selected criteria:', selectedCriteria.size, 'criteria');
+            
+            if (analysisResults.length === 0) {
+                container.innerHTML = '<div class="info-box">Žádné výsledky k zobrazení.</div>';
+                return;
+            }
             
             analysisResults.forEach(result => {
                 let html = `<h3>📄 ${result.projectName}</h3>
