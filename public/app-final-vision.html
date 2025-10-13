@@ -205,16 +205,44 @@
         let analysisResults = [];
         
         const CRITERIA = {
-            'celkova_plocha': { name: 'Celková plocha zájmu', unit: 'm²' },
-            'zastavena_plocha': { name: 'Zastavěná plocha', unit: 'm²' },
-            'zelena_plocha': { name: 'Zelená plocha', unit: 'm²' },
-            'dopravni_plocha': { name: 'Dopravní plocha', unit: 'm²' },
-            'parkovaci_plocha': { name: 'Parkovací plocha', unit: 'm²' },
-            'naklady': { name: 'Náklady na výstavbu', unit: 'Kč', lower_better: true },
-            'navratnost': { name: 'Návratnost investice', unit: 'roky', lower_better: true },
-            'cena_m2': { name: 'Cena za m²', unit: 'Kč/m²' },
-            'energie': { name: 'Energická účinnost', unit: 'kWh/m²/rok', lower_better: true },
-            'co2': { name: 'Uhlíková stopa', unit: 't CO₂/rok', lower_better: true }
+            // Plochy a rozlohy
+            'celkova_plocha': { name: 'Celková plocha zájmu', unit: 'm²', category: 'Plochy' },
+            'zastavena_plocha': { name: 'Zastavěná plocha', unit: 'm²', category: 'Plochy' },
+            'zelena_plocha': { name: 'Zelená plocha', unit: 'm²', category: 'Plochy' },
+            'dopravni_plocha': { name: 'Dopravní plocha', unit: 'm²', category: 'Plochy' },
+            'parkovaci_plocha': { name: 'Parkovací plocha', unit: 'm²', category: 'Plochy' },
+            'plocha_bydleni': { name: 'Plocha bydlení', unit: 'm²', category: 'Plochy' },
+            'plocha_obchod': { name: 'Plocha obchodu', unit: 'm²', category: 'Plochy' },
+            'vodni_plocha': { name: 'Vodní plocha', unit: 'm²', category: 'Plochy' },
+            
+            // Ekonomické ukazatele
+            'naklady': { name: 'Náklady na výstavbu', unit: 'Kč', lower_better: true, category: 'Ekonomika' },
+            'navratnost': { name: 'Návratnost investice', unit: 'roky', lower_better: true, category: 'Ekonomika' },
+            'cena_m2': { name: 'Cena za m²', unit: 'Kč/m²', category: 'Ekonomika' },
+            'provozni_naklady': { name: 'Provozní náklady', unit: 'Kč/rok', lower_better: true, category: 'Ekonomika' },
+            'vynosy': { name: 'Výnosy z pronájmu', unit: 'Kč/rok', category: 'Ekonomika' },
+            'roi': { name: 'ROI', unit: '%', category: 'Ekonomika' },
+            
+            // Udržitelnost
+            'energie': { name: 'Energická účinnost', unit: 'kWh/m²/rok', lower_better: true, category: 'Udržitelnost' },
+            'co2': { name: 'Uhlíková stopa', unit: 't CO₂/rok', lower_better: true, category: 'Udržitelnost' },
+            'voda': { name: 'Vodní stopa', unit: 'm³/rok', lower_better: true, category: 'Udržitelnost' },
+            'recyklace': { name: 'Recyklace materiálů', unit: '%', category: 'Udržitelnost' },
+            'obnovitelne_zdroje': { name: 'Obnovitelné zdroje', unit: '%', category: 'Udržitelnost' },
+            
+            // Sociální dopady
+            'pracovni_mista': { name: 'Pracovní místa', unit: 'ks', category: 'Sociální' },
+            'dostupnost_bydleni': { name: 'Dostupnost bydlení', unit: 'index', category: 'Sociální' },
+            'verejne_prostory': { name: 'Veřejné prostory', unit: 'index', category: 'Sociální' },
+            'dopravni_dostupnost': { name: 'Dopravní dostupnost', unit: 'min', lower_better: true, category: 'Sociální' },
+            'bezpecnost': { name: 'Bezpečnost', unit: 'index', category: 'Sociální' },
+            
+            // Technické parametry
+            'pocet_budov': { name: 'Počet budov', unit: 'ks', category: 'Technické' },
+            'pocet_bytu': { name: 'Počet bytů', unit: 'ks', category: 'Technické' },
+            'pocet_parkovacich_mist': { name: 'Parkovací místa', unit: 'ks', category: 'Technické' },
+            'vyska_budov': { name: 'Výška budov', unit: 'm', category: 'Technické' },
+            'podlaznost': { name: 'Podlažnost', unit: 'podlaží', category: 'Technické' }
         };
         
         function showToast(msg, type = 'success') {
