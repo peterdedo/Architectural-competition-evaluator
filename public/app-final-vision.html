@@ -797,19 +797,6 @@
             'comparison': 'inactive'
         };
 
-        // Initialize app
-        document.addEventListener('DOMContentLoaded', function() {
-            loadApiConfig();
-            loadCriteria();
-            setupFileUpload();
-            initializePDFJS();
-            
-            // Setup navigation with delay to ensure DOM is ready
-            setTimeout(() => {
-                setupNavigation();
-            }, 500);
-        });
-
         // Initialize PDF.js
         function initializePDFJS() {
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -828,6 +815,19 @@
                 });
             });
         }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadApiConfig();
+            loadCriteria();
+            setupFileUpload();
+            initializePDFJS();
+            
+            // Setup navigation with delay to ensure DOM is ready
+            setTimeout(() => {
+                setupNavigation();
+            }, 500);
+        });
 
         function showSection(sectionId) {
             console.log('Showing section:', sectionId);
