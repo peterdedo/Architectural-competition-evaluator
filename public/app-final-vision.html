@@ -816,11 +816,6 @@
             });
         }
 
-        // Make functions globally available
-        window.setupNavigation = setupNavigation;
-        window.initializePDFJS = initializePDFJS;
-        window.initializeApp = initializeApp;
-
         // Initialize app immediately
         function initializeApp() {
             console.log('Initializing app...');
@@ -831,6 +826,11 @@
             setupNavigation();
             console.log('App initialized successfully');
         }
+
+        // Make functions globally available
+        window.setupNavigation = setupNavigation;
+        window.initializePDFJS = initializePDFJS;
+        window.initializeApp = initializeApp;
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
