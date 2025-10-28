@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Odstránenie Toalety</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #b91c1c;
+        }
+        .success {
+            background: #10b981;
+            color: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🧹 Odstránenie "Toalety" z aplikácie</h1>
+        <p>Tento skript odstráni indikátor "Toalety" (ID: <code>custom_1761333530207</code>) z localStorage.</p>
+        
+        <button onclick="removeToilets()">Odstrániť Toalety</button>
+        
+        <div id="success" class="success">
+            ✅ Toalety boli úspešne odstránené! Obnovte stránku aplikácie (Ctrl+F5).
+        </div>
+        
+        <h3>Čo sa odstráni:</h3>
+        <pre id="preview">Načítavam...</pre>
+    </div>
+
+    <script>
+        // Zobraz náhľad
+        function showPreview() {
+            const customInd = JSON.parse(localStorage.getItem('urban-analysis-custom-indicators') || '[]');
+            const vybrane = JSON.parse(localStorage.getItem('urban-analysis-vybrane-indikatory') || '[]');
+            
+            const toiletIndicator = customInd.find(i => i.id === 'custom_1761333530207');
+            const isSelected = vybrane.includes('custom_1761333530207');
+            
+            document.getElementById('preview').textContent = 
+                `Custom indikátory: ${customInd.length}\n` +
+                `Vybrané indikátory: ${vybrane.length}\n` +
+                `\nToalety nájdené: ${toiletIndicator ? 'ÁNO' : 'NIE'}\n` +
+                `Toalety vybrané: ${isSelected ? 'ÁNO' : 'NIE'}\n` +
+                (toiletIndicator ? `\nDetail:\n${JSON.stringify(toiletIndicator, null, 2)}` : '');
+        }
+        
+        function removeToilets() {
+            // 1. Odstráň z custom indikátorov
+            const customInd = JSON.parse(localStorage.getItem('urban-analysis-custom-indicators') || '[]');
+            const filteredCustom = customInd.filter(i => i.id !== 'custom_1761333530207');
+            localStorage.setItem('urban-analysis-custom-indicators', JSON.stringify(filteredCustom));
+            
+            // 2. Odstráň z vybraných indikátorov
+            const vybrane = JSON.parse(localStorage.getItem('urban-analysis-vybrane-indikatory') || '[]');
+            const filteredVybrane = vybrane.filter(id => id !== 'custom_1761333530207');
+            localStorage.setItem('urban-analysis-vybrane-indikatory', JSON.stringify(filteredVybrane));
+            
+            // 3. Zobraz úspech
+            document.getElementById('success').style.display = 'block';
+            
+            // 4. Aktualizuj náhľad
+            showPreview();
+            
+            console.log('✅ Toalety odstránené!');
+            console.log('Custom indikátory pred:', customInd.length, '→ po:', filteredCustom.length);
+            console.log('Vybrané indikátory pred:', vybrane.length, '→ po:', filteredVybrane.length);
+        }
+        
+        // Načítaj náhľad pri načítaní stránky
+        showPreview();
+    </script>
+</body>
+</html>
+
