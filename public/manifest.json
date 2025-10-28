@@ -1,0 +1,24 @@
+{
+  "name": "Urban Analytics v2.1",
+  "short_name": "Urban Analytics",
+  "description": "AI-powered urban analysis application for evaluating architectural proposals",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1E293B",
+  "theme_color": "#0066A4",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "sk",
+  "categories": ["productivity", "business", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
+

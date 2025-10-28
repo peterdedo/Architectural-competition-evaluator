@@ -1,0 +1,64 @@
+================================================================================
+ZÁLOHA HLAVNÍCH KOMPONENT - URBAN ANALYSIS APPLICATION
+================================================================================
+Datum: 2025-10-21 00:23
+Poznámka: Toto je záloha pro rychlé obnovení klíčových částí aplikace
+================================================================================
+
+SOUBORY V TÉTO ZÁLOZE:
+1. App.jsx (201 řádků) - Hlavní aplikace s localStorage persistence
+2. ErrorBoundary.jsx (142 řádků) - NOVÝ error handling
+3. StepCriteria.jsx - Výběr indikátorů (vyčištěno)
+4. StepResults.jsx - Výsledky (s validací)
+5. indikatory_zakladni.js - 20 základních indikátorů
+
+================================================================================
+POZNÁMKA O UMÍSTĚNÍ SOUBORŮ
+================================================================================
+
+Všechny zdrojové soubory jsou v:
+  urban-analysis-vite/src/
+
+Struktura:
+  src/
+  ├── App.jsx                          ← Tento soubor níže
+  ├── components/
+  │   ├── ErrorBoundary.jsx           ← Tento soubor níže
+  │   ├── StepCriteria.jsx            ← Vyčištěná verze
+  │   ├── StepResults.jsx             ← S validací
+  │   ├── StepUpload.jsx              ← S regex + mock data
+  │   └── ... (další komponenty)
+  └── data/
+      ├── indikatory_zakladni.js      ← 20 indikátorů
+      └── indikatory_data.js          ← 100 indikátorů
+
+================================================================================
+
+KLÍČOVÉ ZMĚNY V REVIZI:
+✅ localStorage persistence (App.jsx)
+✅ ErrorBoundary (ErrorBoundary.jsx - NOVÝ)
+✅ Odstranění automatického přepisování (StepCriteria.jsx)
+✅ Validace indikátorů (StepResults.jsx)
+✅ Vylepšené regex + mock data (StepUpload.jsx)
+✅ 0 linter errors
+
+================================================================================
+
+Pro úplnou zálohu včetně dokumentace viz:
+- ZALOHA_KOMPLETNI_2025-10-21.md (kompletní přehled)
+- REVIZE_KOMPLETNI.md (detailní dokumentace revize)
+- HOTOVO.md (shrnutí + testovací návod)
+
+================================================================================
+
+Celý projekt lze obnovit zkopírováním složky urban-analysis-vite:
+1. Zkopírovat celou složku
+2. npm install
+3. npm run dev -- --port 5182
+4. Otevřít http://localhost:5182/
+
+================================================================================
+KONEC ZÁLOHY
+================================================================================
+
+

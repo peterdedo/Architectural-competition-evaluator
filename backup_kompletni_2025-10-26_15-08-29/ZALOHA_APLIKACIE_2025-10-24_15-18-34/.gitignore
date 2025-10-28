@@ -1,0 +1,90 @@
+# ========================================
+# Environment & Secrets
+# ========================================
+.env
+.env.local
+.env.*.local
+.env.production.local
+.env.development.local
+.env.test.local
+
+# ========================================
+# Dependencies
+# ========================================
+node_modules/
+npm-debug.log
+npm-error.log
+yarn-error.log
+yarn-debug.log
+pnpm-debug.log
+
+# ========================================
+# Build & Output
+# ========================================
+dist/
+build/
+.vite/
+.cache/
+out/
+
+# ========================================
+# IDE & Editor
+# ========================================
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+*~
+.project
+.classpath
+*.c9/
+*.sublime-project
+*.sublime-workspace
+.prettierignore
+
+# ========================================
+# Testing & Coverage
+# ========================================
+coverage/
+.nyc_output/
+.jest/
+
+# ========================================
+# Logs
+# ========================================
+logs/
+*.log
+lerna-debug.log*
+
+# ========================================
+# OS
+# ========================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# ========================================
+# Temporary Files
+# ========================================
+.tmp/
+tmp/
+*.bak
+*.swp
+.env.bak
+
+# ========================================
+# PM2 & Process Manager
+# ========================================
+logs/
+pm2-err.log
+pm2-out.log
+
+# ========================================
+# Deployment Scripts
+# ========================================
+deploy.sh
+*.pem
+*.key
+*.pub
+

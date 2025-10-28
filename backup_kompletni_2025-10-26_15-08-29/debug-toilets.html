@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Toalety</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        pre { background: #f3f4f6; padding: 12px; border-radius: 4px; overflow-x: auto; }
+        button { background: #dc2626; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Toalety</h1>
+    <button onclick="debugToilets()">Debug Toalety</button>
+    <button onclick="removeToilets()">Odstrániť Toalety</button>
+    <pre id="output">Kliknite na Debug Toalety...</pre>
+
+    <script>
+        function debugToilets() {
+            const customInd = JSON.parse(localStorage.getItem('urban-analysis-custom-indicators') || '[]');
+            const vybrane = JSON.parse(localStorage.getItem('urban-analysis-vybrane-indikatory') || '[]');
+            
+            const toiletIndicator = customInd.find(i => i.id === 'custom_1761333530207');
+            const isSelected = vybrane.includes('custom_1761333530207');
+            
+            document.getElementById('output').textContent = 
+                `🔍 DEBUG TOALETY:\n\n` +
+                `Custom indikátory celkovo: ${customInd.length}\n` +
+                `Vybrané indikátory celkovo: ${vybrane.length}\n\n` +
+                `Toalety nájdené: ${toiletIndicator ? 'ÁNO' : 'NIE'}\n` +
+                `Toalety vybrané: ${isSelected ? 'ÁNO' : 'NIE'}\n\n` +
+                `Všetky custom indikátory:\n${JSON.stringify(customInd, null, 2)}\n\n` +
+                `Vybrané indikátory:\n${JSON.stringify(vybrane, null, 2)}`;
+        }
+        
+        function removeToilets() {
+            // 1. Odstráň z custom indikátorov
+            const customInd = JSON.parse(localStorage.getItem('urban-analysis-custom-indicators') || '[]');
+            const filteredCustom = customInd.filter(i => i.id !== 'custom_1761333530207');
+            localStorage.setItem('urban-analysis-custom-indicators', JSON.stringify(filteredCustom));
+            
+            // 2. Odstráň z vybraných indikátorov
+            const vybrane = JSON.parse(localStorage.getItem('urban-analysis-vybrane-indikatory') || '[]');
+            const filteredVybrane = vybrane.filter(id => id !== 'custom_1761333530207');
+            localStorage.setItem('urban-analysis-vybrane-indikatory', JSON.stringify(filteredVybrane));
+            
+            document.getElementById('output').textContent = 
+                `✅ TOALETY ODSTÁNENÉ!\n\n` +
+                `Custom indikátory: ${customInd.length} → ${filteredCustom.length}\n` +
+                `Vybrané indikátory: ${vybrane.length} → ${filteredVybrane.length}\n\n` +
+                `Obnovte stránku aplikácie (Ctrl+F5)!`;
+        }
+    </script>
+</body>
+</html>

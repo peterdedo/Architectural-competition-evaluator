@@ -1,0 +1,95 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer base {
+  html, body, #root {
+    @apply h-full;
+  }
+  body {
+    @apply font-sans antialiased bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-slate-800;
+  }
+}
+
+@layer components {
+  .toast {
+    @apply bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-w-80 max-w-md cursor-pointer hover:shadow-xl transition-all duration-200;
+  }
+  
+  .toast-success {
+    @apply border-emerald-200 bg-emerald-50;
+  }
+  
+  .toast-error {
+    @apply border-red-200 bg-red-50;
+  }
+  
+  .toast-warning {
+    @apply border-yellow-200 bg-yellow-50;
+  }
+  
+  .toast-info {
+    @apply border-blue-200 bg-blue-50;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+  
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-skeleton {
+    animation: skeleton 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes fadeIn {
+  0% { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideUp {
+  0% { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideDown {
+  0% { 
+    opacity: 0; 
+    transform: translateY(-20px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes skeleton {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
