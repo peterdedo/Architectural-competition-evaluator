@@ -1,6 +1,6 @@
-# Urbanistická analýza – Streamlit
+# Urbanistická analýza – Streamlit (plná aplikácia)
 
-Jednoduchá verzia urbanistickej analýzy pre **Streamlit Cloud** (alebo lokálne spustenie).
+Plná verzia urbanistickej analýzy pre **Streamlit Cloud**: nahratie dát, váhy, výpočet skóre, porovnanie projektov, heatmapa, export.
 
 ## Lokálne spustenie
 
@@ -14,26 +14,16 @@ Otvorí sa `http://localhost:8501`.
 
 ## Publikovanie na Streamlit Cloud
 
-1. Nahraj tento priečinok (`streamlit_app`) do **GitHub** repozitára (samostatný repozitár alebo podpriečinok).
-2. Choď na [share.streamlit.io](https://share.streamlit.io).
-3. Prihlás sa cez GitHub a vyber repozitár.
-4. **Main file path:** zadaj `app.py` (alebo ak je app v podpriečinku: `streamlit_app/app.py`).
-5. **Working directory:** ak je app v podpriečinku, nastav napr. `streamlit_app`.
-6. Spusti deploy.
-
-Ak je všetko v jednom repozitári a app je v podpriečinku `streamlit_app`, v Streamlit Cloud nastav:
-
-- **Repository:** tvoj repozitár
-- **Branch:** main (alebo master)
 - **Main file path:** `streamlit_app/app.py`
-- **Advanced settings** → Working directory: `streamlit_app` (voliteľné, môže byť prázdne ak cesty v kóde sú relatívne)
+- **Working directory:** `streamlit_app`
+- Viac v `STREAMLIT_DEPLOY.md`.
 
-## Obsah aplikácie
+## Funkcie
 
-- **Váhy kategórií** – sidebar, posuvníky
-- **Celkové skóre** – vážený výsledok na demo dátach
-- **Skóre podľa kategórií** – stĺpcový graf
-- **Indikátory podľa kategórií** – tabuľka
-- **Porovnanie kategórií** – váhy
-
-Dáta sú zatiaľ demo (jeden projekt). Pre nahrávanie CSV a porovnanie viacerých projektov použite plnú React aplikáciu v koreni projektu.
+- **Nahratie dát** – CSV alebo JSON (viac projektov); prvý stĺpec CSV = názov projektu, ostatné = id indikátorov (U01, F01, …).
+- **Demo dáta** – tlačidlo načíta 3 vzorové projekty.
+- **Váhy kategórií** – sidebar s posuvníkmi (súčet sa normalizuje).
+- **Výpočet skóre** – min-max normalizácia cez projekty, vážený súčet (kompatibilné s React EvaluationEngine).
+- **Výsledky** – tabuľka (Projekt, Skóre, Skóre %, Plnosť dát), stĺpcový graf, heatmapa indikátorov.
+- **Export** – stiahnutie výsledkov ako CSV.
+- **Detail** – rozbaliteľný detail indikátorov pre víťazný projekt.
