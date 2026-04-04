@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /**
+   * System sans stack — bez next/font/google (žádný download z fonts.googleapis.com při buildu).
+   * Název proměnné zachován kvůli Tailwind `fontFamily.sans`.
+   */
+  --font-dm-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --primary: 221 83% 40%;
+  --primary-foreground: 210 40% 98%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 221 83% 40%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --radius: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 224 76% 48%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+  }
+}
+
+/* Typografia */
+body {
+  @apply bg-background text-foreground antialiased;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Lepší čitelnost nadpisů */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+/* Tabular nums globálně pre čísla ve KPI */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Studio: jemné pozadí pro hlavní pracovní plochu */
+.studio-shell {
+  @apply bg-gradient-to-b from-muted/20 to-background;
+}
+
+/* Lepší focus ring konzistence */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}

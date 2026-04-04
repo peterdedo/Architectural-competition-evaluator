@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+playwright-report
+test-results
+.env*.local
+
+# Lokální záloha vnořeného gitu (složka je součástí nadřazeného repozitáře Cursor)
+.git_nested_backup*

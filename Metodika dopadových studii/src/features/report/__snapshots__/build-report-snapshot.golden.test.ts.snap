@@ -1,0 +1,2732 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildMethodologyReportSnapshot (golden) > produces stable output for demo seed (normalized metadata) 1`] = `
+"{
+  "executiveSummaryCs": "### Hlavní závěry\\n\\nProjekt **Skladová a logistická zóna — ukázkový záměr** — výpočet metodiky MHDSI (baseline / střední scénář) uvádí celkovou potřebu pracovních míst **301** a **odhad změny HDP (ΔHDP) 828 936 198 Kč** z profilu M6 (CAPEX, výstup M3 a konfigurovatelné multiplikátory § 2.4 — detail v auditní stopě a v sekci P1→M6). Jedná se o zjednodušený rámec (bez plného (X−M), bez NPV — OQ-05, OQ-11), nikoli o uzavřený makro výsledek. Další ekonomické ukazatele (včetně θ×ΔHDP) vycházejí z této báze — interpretujte je jako orientační, nikoli jako jisté číslo bez kontextu předpokladů.\\n\\n#### Co je v tomto shrnutí potvrzené\\n- Hodnoty vycházejí přímo z výpočetního jádra (moduly zaměstnanost, bydlení, občanská vybavenost, ekonomika).\\n- Klíčové ukazatele baseline: RZPS 23,8, obyvatelé k usazení (OU) 366,7, daňový výnos (θ×ΔHDP) 281 838 307 Kč/rok (orientačně).\\n\\n#### Co závisí na předpokladech\\n- Ekonomické a fiskální ukazatele používají konfigurovatelné symboly (θ, MPC, alokace rozpočtů) — viz sekce předpokladů.\\n- Scénářové rozdíly (optimistický / pesimistický) mění vstupní symboly; interpretujte je jako rozptyl, nikoli jako jistý interval.\\n\\n#### Nejistoty a otevřené otázky\\n- Počet aktivovaných otevřených otázek metodiky (baseline): **3**.\\n- Počet varování z výpočtu (baseline): **2** — mohou signalizovat substituce, výchozí předpoklady nebo chybějící vstupy.\\n- **Rizikový signál (M3):** podíl agenturních pracovníků vůči potřebě PMJ překračuje metodickou hranici (> 5 %) — stejný text je v rozhraní výsledků, v interpretaci reportu a v sekci varování; jde o signál pro rozhodování, nikoli o chybu aplikace.\\n\\n#### Scénářová citlivost (stručně)\\n- Potřeba PMJ: optimistický 301 vs. pesimistický 301.\\n- Odhad změny HDP (ΔHDP): **828 936 198 Kč** u všech tří scénářů v tomto běhu (stejná výsledná hodnota ve sloupci srovnání — typicky při shodných vstupech do M6 nebo ručním MVP bez rozdílu mezi scénáři).\\n- Výnos daní (θ×ΔHDP): optimistický 265 259 583 vs. pesimistický 331 574 479 Kč/rok.\\n- Proxy spotřeba domácností (C): stejná ve všech scénářích (166 657 720 Kč/rok); zdroj výpočtu: payroll_proxy.\\n\\n#### M7 — scénářová konsolidace (bez nových výpočtů)\\n- Tři scénáře nepředstavují interval spolehlivosti ani statistickou jistotu — jde o pevně zvolené varianty předpokladů dle metodiky (§ 1.5).\\n- Symboly s odlišnou efektivní hodnotou mezi scénáři (po sloučení assumptionsUsed): M_i, k_inv, p_pendler, theta, util_RZPS.\\n- Sdílená báze zahrnuje mimo jiné klíče: KH, MPC, M_spotreba, Rp_RUD, T_ref_years, alpha_elast, alpha_obec, beds_per_1000, delta, free_cap_factor, gamma, market_coverage, ….\\n- Sjednocené kódy varování (unie scénářů): **2**; OQ (unie): **3**.\\n\\n*Toto shrnutí nenahrazuje metodický text ani právní posouzení; slouží jako řídicí přehled pro další kroky.*",
+  "m7_scenario_consolidation": {
+    "auditLinks": {
+      "byScenario": {
+        "baseline": {
+          "assumptionsMergedPath": "section12_assumptionsUncertainty.assumptionsMergedByScenario.baseline",
+          "openQuestionsPath": "section12_assumptionsUncertainty.openQuestionsByScenario.baseline",
+          "pipelineResultsPath": "pipeline_results.baseline",
+          "tracePath": "section13_audit.byScenario.baseline"
+        },
+        "optimistic": {
+          "assumptionsMergedPath": "section12_assumptionsUncertainty.assumptionsMergedByScenario.optimistic",
+          "openQuestionsPath": "section12_assumptionsUncertainty.openQuestionsByScenario.optimistic",
+          "pipelineResultsPath": "pipeline_results.optimistic",
+          "tracePath": "section13_audit.byScenario.optimistic"
+        },
+        "pessimistic": {
+          "assumptionsMergedPath": "section12_assumptionsUncertainty.assumptionsMergedByScenario.pessimistic",
+          "openQuestionsPath": "section12_assumptionsUncertainty.openQuestionsByScenario.pessimistic",
+          "pipelineResultsPath": "pipeline_results.pessimistic",
+          "tracePath": "section13_audit.byScenario.pessimistic"
+        }
+      }
+    },
+    "classification": {
+      "comparisonMetricSemantics": {
+        "comparison.assumptionsKeyCount": "derived_output",
+        "comparison.civic": "derived_output",
+        "comparison.economic": "derived_output",
+        "comparison.employment": "derived_output",
+        "comparison.housing": "derived_output",
+        "comparison.openQuestionsCount": "derived_output",
+        "comparison.warningsCount": "derived_output"
+      },
+      "items": [
+        {
+          "id": "inp-project-territory",
+          "kind": "shared_input",
+          "labelCs": "Společný popis záměru a území (sekce 1–3 reportu) — jeden vstup pro všechny scénáře",
+          "refKey": "section01_project,section03_territory"
+        },
+        {
+          "id": "wizard-shared-assumptions",
+          "kind": "shared_input",
+          "labelCs": "Sdílené symboly předpokladů ve wizardu — společná báze pro všechny scénáře",
+          "refKey": "sharedAssumptions"
+        },
+        {
+          "id": "wizard-scenario-delta",
+          "kind": "scenario_delta",
+          "labelCs": "Scénářové odchylky symbolů (optimistický / střední / pesimistický) — mění efektivní vstupy pipeline",
+          "refKey": "scenarioAssumptionDelta"
+        },
+        {
+          "id": "p1-pipeline-bridge",
+          "kind": "fallback_bridge",
+          "labelCs": "P1 mosty (M0–M2 → M3–M6) — určují odvození vstupů; část může být MVP bridge dle příznaků",
+          "refKey": "p1PipelineBridge"
+        },
+        {
+          "id": "merged-assumptions-per-scenario",
+          "kind": "assumption",
+          "labelCs": "Efektivní předpoklady použité v jádře po scénářích (sloučení assumptionsUsed M3–M6)",
+          "refKey": "section12_assumptionsUncertainty.assumptionsMergedByScenario"
+        },
+        {
+          "id": "open-questions-per-scenario",
+          "kind": "open_question",
+          "labelCs": "Otevřené otázky metodiky aktivované v běhu pipeline (M3–M6) po scénářích",
+          "refKey": "section12_assumptionsUncertainty.openQuestionsByScenario"
+        },
+        {
+          "id": "comparison-table-metrics",
+          "kind": "derived_output",
+          "labelCs": "Sloupce srovnávací tabulky (sekce 11) — převzaty z výstupů modulů bez nových vzorců",
+          "refKey": "m7_scenario_consolidation.scenarioMetrics.rows"
+        },
+        {
+          "id": "scenario-delta-key:M_i",
+          "kind": "scenario_delta",
+          "labelCs": "Scénářový parametr „M_i“ (delta oproti sdíleným předpokladům)",
+          "refKey": "M_i"
+        },
+        {
+          "id": "scenario-delta-key:k_inv",
+          "kind": "scenario_delta",
+          "labelCs": "Scénářový parametr „k_inv“ (delta oproti sdíleným předpokladům)",
+          "refKey": "k_inv"
+        },
+        {
+          "id": "scenario-delta-key:p_pendler",
+          "kind": "scenario_delta",
+          "labelCs": "Scénářový parametr „p_pendler“ (delta oproti sdíleným předpokladům)",
+          "refKey": "p_pendler"
+        },
+        {
+          "id": "scenario-delta-key:theta",
+          "kind": "scenario_delta",
+          "labelCs": "Scénářový parametr „theta“ (delta oproti sdíleným předpokladům)",
+          "refKey": "theta"
+        },
+        {
+          "id": "scenario-delta-key:util_RZPS",
+          "kind": "scenario_delta",
+          "labelCs": "Scénářový parametr „util_RZPS“ (delta oproti sdíleným předpokladům)",
+          "refKey": "util_RZPS"
+        }
+      ]
+    },
+    "consolidatedRisks": {
+      "fallbackSignals": [],
+      "openQuestionsUnion": [
+        "OQ-05",
+        "OQ-10",
+        "OQ-11"
+      ],
+      "warningCodesUnion": [
+        "AGENCY_SHARE_RISK",
+        "P1_BASELINE_BRIDGE"
+      ]
+    },
+    "scenarioMetrics": {
+      "rows": [
+        {
+          "assumptionsKeyCount": 27,
+          "civic": {
+            "elementaryDeficit": 12.726334400000006,
+            "healthcareDemand": 2.0096258333333337,
+            "kindergartenDeficit": -0.7010898999999995
+          },
+          "economic": {
+            "consumptionRetained": 108327518.20800006,
+            "deltaHdp": 828936197.6,
+            "deltaHdpSource": "computed_profile",
+            "dznmAnnual": 644000,
+            "householdConsumptionAnnual": 166657720.32000008,
+            "householdConsumptionSource": "payroll_proxy",
+            "prudAnnual": 19899.000000000004,
+            "taxYield": 265259583.23200002
+          },
+          "employment": {
+            "nCelkem": 301.39200000000005,
+            "nMezera": 243.07025000000004,
+            "rzps": 33.321749999999994
+          },
+          "housing": {
+            "aggregateDeficit": -747.4162668526786,
+            "ou": 361.73265000000004
+          },
+          "openQuestionsCount": 3,
+          "scenario": "optimistic",
+          "warningsByCode": {
+            "AGENCY_SHARE_RISK": 1,
+            "P1_BASELINE_BRIDGE": 1
+          },
+          "warningsCount": 2
+        },
+        {
+          "assumptionsKeyCount": 27,
+          "civic": {
+            "elementaryDeficit": 13.206297920000011,
+            "healthcareDemand": 2.0374015000000005,
+            "kindergartenDeficit": -0.5311028199999956
+          },
+          "economic": {
+            "consumptionRetained": 108327518.20800006,
+            "deltaHdp": 828936197.6,
+            "deltaHdpSource": "computed_profile",
+            "dznmAnnual": 644000,
+            "householdConsumptionAnnual": 166657720.32000008,
+            "householdConsumptionSource": "payroll_proxy",
+            "prudAnnual": 19899.000000000004,
+            "taxYield": 281838307.184
+          },
+          "employment": {
+            "nCelkem": 301.39200000000005,
+            "nMezera": 252.59075000000007,
+            "rzps": 23.80125
+          },
+          "housing": {
+            "aggregateDeficit": -745.4856100223215,
+            "ou": 366.7322700000001
+          },
+          "openQuestionsCount": 3,
+          "scenario": "baseline",
+          "warningsByCode": {
+            "AGENCY_SHARE_RISK": 1,
+            "P1_BASELINE_BRIDGE": 1
+          },
+          "warningsCount": 2
+        },
+        {
+          "assumptionsKeyCount": 27,
+          "civic": {
+            "elementaryDeficit": 14.31089312000001,
+            "healthcareDemand": 2.101324833333334,
+            "kindergartenDeficit": -0.13989201999999779
+          },
+          "economic": {
+            "consumptionRetained": 108327518.20800006,
+            "deltaHdp": 828936197.6,
+            "deltaHdpSource": "computed_profile",
+            "dznmAnnual": 644000,
+            "householdConsumptionAnnual": 166657720.32000008,
+            "householdConsumptionSource": "payroll_proxy",
+            "prudAnnual": 19899.000000000004,
+            "taxYield": 331574479.04
+          },
+          "employment": {
+            "nCelkem": 301.39200000000005,
+            "nMezera": 271.63175000000007,
+            "rzps": 4.760250000000001
+          },
+          "housing": {
+            "aggregateDeficit": -741.0423676116072,
+            "ou": 378.23847000000006
+          },
+          "openQuestionsCount": 3,
+          "scenario": "pessimistic",
+          "warningsByCode": {
+            "AGENCY_SHARE_RISK": 1,
+            "P1_BASELINE_BRIDGE": 1
+          },
+          "warningsCount": 2
+        }
+      ]
+    },
+    "sensitivitySummary": {
+      "notesCs": [
+        "Tři scénáře nepředstavují interval spolehlivosti ani statistickou jistotu — jde o pevně zvolené varianty předpokladů dle metodiky (§ 1.5).",
+        "Symboly s odlišnou efektivní hodnotou mezi scénáři (po sloučení assumptionsUsed): M_i, k_inv, p_pendler, theta, util_RZPS.",
+        "Sdílená báze zahrnuje mimo jiné klíče: KH, MPC, M_spotreba, Rp_RUD, T_ref_years, alpha_elast, alpha_obec, beds_per_1000, delta, free_cap_factor, gamma, market_coverage, …."
+      ],
+      "scenarioDeltaKeysPresent": [
+        "M_i",
+        "k_inv",
+        "p_pendler",
+        "theta",
+        "util_RZPS"
+      ],
+      "varyingAssumptionKeys": [
+        "M_i",
+        "k_inv",
+        "p_pendler",
+        "theta",
+        "util_RZPS"
+      ]
+    }
+  },
+  "m8_report_completeness": {
+    "annexes": [
+      {
+        "availableInJsonExport": true,
+        "contentLayer": "scenarios",
+        "id": "annex-A",
+        "snapshotPath": "section11_comparison,m7_scenario_consolidation",
+        "titleCs": "Příloha A — Scénářová analýza a konsolidace (M7)"
+      },
+      {
+        "availableInJsonExport": true,
+        "contentLayer": "assumptions_oq_fallback",
+        "id": "annex-B",
+        "snapshotPath": "section12_assumptionsUncertainty",
+        "titleCs": "Příloha B — Předpoklady, otevřené otázky a fallbacky"
+      },
+      {
+        "availableInJsonExport": true,
+        "contentLayer": "assumptions_oq_fallback",
+        "id": "annex-C",
+        "snapshotPath": "section13_audit",
+        "titleCs": "Příloha C — Auditní stopa výpočtu"
+      },
+      {
+        "availableInJsonExport": true,
+        "contentLayer": "baseline",
+        "id": "annex-D",
+        "snapshotPath": "p1_layers,p1_m3_m4_bridge,p1_m5_bridge,p1_m6_bridge",
+        "titleCs": "Příloha D — Kanonické metodické mosty P1"
+      }
+    ],
+    "contentLayerIndex": {
+      "assumptions_oq_fallback": [
+        "section10_risks",
+        "section10_mitigations",
+        "section12_assumptionsUncertainty",
+        "section13_audit",
+        "m7_scenario_consolidation.consolidatedRisks"
+      ],
+      "baseline": [
+        "section05_asIs",
+        "p1_layers",
+        "p1_m3_m4_bridge",
+        "p1_m5_bridge",
+        "p1_m6_bridge"
+      ],
+      "inputs": [
+        "section01_project",
+        "section02_investor",
+        "section03_territory",
+        "section04_scenarios",
+        "section05_asIs"
+      ],
+      "module_results": [
+        "primaryKpiAndModules"
+      ],
+      "scenarios": [
+        "section04_scenarios",
+        "section11_comparison",
+        "m7_scenario_consolidation"
+      ]
+    },
+    "outline": [
+      {
+        "contentLayer": "inputs",
+        "id": "bod-1",
+        "methodologyRef": "§ 3.1 bod 1",
+        "snapshotPath": "section01_project",
+        "titleCs": "Základní údaje o projektu"
+      },
+      {
+        "contentLayer": "inputs",
+        "id": "bod-2",
+        "methodologyRef": "§ 3.1 bod 2",
+        "snapshotPath": "section02_investor",
+        "titleCs": "Investor a charakteristika záměru"
+      },
+      {
+        "contentLayer": "inputs",
+        "id": "bod-3",
+        "methodologyRef": "§ 3.1 bod 3",
+        "snapshotPath": "section03_territory,p1_layers",
+        "titleCs": "Vymezení území a časový rámec (P1: M0–M2)"
+      },
+      {
+        "contentLayer": "scenarios",
+        "id": "bod-4",
+        "methodologyRef": "§ 3.1 bod 4",
+        "snapshotPath": "section04_scenarios",
+        "titleCs": "Scénáře hodnocení — vstupní delty"
+      },
+      {
+        "contentLayer": "baseline",
+        "id": "bod-5",
+        "methodologyRef": "§ 3.1 bod 5",
+        "snapshotPath": "section05_asIs,p1_m3_m4_bridge,p1_m5_bridge,p1_m6_bridge",
+        "titleCs": "Výchozí stav (AS-IS) a baseline vstupy"
+      },
+      {
+        "contentLayer": "module_results",
+        "id": "bod-6",
+        "methodologyRef": "§ 3.1 bod 6",
+        "snapshotPath": "primaryKpiAndModules.baseline.employment",
+        "titleCs": "Dopady na zaměstnanost (M3)"
+      },
+      {
+        "contentLayer": "module_results",
+        "id": "bod-7",
+        "methodologyRef": "§ 3.1 bod 7",
+        "snapshotPath": "primaryKpiAndModules.baseline.housing",
+        "titleCs": "Dopady na bydlení (M4)"
+      },
+      {
+        "contentLayer": "module_results",
+        "id": "bod-8",
+        "methodologyRef": "§ 3.1 bod 8",
+        "snapshotPath": "primaryKpiAndModules.baseline.civic",
+        "titleCs": "Dopady na občanskou vybavenost (M5)"
+      },
+      {
+        "contentLayer": "module_results",
+        "id": "bod-9",
+        "methodologyRef": "§ 3.1 bod 9",
+        "snapshotPath": "primaryKpiAndModules.baseline.economic",
+        "titleCs": "Ekonomické a fiskální přínosy (M6)"
+      },
+      {
+        "contentLayer": "assumptions_oq_fallback",
+        "id": "bod-10",
+        "methodologyRef": "§ 3.1 bod 10",
+        "snapshotPath": "section10_risks,section10_mitigations",
+        "titleCs": "Rizika, mitigace a doporučení"
+      },
+      {
+        "contentLayer": "scenarios",
+        "id": "priloha-A",
+        "methodologyRef": "Příloha A",
+        "snapshotPath": "section11_comparison,m7_scenario_consolidation",
+        "titleCs": "Scénářová analýza a konsolidace (M7)"
+      },
+      {
+        "contentLayer": "assumptions_oq_fallback",
+        "id": "priloha-B",
+        "methodologyRef": "Příloha B",
+        "snapshotPath": "section12_assumptionsUncertainty",
+        "titleCs": "Předpoklady, otevřené otázky a fallbacky"
+      },
+      {
+        "contentLayer": "assumptions_oq_fallback",
+        "id": "priloha-C",
+        "methodologyRef": "Příloha C",
+        "snapshotPath": "section13_audit",
+        "titleCs": "Auditní stopa výpočtu"
+      },
+      {
+        "contentLayer": "baseline",
+        "id": "priloha-D",
+        "methodologyRef": "Příloha D",
+        "snapshotPath": "p1_layers,p1_m3_m4_bridge,p1_m5_bridge,p1_m6_bridge",
+        "titleCs": "Kanonické metodické mosty P1 (M0–M2 → M3–M6)"
+      }
+    ]
+  },
+  "metadata": {
+    "generatedAt": "2000-01-01T00:00:00.000Z",
+    "id": "golden-rc",
+    "schemaVersion": "1.4.0",
+    "source": "mhdsi-studio",
+    "title": "Skladová a logistická zóna — ukázkový záměr"
+  },
+  "p1_layers": {
+    "m0": {
+      "capacityNarrative": "Skladové haly, manipulační plochy a zázemí pro řidiče; plný provoz po stabilizaci náboru.",
+      "investorDisplayName": "Logistická skupina (demo)",
+      "pmjPortfolio": {
+        "fteEquivalent": 0.92,
+        "peakLoadNote": "Špička v sezóně (Q4) — přesčasy řešeny agenturou.",
+        "shiftsDescription": "Směnnost 2–3 směny; administrativa jednosměnně."
+      },
+      "projectCode": "DEMO-KOL-LOG-01",
+      "schedule": {
+        "constructionStart": "2026-Q2",
+        "fullOperationPlanned": "2028"
+      },
+      "scopeCapacity": {
+        "floorAreaM2": 38000,
+        "siteAreaM2": 120000,
+        "throughputNote": "Přepravní kapacity orientačně v tisících paletových míst ročně (ilustrace)."
+      },
+      "secondaryNace": "52.24; 53.20",
+      "strategicDocuments": [
+        {
+          "relevance": "Soulad s polohou logistické zóny.",
+          "title": "Zásady územního rozvoje kraje (orientačně)"
+        }
+      ]
+    },
+    "m1": {
+      "aoiUnitsLabel": "ORP Kolín, ZÚ Kolín (ilustrativní)",
+      "boundaryNote": "Záměr v rámci stávající průmyslové zóny; přesné hranice dle PD.",
+      "cadastralArea": "Kolín",
+      "definitionPointLabel": "Střed areálu u napojení na silnici II/ třídy",
+      "geoJsonText": "",
+      "isochronesManualNote": "Isochrony zatím nepočítány — pro vstup do modelu používáme DIAD níže (stejné čísla jako dostupnost).",
+      "isochronesMode": "manual_same_as_diad",
+      "lat": null,
+      "lon": null,
+      "municipality": "Kolín",
+      "region": "Středočeský kraj"
+    },
+    "m2AsIs": {
+      "ageShares": {
+        "age014": {
+          "kind": "reference_baseline",
+          "note": "",
+          "value": 0.16
+        },
+        "age1564": {
+          "kind": "reference_baseline",
+          "note": "",
+          "value": 0.62
+        },
+        "age65Plus": {
+          "kind": "reference_baseline",
+          "note": "",
+          "value": 0.22
+        }
+      },
+      "civic": {
+        "gpPer1000": {
+          "kind": "raw_input",
+          "note": "Kapacita PLDD / 1000 obyvatel (demo).",
+          "value": 0.85
+        }
+      },
+      "demographics": {
+        "population": {
+          "kind": "reference_baseline",
+          "note": "ORP přibližně (demo)",
+          "value": 63000
+        },
+        "year": 2024
+      },
+      "economicProfile": {
+        "regionalHdpPerCapitaCzk": {
+          "kind": "reference_baseline",
+          "note": "",
+          "value": 620000
+        }
+      },
+      "housing": {
+        "avgRentCzk": {
+          "kind": "raw_input",
+          "note": "Orientační měsíční nájem za m² (ilustrace).",
+          "value": 280
+        },
+        "vacantUnits": {
+          "kind": "raw_input",
+          "note": "Bytové jednotky + RD, hrubý odhad.",
+          "value": 850
+        }
+      },
+      "laborMarket": {
+        "avgWageCzk": {
+          "kind": "reference_baseline",
+          "note": "Hrubá mzda, ilustrace.",
+          "value": 38000
+        },
+        "employmentRate": {
+          "kind": "reference_baseline",
+          "note": "",
+          "value": 0.78
+        },
+        "unemploymentRate": {
+          "kind": "reference_baseline",
+          "note": "",
+          "value": 0.035
+        }
+      },
+      "migration": {
+        "netPerYear": {
+          "kind": "raw_input",
+          "note": "Saldo migrace — ruční odhad.",
+          "value": 120
+        }
+      },
+      "publicFinance": {
+        "fiscalNote": "Veřejné finance — ruční baseline; propojení na HDP modul v další epice.",
+        "municipalBudgetPerCapitaCzk": {
+          "kind": "raw_input",
+          "note": "Obecní rozpočet / obyvatel (ilustrace).",
+          "value": 38000
+        }
+      },
+      "trends": {
+        "notes": "Růst zalidnění v okrajové části ORP; dojížďka zintermediovaná přes D11."
+      }
+    }
+  },
+  "p1_m3_m4_bridge": {
+    "canonical": {
+      "employment": {
+        "employmentRamp": "capped_by_project_horizon",
+        "nInvEffective": "m0_fte_scaled",
+        "utilRzpsModifier": "m2_unemployment_heuristic"
+      },
+      "housing": {
+        "housingRamp": "capped_by_project_horizon",
+        "m3toM4": "m3_drv_outputs",
+        "nKmen": "mvp_plus_m2_migration_proxy",
+        "vacantSupply": "mvp_or_m2_max"
+      }
+    },
+    "employment": {
+      "baselineUnemploymentRate": 0.035,
+      "fteFactor": 0.92,
+      "nInvEffective": 386.40000000000003,
+      "nInvMvp": 420,
+      "rampYearsEffective": 4
+    },
+    "engineContractBaseline": {
+      "employmentRampYears": 4,
+      "fteFactorApplied": 0.92,
+      "housingRampYears": 4,
+      "linkM3toM4": true,
+      "nAgenturaUsed": 233.00027000000006,
+      "nCelkemM3": 301.39200000000005,
+      "nInvEffective": 386.40000000000003,
+      "nKmenEffective": 99.8,
+      "nPendlerUsed": 19.590480000000003,
+      "situation": "A",
+      "utilRzpsEffective": 0.48083333333333333,
+      "vVacantEffective": 850
+    },
+    "flags": {
+      "alignEmploymentRampToProjectHorizon": true,
+      "alignHousingRampToProjectHorizon": true,
+      "applyM0FteToEmployment": true,
+      "applyM2MigrationToKmen": true,
+      "applyM2UnemploymentToUtilRzps": true,
+      "applyM2VacantToHousingSupply": true,
+      "linkCivicOuToM4Ou": true,
+      "linkCivicSafetyToM3NCelkem": true,
+      "linkHousingToEmploymentM3": true,
+      "useComputedM6DeltaHdp": true
+    },
+    "housing": {
+      "linkHousingToEmploymentM3": true,
+      "m2VacantUsed": true,
+      "m3EmploymentMvp": {
+        "nAgentura": 40,
+        "nPendler": 60
+      },
+      "migrationAdjustment": 4.8,
+      "nKmenEffective": 99.8,
+      "nKmenMvp": 95,
+      "rampYearsEffective": 4,
+      "vTVacantMvp": 40,
+      "vVacantEffective": 850
+    },
+    "m0Schedule": {
+      "constructionStart": "2026-Q2",
+      "fullOperationPlanned": "2028",
+      "rampYearsGlobal": 5
+    },
+    "m2HousingBaselineAudit": {
+      "avgRentCzk": 280,
+      "population": 63000,
+      "vacantUnits": 850
+    },
+    "m2LaborMarketAudit": {
+      "employmentRate": 0.78,
+      "unemploymentRate": 0.035
+    }
+  },
+  "p1_m5_bridge": {
+    "canonical": {
+      "nCelkemForSafety": "m3_output",
+      "ou": "m4_output"
+    },
+    "engineContractBaseline": {
+      "nCelkemM3Used": 301.39200000000005,
+      "ouUsed": 366.7322700000001
+    },
+    "flags": {
+      "linkCivicOuToM4Ou": true,
+      "linkCivicSafetyToM3NCelkem": true
+    },
+    "nCelkemWizardMvp": 420,
+    "ouWizardMvp": 210
+  },
+  "p1_m6_bridge": {
+    "canonical": {
+      "deltaHdp": "computed_profile"
+    },
+    "engineContractBaseline": {
+      "breakdown": {
+        "capexTotalCzk": 850000000,
+        "constructionYears": 4,
+        "employmentIncomeProxyAnnual": 196748697.60000005,
+        "governmentInducedFromInvestmentAnnual": 270937500,
+        "investmentImpulseAnnual": 361250000,
+        "investmentPhaseAnnual": 632187500,
+        "mRegionMonthlyUsed": 32000,
+        "nCelkemUsed": 301.39200000000005,
+        "operationalPhaseAnnual": 196748697.60000005
+      },
+      "consumptionRetainedAnnual": 108327518.20800006,
+      "deltaHdpAnnualUsed": 828936197.6,
+      "deltaHdpSource": "computed_profile",
+      "dznmAnnual": 644000,
+      "householdConsumptionAnnual": 166657720.32000008,
+      "householdConsumptionSource": "payroll_proxy",
+      "publicBudgetKraj": 93006641.37072001,
+      "publicBudgetObec": 95825024.44256002,
+      "publicBudgetStat": 93006641.37072001,
+      "taxYieldAnnual": 281838307.184
+    },
+    "flags": {
+      "useComputedM6DeltaHdp": true
+    },
+    "manualDeltaHdpMvpCzk": 120000000
+  },
+  "primaryKpiAndModules": {
+    "baseline": {
+      "assumptionsMerged": {
+        "KH": 1.34,
+        "MPC": 0.8,
+        "M_i": 0.1,
+        "M_investice": 1.7,
+        "M_mista": 1.7,
+        "M_spotreba": 1.8,
+        "M_vlada": 1.75,
+        "Rp_RUD": 1.34,
+        "T_ref_years": 10,
+        "alpha_elast": 0.5,
+        "alpha_obec": 0.05,
+        "beds_per_1000": 2.5,
+        "delta": 0.15,
+        "free_cap_factor": 0.9,
+        "gamma": 0.3,
+        "k_inv": 0.22,
+        "market_coverage": 0.8,
+        "p_kraj": 0.33,
+        "p_obec": 0.34,
+        "p_pendler": 0.065,
+        "p_stat": 0.33,
+        "r_retence": 0.65,
+        "std_MS_per_1000": 34,
+        "std_ZS_per_1000": 96,
+        "theta": 0.34,
+        "util_RZPS": 0.5,
+        "v_RUD_per_cap": 16500
+      },
+      "civic": {
+        "demandMs": 12.468897180000004,
+        "demandZs": 35.20629792000001,
+        "elementaryDeficit": 13.206297920000011,
+        "healthcareDemand": 2.0374015000000005,
+        "kindergartenDeficit": -0.5311028199999956,
+        "leisureFacilities": 8.801574480000003,
+        "safetyFteGap": -0.17136247850000003
+      },
+      "economic": {
+        "consumptionRetained": 108327518.20800006,
+        "cumulativeTaxYield": 2818383071.84,
+        "deltaHdp": 828936197.6,
+        "deltaHdpBreakdown": {
+          "capexTotalCzk": 850000000,
+          "constructionYears": 4,
+          "employmentIncomeProxyAnnual": 196748697.60000005,
+          "governmentInducedFromInvestmentAnnual": 270937500,
+          "investmentImpulseAnnual": 361250000,
+          "investmentPhaseAnnual": 632187500,
+          "mRegionMonthlyUsed": 32000,
+          "nCelkemUsed": 301.39200000000005,
+          "operationalPhaseAnnual": 196748697.60000005
+        },
+        "deltaHdpSource": "computed_profile",
+        "dznmAnnual": 644000,
+        "householdConsumptionAnnual": 166657720.32000008,
+        "householdConsumptionSource": "payroll_proxy",
+        "prudAnnual": 19899.000000000004,
+        "publicBudgetKraj": 93006641.37072001,
+        "publicBudgetObec": 95825024.44256002,
+        "publicBudgetStat": 93006641.37072001,
+        "taxYield": 281838307.184
+      },
+      "employment": {
+        "nCelkem": 301.39200000000005,
+        "nMezera": 252.59075000000007,
+        "rzps": 23.80125,
+        "zZtrata": 1.434375
+      },
+      "housing": {
+        "aggregateDeficit": -745.4856100223215,
+        "ou": 366.7322700000001,
+        "zu": 332.80027000000007
+      },
+      "openQuestions": [
+        "OQ-10",
+        "OQ-11",
+        "OQ-05"
+      ],
+      "warnings": [
+        {
+          "code": "P1_BASELINE_BRIDGE",
+          "field": "util_RZPS",
+          "message": "Použita měkká úprava util_RZPS z AS-IS míry nezaměstnanosti (M2) — heuristika, ne uzavřený PDF vzorec."
+        },
+        {
+          "code": "AGENCY_SHARE_RISK",
+          "field": "p_pendler",
+          "message": "Odhad podílu agenturních pracovníků 77,3 % z potřeby PMJ (N_celkem) překračuje metodickou hranici rizika (> 5 %)."
+        }
+      ]
+    }
+  },
+  "section01_project": {
+    "capexTotalCzk": 850000000,
+    "czNace": "52.10",
+    "locationDescription": "Okres Kolín, k. ú. Kolín, pozemek u exitu z D11",
+    "nInv": 420,
+    "projectName": "Skladová a logistická zóna — ukázkový záměr"
+  },
+  "section02_investor": {
+    "investorProfile": "Strategický investor v logistice, skupina s evropskou působností.",
+    "legalForm": "Akciová společnost",
+    "strategicLinks": "Záměr je v souladu s krajskou polohou v dokumentu územního plánování (orientačně)."
+  },
+  "section03_territory": {
+    "dLastMileKm": 4.2,
+    "diadAkMinutes": 60,
+    "diadPrMinutes": 30,
+    "rampYearsGlobal": 5,
+    "t0": "2026",
+    "tinfrMinutes": 5
+  },
+  "section04_scenarios": {
+    "scenarioDeltas": {
+      "baseline": {
+        "M_i": 0.1,
+        "k_inv": 0.22,
+        "p_pendler": 0.065,
+        "theta": 0.34,
+        "util_RZPS": 0.5
+      },
+      "optimistic": {
+        "M_i": 0.12,
+        "k_inv": 0.15,
+        "p_pendler": 0.05,
+        "theta": 0.32,
+        "util_RZPS": 0.7
+      },
+      "pessimistic": {
+        "M_i": 0.08,
+        "k_inv": 0.35,
+        "p_pendler": 0.09,
+        "theta": 0.4,
+        "util_RZPS": 0.1
+      }
+    },
+    "sharedAssumptionKeys": [
+      "KH",
+      "MPC",
+      "M_spotreba",
+      "Rp_RUD",
+      "T_ref_years",
+      "alpha_elast",
+      "alpha_obec",
+      "beds_per_1000",
+      "delta",
+      "free_cap_factor",
+      "gamma",
+      "market_coverage",
+      "p_kraj",
+      "p_obec",
+      "p_stat",
+      "r_retence",
+      "std_MS_per_1000",
+      "std_ZS_per_1000",
+      "v_RUD_per_cap"
+    ]
+  },
+  "section05_asIs": {
+    "civicInputsSummary": {
+      "capRegMs": 120,
+      "capRegZs": 480,
+      "civicRampYears": 4,
+      "ou": 210
+    },
+    "economicInputsSummary": {
+      "mvpManualDeltaHdpCzk": 120000000,
+      "sPlochyM2": 28000,
+      "sStavbyM2": 42000
+    },
+    "employmentInputsSummary": {
+      "employmentRampYears": 4,
+      "kInv": 0.22,
+      "nInv": 420
+    },
+    "housingInputsSummary": {
+      "housingRampYears": 4,
+      "nAgentura": 40,
+      "nKmen": 95,
+      "situation": "A"
+    },
+    "m3m4EffectiveBaseline": {
+      "employmentRampYears": 4,
+      "fteFactorApplied": 0.92,
+      "housingRampYears": 4,
+      "linkM3toM4": true,
+      "nAgenturaUsed": 233.00027000000006,
+      "nCelkemM3": 301.39200000000005,
+      "nInvEffective": 386.40000000000003,
+      "nKmenEffective": 99.8,
+      "nPendlerUsed": 19.590480000000003,
+      "situation": "A",
+      "utilRzpsEffective": 0.48083333333333333,
+      "vVacantEffective": 850
+    },
+    "m5EffectiveBaseline": {
+      "nCelkemM3Used": 301.39200000000005,
+      "ouUsed": 366.7322700000001
+    },
+    "m6EffectiveBaseline": {
+      "breakdown": {
+        "capexTotalCzk": 850000000,
+        "constructionYears": 4,
+        "employmentIncomeProxyAnnual": 196748697.60000005,
+        "governmentInducedFromInvestmentAnnual": 270937500,
+        "investmentImpulseAnnual": 361250000,
+        "investmentPhaseAnnual": 632187500,
+        "mRegionMonthlyUsed": 32000,
+        "nCelkemUsed": 301.39200000000005,
+        "operationalPhaseAnnual": 196748697.60000005
+      },
+      "consumptionRetainedAnnual": 108327518.20800006,
+      "deltaHdpAnnualUsed": 828936197.6,
+      "deltaHdpSource": "computed_profile",
+      "dznmAnnual": 644000,
+      "householdConsumptionAnnual": 166657720.32000008,
+      "householdConsumptionSource": "payroll_proxy",
+      "publicBudgetKraj": 93006641.37072001,
+      "publicBudgetObec": 95825024.44256002,
+      "publicBudgetStat": 93006641.37072001,
+      "taxYieldAnnual": 281838307.184
+    }
+  },
+  "section10_mitigations": [
+    {
+      "detailCs": "Zvážit doplnění kapacity nebo mitigaci v oblasti „základní školy“ (MHDSI oddíl 2.3).",
+      "id": "M-1",
+      "source": "civic_engine",
+      "titleCs": "Občanská vybavenost — základní školy"
+    },
+    {
+      "detailCs": "Zvážit doplnění kapacity nebo mitigaci v oblasti „volný čas a komunitní zařízení“ (MHDSI oddíl 2.3).",
+      "id": "M-2",
+      "source": "civic_engine",
+      "titleCs": "Občanská vybavenost — volný čas"
+    }
+  ],
+  "section10_risks": [
+    {
+      "category": "methodology",
+      "detailCs": "Použita měkká úprava util_RZPS z AS-IS míry nezaměstnanosti (M2) — heuristika, ne uzavřený PDF vzorec.",
+      "id": "R-1",
+      "ref": "util_RZPS",
+      "severity": "low",
+      "source": "warning",
+      "titleCs": "P1_BASELINE_BRIDGE: Použita měkká úprava util_RZPS z AS-IS míry nezaměstnanosti (M2) — heuristika, ne uzavřený PDF vzorec."
+    },
+    {
+      "category": "methodology",
+      "detailCs": "Podíl práce přes agentury překračuje v modelu metodickou hranici rizika (> 5 % z potřeby PMJ). Jde o signál pro interpretaci, ne o chybu výpočtu.",
+      "id": "R-2",
+      "ref": "p_pendler",
+      "severity": "low",
+      "source": "warning",
+      "titleCs": "AGENCY_SHARE_RISK: Podíl práce přes agentury překračuje v modelu metodickou hranici rizika (> 5 % z potřeby PMJ). Jde o signál pro interpre"
+    },
+    {
+      "category": "methodology",
+      "detailCs": "Legislativní přesnost θ a RUD v čase",
+      "id": "R-3",
+      "ref": "OQ-10",
+      "severity": "medium",
+      "source": "open_question",
+      "titleCs": "Otevřená otázka: OQ-10"
+    },
+    {
+      "category": "methodology",
+      "detailCs": "NPV a diskontování víceletých toků",
+      "id": "R-4",
+      "ref": "OQ-11",
+      "severity": "medium",
+      "source": "open_question",
+      "titleCs": "Otevřená otázka: OQ-11"
+    },
+    {
+      "category": "methodology",
+      "detailCs": "Nepřímá a indukovaná pracovní místa",
+      "id": "R-5",
+      "ref": "OQ-05",
+      "severity": "medium",
+      "source": "open_question",
+      "titleCs": "Otevřená otázka: OQ-05"
+    }
+  ],
+  "section11_comparison": {
+    "rows": [
+      {
+        "assumptionsKeyCount": 27,
+        "civic": {
+          "elementaryDeficit": 12.726334400000006,
+          "healthcareDemand": 2.0096258333333337,
+          "kindergartenDeficit": -0.7010898999999995
+        },
+        "economic": {
+          "consumptionRetained": 108327518.20800006,
+          "deltaHdp": 828936197.6,
+          "deltaHdpSource": "computed_profile",
+          "dznmAnnual": 644000,
+          "householdConsumptionAnnual": 166657720.32000008,
+          "householdConsumptionSource": "payroll_proxy",
+          "prudAnnual": 19899.000000000004,
+          "taxYield": 265259583.23200002
+        },
+        "employment": {
+          "nCelkem": 301.39200000000005,
+          "nMezera": 243.07025000000004,
+          "rzps": 33.321749999999994
+        },
+        "housing": {
+          "aggregateDeficit": -747.4162668526786,
+          "ou": 361.73265000000004
+        },
+        "openQuestionsCount": 3,
+        "scenario": "optimistic",
+        "warningsByCode": {
+          "AGENCY_SHARE_RISK": 1,
+          "P1_BASELINE_BRIDGE": 1
+        },
+        "warningsCount": 2
+      },
+      {
+        "assumptionsKeyCount": 27,
+        "civic": {
+          "elementaryDeficit": 13.206297920000011,
+          "healthcareDemand": 2.0374015000000005,
+          "kindergartenDeficit": -0.5311028199999956
+        },
+        "economic": {
+          "consumptionRetained": 108327518.20800006,
+          "deltaHdp": 828936197.6,
+          "deltaHdpSource": "computed_profile",
+          "dznmAnnual": 644000,
+          "householdConsumptionAnnual": 166657720.32000008,
+          "householdConsumptionSource": "payroll_proxy",
+          "prudAnnual": 19899.000000000004,
+          "taxYield": 281838307.184
+        },
+        "employment": {
+          "nCelkem": 301.39200000000005,
+          "nMezera": 252.59075000000007,
+          "rzps": 23.80125
+        },
+        "housing": {
+          "aggregateDeficit": -745.4856100223215,
+          "ou": 366.7322700000001
+        },
+        "openQuestionsCount": 3,
+        "scenario": "baseline",
+        "warningsByCode": {
+          "AGENCY_SHARE_RISK": 1,
+          "P1_BASELINE_BRIDGE": 1
+        },
+        "warningsCount": 2
+      },
+      {
+        "assumptionsKeyCount": 27,
+        "civic": {
+          "elementaryDeficit": 14.31089312000001,
+          "healthcareDemand": 2.101324833333334,
+          "kindergartenDeficit": -0.13989201999999779
+        },
+        "economic": {
+          "consumptionRetained": 108327518.20800006,
+          "deltaHdp": 828936197.6,
+          "deltaHdpSource": "computed_profile",
+          "dznmAnnual": 644000,
+          "householdConsumptionAnnual": 166657720.32000008,
+          "householdConsumptionSource": "payroll_proxy",
+          "prudAnnual": 19899.000000000004,
+          "taxYield": 331574479.04
+        },
+        "employment": {
+          "nCelkem": 301.39200000000005,
+          "nMezera": 271.63175000000007,
+          "rzps": 4.760250000000001
+        },
+        "housing": {
+          "aggregateDeficit": -741.0423676116072,
+          "ou": 378.23847000000006
+        },
+        "openQuestionsCount": 3,
+        "scenario": "pessimistic",
+        "warningsByCode": {
+          "AGENCY_SHARE_RISK": 1,
+          "P1_BASELINE_BRIDGE": 1
+        },
+        "warningsCount": 2
+      }
+    ]
+  },
+  "section12_assumptionsUncertainty": {
+    "assumptionsMergedByScenario": {
+      "baseline": {
+        "KH": 1.34,
+        "MPC": 0.8,
+        "M_i": 0.1,
+        "M_investice": 1.7,
+        "M_mista": 1.7,
+        "M_spotreba": 1.8,
+        "M_vlada": 1.75,
+        "Rp_RUD": 1.34,
+        "T_ref_years": 10,
+        "alpha_elast": 0.5,
+        "alpha_obec": 0.05,
+        "beds_per_1000": 2.5,
+        "delta": 0.15,
+        "free_cap_factor": 0.9,
+        "gamma": 0.3,
+        "k_inv": 0.22,
+        "market_coverage": 0.8,
+        "p_kraj": 0.33,
+        "p_obec": 0.34,
+        "p_pendler": 0.065,
+        "p_stat": 0.33,
+        "r_retence": 0.65,
+        "std_MS_per_1000": 34,
+        "std_ZS_per_1000": 96,
+        "theta": 0.34,
+        "util_RZPS": 0.5,
+        "v_RUD_per_cap": 16500
+      },
+      "optimistic": {
+        "KH": 1.34,
+        "MPC": 0.8,
+        "M_i": 0.12,
+        "M_investice": 1.7,
+        "M_mista": 1.7,
+        "M_spotreba": 1.8,
+        "M_vlada": 1.75,
+        "Rp_RUD": 1.34,
+        "T_ref_years": 10,
+        "alpha_elast": 0.5,
+        "alpha_obec": 0.05,
+        "beds_per_1000": 2.5,
+        "delta": 0.15,
+        "free_cap_factor": 0.9,
+        "gamma": 0.3,
+        "k_inv": 0.15,
+        "market_coverage": 0.8,
+        "p_kraj": 0.33,
+        "p_obec": 0.34,
+        "p_pendler": 0.05,
+        "p_stat": 0.33,
+        "r_retence": 0.65,
+        "std_MS_per_1000": 34,
+        "std_ZS_per_1000": 96,
+        "theta": 0.32,
+        "util_RZPS": 0.7,
+        "v_RUD_per_cap": 16500
+      },
+      "pessimistic": {
+        "KH": 1.34,
+        "MPC": 0.8,
+        "M_i": 0.08,
+        "M_investice": 1.7,
+        "M_mista": 1.7,
+        "M_spotreba": 1.8,
+        "M_vlada": 1.75,
+        "Rp_RUD": 1.34,
+        "T_ref_years": 10,
+        "alpha_elast": 0.5,
+        "alpha_obec": 0.05,
+        "beds_per_1000": 2.5,
+        "delta": 0.15,
+        "free_cap_factor": 0.9,
+        "gamma": 0.3,
+        "k_inv": 0.35,
+        "market_coverage": 0.8,
+        "p_kraj": 0.33,
+        "p_obec": 0.34,
+        "p_pendler": 0.09,
+        "p_stat": 0.33,
+        "r_retence": 0.65,
+        "std_MS_per_1000": 34,
+        "std_ZS_per_1000": 96,
+        "theta": 0.4,
+        "util_RZPS": 0.1,
+        "v_RUD_per_cap": 16500
+      }
+    },
+    "m7VaryingEffectiveAssumptionKeys": [
+      "M_i",
+      "k_inv",
+      "p_pendler",
+      "theta",
+      "util_RZPS"
+    ],
+    "openQuestionsByScenario": {
+      "baseline": [
+        "OQ-10",
+        "OQ-11",
+        "OQ-05"
+      ],
+      "optimistic": [
+        "OQ-10",
+        "OQ-11",
+        "OQ-05"
+      ],
+      "pessimistic": [
+        "OQ-10",
+        "OQ-11",
+        "OQ-05"
+      ]
+    }
+  },
+  "section13_audit": {
+    "byScenario": {
+      "baseline": {
+        "civic": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje M5: OU z M4 vs ručně; N_celkem (bezpečnost) z M3 vs ručně; školy/zdraví/volnočas dle DRV-023–027",
+            "id": "M5-SOURCE-MIX",
+            "value": {
+              "nCelkemForSafety": {
+                "canonical": "m3_output",
+                "nCelkemEffective": 301.39200000000005,
+                "nCelkemWizardMvp": 420
+              },
+              "ou": {
+                "canonical": "m4_output",
+                "ouEffective": 366.7322700000001,
+                "ouWizardMvp": 210
+              }
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "OU = výstup M4 (obyvatelé k usazení dle situace A/B)",
+            "id": "P1-M5-OU",
+            "value": {
+              "ouEffective": 366.7322700000001,
+              "ouWizardMvp": 210
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_celkem pro bezpečnost = výstup M3 (potřeba PMJ po kmenových)",
+            "drvId": "DRV-007",
+            "id": "P1-M5-NCEL",
+            "value": {
+              "nCelkemEffective": 301.39200000000005,
+              "nCelkemWizardMvp": 420
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "demand_MS = OU * std_MS/1000",
+            "drvId": "DRV-023",
+            "id": "DRV-023",
+            "value": 12.468897180000004
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "demand_ZS = OU * std_ZS/1000",
+            "drvId": "DRV-024",
+            "id": "DRV-024",
+            "value": 35.20629792000001
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "free = free_cap * cap_reg - enrolled (per sector)",
+            "drvId": "DRV-025",
+            "id": "DRV-025",
+            "value": {
+              "freeMs": 13,
+              "freeZs": 22
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "beds_need = OU/1000 * beds_per_1000",
+            "drvId": "DRV-026",
+            "id": "DRV-026",
+            "value": 0.9168306750000002
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_zarizeni = (OU/100)*K",
+            "drvId": "DRV-027",
+            "id": "DRV-027",
+            "value": 8.801574480000003
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "NX = OU / PX (souhrnný nebo agregovaný vstup PX)",
+            "drvId": "OQ-08",
+            "id": "HEALTH-NX",
+            "value": 2.0374015000000005
+          }
+        ],
+        "economic": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "θ a RUD — legislativní přesnost v čase (viz system spec).",
+            "drvId": "OQ-10",
+            "id": "OQ-10",
+            "value": {
+              "theta": 0.34,
+              "v_RUD_per_cap": 16500
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Kumulace bez diskontu — NPV není uzavřen ve vstupní tabulce INP.",
+            "drvId": "OQ-11",
+            "id": "OQ-11",
+            "value": {
+              "years": 10
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje M6: zapnutý výpočet profilu ΔHDP z CAPEX, M3 (N_celkem) a multiplikátorů; ruční ΔHDP jako záloha",
+            "id": "M6-SOURCE-MIX",
+            "value": {
+              "capexTotalCzk": 850000000,
+              "constructionRampYears": 4,
+              "mRegionMonthlyCzk": 32000,
+              "mvpManualDeltaHdpCzk": 120000000,
+              "nCelkemFromM3": 301.39200000000005,
+              "ouFromM4_auditOnly": 366.7322700000001,
+              "useComputedDeltaHdp": true
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "Investiční impuls (ročně): CAPEX / T_ramp × M_investice — vstup do profilu ΔHDP (§ 2.4)",
+            "drvId": "INP-604",
+            "id": "M6-I-ANNUAL",
+            "value": {
+              "I_annual": 361250000,
+              "M_investice": 1.7,
+              "capexTotalCzk": 850000000,
+              "constructionYears": 4
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Roční proxy toku spojeného s PMJ: N_celkem × M_region × 12 × M_mista — OQ-05, není uzavřený HDP výstup z mezd",
+            "id": "M6-EMP-PROXY",
+            "value": {
+              "M_mista": 1.7,
+              "employmentIncomeProxyAnnual": 196748697.60000005,
+              "mRegionMonthly": 32000,
+              "nCelkem": 301.39200000000005
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Indukované veřejné výdaje z investičního impulsu: I_annual × max(0, M_vlada − 1) — ilustrativní proxy (§ 2.4 multiplikátory)",
+            "id": "M6-G-INDUCED",
+            "value": {
+              "M_vlada": 1.75,
+              "governmentInducedAnnual": 270937500
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Investiční fáze (roční, profil M6): I_annual + indukované G z I — G je ilustrativní proxy (M6-G-INDUCED), ne přesná fiskální identita",
+            "id": "M6-PHASE-INVEST",
+            "value": 632187500
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Provozní fáze (roční, profil M6): mezdové proxy N_celkem × M_region × 12 × M_mista — OQ-05",
+            "id": "M6-PHASE-OPER",
+            "value": 196748697.60000005
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "ΔHDP (roční referenční profil) = součet investičního impulsu, mezdového proxy a indukovaného G — zjednodušený rámec C+I+G bez (X−M)",
+            "drvId": "DRV-028",
+            "id": "M6-DELTA-PROFILE",
+            "value": 828936197.6
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "tax_yield = theta * delta_HDP",
+            "drvId": "DRV-029",
+            "id": "DRV-029",
+            "value": 281838307.184
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "Alokace výnosu daní (θ×ΔHDP) do rozpočtů: × p_stat, × p_kraj, × p_obec",
+            "drvId": "INP-608",
+            "id": "M6-FISCAL-BUDGET-SPLIT",
+            "value": {
+              "p_kraj": 0.33,
+              "p_obec": 0.34,
+              "p_stat": 0.33,
+              "publicBudgetKraj": 93006641.37072001,
+              "publicBudgetObec": 95825024.44256002,
+              "publicBudgetStat": 93006641.37072001,
+              "taxYieldAnnual": 281838307.184
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "C (proxy) = (N_celkem × M_region × 12) × MPC × M_spotreba — návaznost na M3, ne škála k celkovému ΔHDP",
+            "id": "M6-C-PAYROLL",
+            "value": 166657720.32000008
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Kanonický zdroj proxy spotřeby domácností pro report a export",
+            "id": "M6-HHC-SOURCE",
+            "value": {
+              "deltaHdpSource": "computed_profile",
+              "householdConsumptionSource": "payroll_proxy"
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "C_r = C * r",
+            "drvId": "DRV-030",
+            "id": "DRV-030",
+            "value": 108327518.20800006
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "DzNM",
+            "drvId": "DRV-031",
+            "id": "DRV-031",
+            "value": 644000
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "PRUD",
+            "drvId": "DRV-032",
+            "id": "DRV-032",
+            "value": 19899.000000000004
+          }
+        ],
+        "employment": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M0 harmonogram / horizont vs. náběh zaměstnanosti (audit)",
+            "id": "P1-M0-SCHED",
+            "value": {
+              "constructionStart": "2026-Q2",
+              "employmentRampYearsEffective": 4,
+              "fullOperationPlanned": "2028",
+              "rampYearsGlobal": 5
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M0 PMJ struktura (směny / provoz — textový kontext)",
+            "id": "P1-M0-PMJ",
+            "value": {
+              "shifts": "Směnnost 2–3 směny; administrativa jednosměnně."
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M2 AS-IS trh práce — baseline (audit; úprava util jen při P1-M2-U)",
+            "id": "P1-M2-MKT",
+            "value": {
+              "employmentRate": 0.78,
+              "unemploymentRate": 0.035
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "util_RZPS škálováno podle M2 (nezaměstnanost 0.0350), mult=0.9617",
+            "id": "P1-M2-U",
+            "value": {
+              "after": 0.48083333333333333,
+              "before": 0.5
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje vstupů M3: baseline P1 vs CONFIGURABLE předpoklady vs most (ne nový výpočet)",
+            "id": "M3-SOURCE-MIX",
+            "value": {
+              "nInv": {
+                "driver": "P1_M0_FTE",
+                "nInvEffective": 386.40000000000003,
+                "nInvMvp": 420
+              },
+              "ramp": {
+                "m0Schedule": {
+                  "constructionStart": "2026-Q2",
+                  "employmentRampYearsEffective": 4,
+                  "fullOperationPlanned": "2028",
+                  "rampYearsGlobal": 5
+                },
+                "years": 4
+              },
+              "utilRZPS": {
+                "driver": "P1_M2_HEURISTIC_ON_ASSUMPTIONS",
+                "utilRzpsEffective": 0.48083333333333333
+              }
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_celkem = (1-k_inv)*N_inv",
+            "drvId": "DRV-007",
+            "id": "DRV-007",
+            "value": 301.39200000000005
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_inv z MVP=420, FTE faktor M0=0.9200 → efektivní N_inv=386.40",
+            "id": "P1-FTE",
+            "value": {
+              "fte": 0.92,
+              "nInvEffective": 386.40000000000003,
+              "nInvMvp": 420
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Územní kontext (M1) — audit; neovlivňuje DRV bez GIS API (ruční režim / poznámka)",
+            "id": "P1-M1-CTX",
+            "value": {
+              "isochronesMode": "manual_same_as_diad",
+              "isochronesNote": "Isochrony zatím nepočítány — pro vstup do modelu používáme DIAD níže (stejné čísla jako dostupnost).",
+              "municipality": "Kolín",
+              "region": "Středočeský kraj"
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "RZPS_raw = A + gamma*B + delta*C",
+            "drvId": "DRV-008",
+            "id": "DRV-008",
+            "value": 49.5
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "RZPS = RZPS_raw * util_RZPS",
+            "drvId": "DRV-009",
+            "id": "DRV-009",
+            "value": 23.80125
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "S_m = alpha * (M_new-M_reg)/M_reg",
+            "drvId": "DRV-010",
+            "id": "DRV-010",
+            "value": 0.09375
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "S_t = (1-NP_vm/NP_tot)*S_m",
+            "drvId": "DRV-011",
+            "id": "DRV-011",
+            "value": 0.0796875
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "Z_ztrata = Z_i * M_i * S_t",
+            "drvId": "DRV-012",
+            "id": "DRV-012",
+            "value": 1.434375
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_mezera = N_celkem - RZPS - N_sub",
+            "drvId": "DRV-013",
+            "id": "DRV-013",
+            "value": 252.59075000000007
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_pendler = p * N_celkem",
+            "drvId": "DRV-014",
+            "id": "DRV-014",
+            "value": 19.590480000000003
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_agentura = N_mezera - N_pendler",
+            "drvId": "DRV-015",
+            "id": "DRV-015",
+            "value": 233.00027000000006
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_agentura / N_celkem — metodický rizikový signál při podílu > 5 %",
+            "drvId": "DRV-014/015",
+            "id": "M3-AGENCY-SHARE-SIGNAL",
+            "value": {
+              "agencyShare": 0.7730804732706907,
+              "nAgenturaCalc": 233.00027000000006,
+              "nCelkem": 301.39200000000005,
+              "threshold": 0.05
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Linear workforce ramp — not a closed PDF formula; MVP distribution only.",
+            "id": "RAMP",
+            "value": [
+              0.1,
+              0.2,
+              0.3,
+              0.4
+            ]
+          }
+        ],
+        "housing": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M0 harmonogram / horizont vs. náběh bydlení (audit)",
+            "id": "P1-M0-H",
+            "value": {
+              "constructionStart": "2026-Q2",
+              "fullOperationPlanned": "2028",
+              "housingRampYearsEffective": 4,
+              "rampYearsGlobal": 5
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M1 územní kontext pro M4 (bez GIS API)",
+            "id": "P1-M1-H",
+            "value": {
+              "isochronesMode": "manual_same_as_diad",
+              "isochronesNote": "Isochrony zatím nepočítány — pro vstup do modelu používáme DIAD níže (stejné čísla jako dostupnost).",
+              "municipality": "Kolín",
+              "region": "Středočeský kraj"
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M2 AS-IS bydlení / demografie — baseline (audit; vstup do E_t přes vacant/migrace dle mostu)",
+            "id": "P1-M2-BL-H",
+            "value": {
+              "avgRentCzk": 280,
+              "population": 63000,
+              "vacantUnitsBaseline": 850
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "M4 vstupy N_agentura, N_pendler z výstupu M3 (DRV-014/015); místo ručních hodnot ve wizardu",
+            "id": "P1-M3-M4",
+            "value": {
+              "nAgenturaEffective": 233.00027000000006,
+              "nAgenturaMvp": 40,
+              "nPendlerEffective": 19.590480000000003,
+              "nPendlerMvp": 60
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "Efektivní vstupy M4 po P1 mostu (M2 → N_kmen, vacant; M3→M4 pokud zapnuto)",
+            "id": "P1-M4-EFFECTIVE",
+            "value": {
+              "m2VacantUsed": true,
+              "migrationAdjustment": 4.8,
+              "nKmenEffective": 99.8,
+              "nKmenMvp": 95,
+              "vTVacantEffective": 850,
+              "vTVacantMvp": 40
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje M4: M0/M2 baseline vs M3 řetězec vs CONFIGURABLE (KH, nabídka)",
+            "id": "M4-SOURCE-MIX",
+            "value": {
+              "linkM3toM4": true,
+              "m0Schedule": {
+                "constructionStart": "2026-Q2",
+                "fullOperationPlanned": "2028",
+                "housingRampYearsEffective": 4,
+                "rampYearsGlobal": 5
+              },
+              "nAgenturaDriver": "M3_DRV",
+              "nKmenDriver": "P1_M2_MIGRATION_PROXY",
+              "nPendlerDriver": "M3_DRV",
+              "rampYears": 4,
+              "situation": "A",
+              "vacantDriver": "P1_M2_MAX_WITH_MVP"
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "OU Sit. A/B",
+            "drvId": "DRV-016",
+            "id": "DRV-016",
+            "value": 366.7322700000001
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "ZU default = N_kmen + N_agentura (PDF: dle příklad — override allowed)",
+            "drvId": "DRV-018",
+            "id": "DRV-018",
+            "value": 332.80027000000007
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "ZU_t, units_t, E_t simplified",
+            "drvId": "DRV-019/020/022",
+            "id": "TYPE-byt",
+            "value": {
+              "eff": 396.9,
+              "unitsRequired": 71.31434357142858,
+              "zuT": 149.76012150000003
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "ZU_t, units_t, E_t simplified",
+            "drvId": "DRV-019/020/022",
+            "id": "TYPE-rodinny",
+            "value": {
+              "eff": 477.1000000000001,
+              "unitsRequired": 57.20004640625001,
+              "zuT": 183.04014850000004
+            }
+          }
+        ]
+      },
+      "optimistic": {
+        "civic": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje M5: OU z M4 vs ručně; N_celkem (bezpečnost) z M3 vs ručně; školy/zdraví/volnočas dle DRV-023–027",
+            "id": "M5-SOURCE-MIX",
+            "value": {
+              "nCelkemForSafety": {
+                "canonical": "m3_output",
+                "nCelkemEffective": 301.39200000000005,
+                "nCelkemWizardMvp": 420
+              },
+              "ou": {
+                "canonical": "m4_output",
+                "ouEffective": 361.73265000000004,
+                "ouWizardMvp": 210
+              }
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "OU = výstup M4 (obyvatelé k usazení dle situace A/B)",
+            "id": "P1-M5-OU",
+            "value": {
+              "ouEffective": 361.73265000000004,
+              "ouWizardMvp": 210
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_celkem pro bezpečnost = výstup M3 (potřeba PMJ po kmenových)",
+            "drvId": "DRV-007",
+            "id": "P1-M5-NCEL",
+            "value": {
+              "nCelkemEffective": 301.39200000000005,
+              "nCelkemWizardMvp": 420
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "demand_MS = OU * std_MS/1000",
+            "drvId": "DRV-023",
+            "id": "DRV-023",
+            "value": 12.2989101
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "demand_ZS = OU * std_ZS/1000",
+            "drvId": "DRV-024",
+            "id": "DRV-024",
+            "value": 34.726334400000006
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "free = free_cap * cap_reg - enrolled (per sector)",
+            "drvId": "DRV-025",
+            "id": "DRV-025",
+            "value": {
+              "freeMs": 13,
+              "freeZs": 22
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "beds_need = OU/1000 * beds_per_1000",
+            "drvId": "DRV-026",
+            "id": "DRV-026",
+            "value": 0.9043316250000001
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_zarizeni = (OU/100)*K",
+            "drvId": "DRV-027",
+            "id": "DRV-027",
+            "value": 8.6815836
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "NX = OU / PX (souhrnný nebo agregovaný vstup PX)",
+            "drvId": "OQ-08",
+            "id": "HEALTH-NX",
+            "value": 2.0096258333333337
+          }
+        ],
+        "economic": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "θ a RUD — legislativní přesnost v čase (viz system spec).",
+            "drvId": "OQ-10",
+            "id": "OQ-10",
+            "value": {
+              "theta": 0.32,
+              "v_RUD_per_cap": 16500
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Kumulace bez diskontu — NPV není uzavřen ve vstupní tabulce INP.",
+            "drvId": "OQ-11",
+            "id": "OQ-11",
+            "value": {
+              "years": 10
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje M6: zapnutý výpočet profilu ΔHDP z CAPEX, M3 (N_celkem) a multiplikátorů; ruční ΔHDP jako záloha",
+            "id": "M6-SOURCE-MIX",
+            "value": {
+              "capexTotalCzk": 850000000,
+              "constructionRampYears": 4,
+              "mRegionMonthlyCzk": 32000,
+              "mvpManualDeltaHdpCzk": 120000000,
+              "nCelkemFromM3": 301.39200000000005,
+              "ouFromM4_auditOnly": 361.73265000000004,
+              "useComputedDeltaHdp": true
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "Investiční impuls (ročně): CAPEX / T_ramp × M_investice — vstup do profilu ΔHDP (§ 2.4)",
+            "drvId": "INP-604",
+            "id": "M6-I-ANNUAL",
+            "value": {
+              "I_annual": 361250000,
+              "M_investice": 1.7,
+              "capexTotalCzk": 850000000,
+              "constructionYears": 4
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Roční proxy toku spojeného s PMJ: N_celkem × M_region × 12 × M_mista — OQ-05, není uzavřený HDP výstup z mezd",
+            "id": "M6-EMP-PROXY",
+            "value": {
+              "M_mista": 1.7,
+              "employmentIncomeProxyAnnual": 196748697.60000005,
+              "mRegionMonthly": 32000,
+              "nCelkem": 301.39200000000005
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Indukované veřejné výdaje z investičního impulsu: I_annual × max(0, M_vlada − 1) — ilustrativní proxy (§ 2.4 multiplikátory)",
+            "id": "M6-G-INDUCED",
+            "value": {
+              "M_vlada": 1.75,
+              "governmentInducedAnnual": 270937500
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Investiční fáze (roční, profil M6): I_annual + indukované G z I — G je ilustrativní proxy (M6-G-INDUCED), ne přesná fiskální identita",
+            "id": "M6-PHASE-INVEST",
+            "value": 632187500
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Provozní fáze (roční, profil M6): mezdové proxy N_celkem × M_region × 12 × M_mista — OQ-05",
+            "id": "M6-PHASE-OPER",
+            "value": 196748697.60000005
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "ΔHDP (roční referenční profil) = součet investičního impulsu, mezdového proxy a indukovaného G — zjednodušený rámec C+I+G bez (X−M)",
+            "drvId": "DRV-028",
+            "id": "M6-DELTA-PROFILE",
+            "value": 828936197.6
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "tax_yield = theta * delta_HDP",
+            "drvId": "DRV-029",
+            "id": "DRV-029",
+            "value": 265259583.23200002
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "Alokace výnosu daní (θ×ΔHDP) do rozpočtů: × p_stat, × p_kraj, × p_obec",
+            "drvId": "INP-608",
+            "id": "M6-FISCAL-BUDGET-SPLIT",
+            "value": {
+              "p_kraj": 0.33,
+              "p_obec": 0.34,
+              "p_stat": 0.33,
+              "publicBudgetKraj": 87535662.46656,
+              "publicBudgetObec": 90188258.29888001,
+              "publicBudgetStat": 87535662.46656,
+              "taxYieldAnnual": 265259583.23200002
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "C (proxy) = (N_celkem × M_region × 12) × MPC × M_spotreba — návaznost na M3, ne škála k celkovému ΔHDP",
+            "id": "M6-C-PAYROLL",
+            "value": 166657720.32000008
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Kanonický zdroj proxy spotřeby domácností pro report a export",
+            "id": "M6-HHC-SOURCE",
+            "value": {
+              "deltaHdpSource": "computed_profile",
+              "householdConsumptionSource": "payroll_proxy"
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "C_r = C * r",
+            "drvId": "DRV-030",
+            "id": "DRV-030",
+            "value": 108327518.20800006
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "DzNM",
+            "drvId": "DRV-031",
+            "id": "DRV-031",
+            "value": 644000
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "PRUD",
+            "drvId": "DRV-032",
+            "id": "DRV-032",
+            "value": 19899.000000000004
+          }
+        ],
+        "employment": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M0 harmonogram / horizont vs. náběh zaměstnanosti (audit)",
+            "id": "P1-M0-SCHED",
+            "value": {
+              "constructionStart": "2026-Q2",
+              "employmentRampYearsEffective": 4,
+              "fullOperationPlanned": "2028",
+              "rampYearsGlobal": 5
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M0 PMJ struktura (směny / provoz — textový kontext)",
+            "id": "P1-M0-PMJ",
+            "value": {
+              "shifts": "Směnnost 2–3 směny; administrativa jednosměnně."
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M2 AS-IS trh práce — baseline (audit; úprava util jen při P1-M2-U)",
+            "id": "P1-M2-MKT",
+            "value": {
+              "employmentRate": 0.78,
+              "unemploymentRate": 0.035
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "util_RZPS škálováno podle M2 (nezaměstnanost 0.0350), mult=0.9617",
+            "id": "P1-M2-U",
+            "value": {
+              "after": 0.6731666666666666,
+              "before": 0.7
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje vstupů M3: baseline P1 vs CONFIGURABLE předpoklady vs most (ne nový výpočet)",
+            "id": "M3-SOURCE-MIX",
+            "value": {
+              "nInv": {
+                "driver": "P1_M0_FTE",
+                "nInvEffective": 386.40000000000003,
+                "nInvMvp": 420
+              },
+              "ramp": {
+                "m0Schedule": {
+                  "constructionStart": "2026-Q2",
+                  "employmentRampYearsEffective": 4,
+                  "fullOperationPlanned": "2028",
+                  "rampYearsGlobal": 5
+                },
+                "years": 4
+              },
+              "utilRZPS": {
+                "driver": "P1_M2_HEURISTIC_ON_ASSUMPTIONS",
+                "utilRzpsEffective": 0.6731666666666666
+              }
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_celkem = (1-k_inv)*N_inv",
+            "drvId": "DRV-007",
+            "id": "DRV-007",
+            "value": 301.39200000000005
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_inv z MVP=420, FTE faktor M0=0.9200 → efektivní N_inv=386.40",
+            "id": "P1-FTE",
+            "value": {
+              "fte": 0.92,
+              "nInvEffective": 386.40000000000003,
+              "nInvMvp": 420
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Územní kontext (M1) — audit; neovlivňuje DRV bez GIS API (ruční režim / poznámka)",
+            "id": "P1-M1-CTX",
+            "value": {
+              "isochronesMode": "manual_same_as_diad",
+              "isochronesNote": "Isochrony zatím nepočítány — pro vstup do modelu používáme DIAD níže (stejné čísla jako dostupnost).",
+              "municipality": "Kolín",
+              "region": "Středočeský kraj"
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "RZPS_raw = A + gamma*B + delta*C",
+            "drvId": "DRV-008",
+            "id": "DRV-008",
+            "value": 49.5
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "RZPS = RZPS_raw * util_RZPS",
+            "drvId": "DRV-009",
+            "id": "DRV-009",
+            "value": 33.321749999999994
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "S_m = alpha * (M_new-M_reg)/M_reg",
+            "drvId": "DRV-010",
+            "id": "DRV-010",
+            "value": 0.09375
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "S_t = (1-NP_vm/NP_tot)*S_m",
+            "drvId": "DRV-011",
+            "id": "DRV-011",
+            "value": 0.0796875
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "Z_ztrata = Z_i * M_i * S_t",
+            "drvId": "DRV-012",
+            "id": "DRV-012",
+            "value": 1.434375
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_mezera = N_celkem - RZPS - N_sub",
+            "drvId": "DRV-013",
+            "id": "DRV-013",
+            "value": 243.07025000000004
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_pendler = p * N_celkem",
+            "drvId": "DRV-014",
+            "id": "DRV-014",
+            "value": 15.069600000000003
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_agentura = N_mezera - N_pendler",
+            "drvId": "DRV-015",
+            "id": "DRV-015",
+            "value": 228.00065000000004
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_agentura / N_celkem — metodický rizikový signál při podílu > 5 %",
+            "drvId": "DRV-014/015",
+            "id": "M3-AGENCY-SHARE-SIGNAL",
+            "value": {
+              "agencyShare": 0.7564920435844349,
+              "nAgenturaCalc": 228.00065000000004,
+              "nCelkem": 301.39200000000005,
+              "threshold": 0.05
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Linear workforce ramp — not a closed PDF formula; MVP distribution only.",
+            "id": "RAMP",
+            "value": [
+              0.1,
+              0.2,
+              0.3,
+              0.4
+            ]
+          }
+        ],
+        "housing": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M0 harmonogram / horizont vs. náběh bydlení (audit)",
+            "id": "P1-M0-H",
+            "value": {
+              "constructionStart": "2026-Q2",
+              "fullOperationPlanned": "2028",
+              "housingRampYearsEffective": 4,
+              "rampYearsGlobal": 5
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M1 územní kontext pro M4 (bez GIS API)",
+            "id": "P1-M1-H",
+            "value": {
+              "isochronesMode": "manual_same_as_diad",
+              "isochronesNote": "Isochrony zatím nepočítány — pro vstup do modelu používáme DIAD níže (stejné čísla jako dostupnost).",
+              "municipality": "Kolín",
+              "region": "Středočeský kraj"
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M2 AS-IS bydlení / demografie — baseline (audit; vstup do E_t přes vacant/migrace dle mostu)",
+            "id": "P1-M2-BL-H",
+            "value": {
+              "avgRentCzk": 280,
+              "population": 63000,
+              "vacantUnitsBaseline": 850
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "M4 vstupy N_agentura, N_pendler z výstupu M3 (DRV-014/015); místo ručních hodnot ve wizardu",
+            "id": "P1-M3-M4",
+            "value": {
+              "nAgenturaEffective": 228.00065000000004,
+              "nAgenturaMvp": 40,
+              "nPendlerEffective": 15.069600000000003,
+              "nPendlerMvp": 60
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "Efektivní vstupy M4 po P1 mostu (M2 → N_kmen, vacant; M3→M4 pokud zapnuto)",
+            "id": "P1-M4-EFFECTIVE",
+            "value": {
+              "m2VacantUsed": true,
+              "migrationAdjustment": 4.8,
+              "nKmenEffective": 99.8,
+              "nKmenMvp": 95,
+              "vTVacantEffective": 850,
+              "vTVacantMvp": 40
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje M4: M0/M2 baseline vs M3 řetězec vs CONFIGURABLE (KH, nabídka)",
+            "id": "M4-SOURCE-MIX",
+            "value": {
+              "linkM3toM4": true,
+              "m0Schedule": {
+                "constructionStart": "2026-Q2",
+                "fullOperationPlanned": "2028",
+                "housingRampYearsEffective": 4,
+                "rampYearsGlobal": 5
+              },
+              "nAgenturaDriver": "M3_DRV",
+              "nKmenDriver": "P1_M2_MIGRATION_PROXY",
+              "nPendlerDriver": "M3_DRV",
+              "rampYears": 4,
+              "situation": "A",
+              "vacantDriver": "P1_M2_MAX_WITH_MVP"
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "OU Sit. A/B",
+            "drvId": "DRV-016",
+            "id": "DRV-016",
+            "value": 361.73265000000004
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "ZU default = N_kmen + N_agentura (PDF: dle příklad — override allowed)",
+            "drvId": "DRV-018",
+            "id": "DRV-018",
+            "value": 327.80065
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "ZU_t, units_t, E_t simplified",
+            "drvId": "DRV-019/020/022",
+            "id": "TYPE-byt",
+            "value": {
+              "eff": 396.9,
+              "unitsRequired": 70.24299642857143,
+              "zuT": 147.51029250000002
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "ZU_t, units_t, E_t simplified",
+            "drvId": "DRV-019/020/022",
+            "id": "TYPE-rodinny",
+            "value": {
+              "eff": 477.1000000000001,
+              "unitsRequired": 56.34073671875001,
+              "zuT": 180.29035750000003
+            }
+          }
+        ]
+      },
+      "pessimistic": {
+        "civic": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje M5: OU z M4 vs ručně; N_celkem (bezpečnost) z M3 vs ručně; školy/zdraví/volnočas dle DRV-023–027",
+            "id": "M5-SOURCE-MIX",
+            "value": {
+              "nCelkemForSafety": {
+                "canonical": "m3_output",
+                "nCelkemEffective": 301.39200000000005,
+                "nCelkemWizardMvp": 420
+              },
+              "ou": {
+                "canonical": "m4_output",
+                "ouEffective": 378.23847000000006,
+                "ouWizardMvp": 210
+              }
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "OU = výstup M4 (obyvatelé k usazení dle situace A/B)",
+            "id": "P1-M5-OU",
+            "value": {
+              "ouEffective": 378.23847000000006,
+              "ouWizardMvp": 210
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_celkem pro bezpečnost = výstup M3 (potřeba PMJ po kmenových)",
+            "drvId": "DRV-007",
+            "id": "P1-M5-NCEL",
+            "value": {
+              "nCelkemEffective": 301.39200000000005,
+              "nCelkemWizardMvp": 420
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "demand_MS = OU * std_MS/1000",
+            "drvId": "DRV-023",
+            "id": "DRV-023",
+            "value": 12.860107980000002
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "demand_ZS = OU * std_ZS/1000",
+            "drvId": "DRV-024",
+            "id": "DRV-024",
+            "value": 36.31089312000001
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "free = free_cap * cap_reg - enrolled (per sector)",
+            "drvId": "DRV-025",
+            "id": "DRV-025",
+            "value": {
+              "freeMs": 13,
+              "freeZs": 22
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "beds_need = OU/1000 * beds_per_1000",
+            "drvId": "DRV-026",
+            "id": "DRV-026",
+            "value": 0.9455961750000001
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_zarizeni = (OU/100)*K",
+            "drvId": "DRV-027",
+            "id": "DRV-027",
+            "value": 9.07772328
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "NX = OU / PX (souhrnný nebo agregovaný vstup PX)",
+            "drvId": "OQ-08",
+            "id": "HEALTH-NX",
+            "value": 2.101324833333334
+          }
+        ],
+        "economic": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "θ a RUD — legislativní přesnost v čase (viz system spec).",
+            "drvId": "OQ-10",
+            "id": "OQ-10",
+            "value": {
+              "theta": 0.4,
+              "v_RUD_per_cap": 16500
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Kumulace bez diskontu — NPV není uzavřen ve vstupní tabulce INP.",
+            "drvId": "OQ-11",
+            "id": "OQ-11",
+            "value": {
+              "years": 10
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje M6: zapnutý výpočet profilu ΔHDP z CAPEX, M3 (N_celkem) a multiplikátorů; ruční ΔHDP jako záloha",
+            "id": "M6-SOURCE-MIX",
+            "value": {
+              "capexTotalCzk": 850000000,
+              "constructionRampYears": 4,
+              "mRegionMonthlyCzk": 32000,
+              "mvpManualDeltaHdpCzk": 120000000,
+              "nCelkemFromM3": 301.39200000000005,
+              "ouFromM4_auditOnly": 378.23847000000006,
+              "useComputedDeltaHdp": true
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "Investiční impuls (ročně): CAPEX / T_ramp × M_investice — vstup do profilu ΔHDP (§ 2.4)",
+            "drvId": "INP-604",
+            "id": "M6-I-ANNUAL",
+            "value": {
+              "I_annual": 361250000,
+              "M_investice": 1.7,
+              "capexTotalCzk": 850000000,
+              "constructionYears": 4
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Roční proxy toku spojeného s PMJ: N_celkem × M_region × 12 × M_mista — OQ-05, není uzavřený HDP výstup z mezd",
+            "id": "M6-EMP-PROXY",
+            "value": {
+              "M_mista": 1.7,
+              "employmentIncomeProxyAnnual": 196748697.60000005,
+              "mRegionMonthly": 32000,
+              "nCelkem": 301.39200000000005
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Indukované veřejné výdaje z investičního impulsu: I_annual × max(0, M_vlada − 1) — ilustrativní proxy (§ 2.4 multiplikátory)",
+            "id": "M6-G-INDUCED",
+            "value": {
+              "M_vlada": 1.75,
+              "governmentInducedAnnual": 270937500
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Investiční fáze (roční, profil M6): I_annual + indukované G z I — G je ilustrativní proxy (M6-G-INDUCED), ne přesná fiskální identita",
+            "id": "M6-PHASE-INVEST",
+            "value": 632187500
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Provozní fáze (roční, profil M6): mezdové proxy N_celkem × M_region × 12 × M_mista — OQ-05",
+            "id": "M6-PHASE-OPER",
+            "value": 196748697.60000005
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "ΔHDP (roční referenční profil) = součet investičního impulsu, mezdového proxy a indukovaného G — zjednodušený rámec C+I+G bez (X−M)",
+            "drvId": "DRV-028",
+            "id": "M6-DELTA-PROFILE",
+            "value": 828936197.6
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "tax_yield = theta * delta_HDP",
+            "drvId": "DRV-029",
+            "id": "DRV-029",
+            "value": 331574479.04
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "Alokace výnosu daní (θ×ΔHDP) do rozpočtů: × p_stat, × p_kraj, × p_obec",
+            "drvId": "INP-608",
+            "id": "M6-FISCAL-BUDGET-SPLIT",
+            "value": {
+              "p_kraj": 0.33,
+              "p_obec": 0.34,
+              "p_stat": 0.33,
+              "publicBudgetKraj": 109419578.08320001,
+              "publicBudgetObec": 112735322.87360002,
+              "publicBudgetStat": 109419578.08320001,
+              "taxYieldAnnual": 331574479.04
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "C (proxy) = (N_celkem × M_region × 12) × MPC × M_spotreba — návaznost na M3, ne škála k celkovému ΔHDP",
+            "id": "M6-C-PAYROLL",
+            "value": 166657720.32000008
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Kanonický zdroj proxy spotřeby domácností pro report a export",
+            "id": "M6-HHC-SOURCE",
+            "value": {
+              "deltaHdpSource": "computed_profile",
+              "householdConsumptionSource": "payroll_proxy"
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "C_r = C * r",
+            "drvId": "DRV-030",
+            "id": "DRV-030",
+            "value": 108327518.20800006
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "DzNM",
+            "drvId": "DRV-031",
+            "id": "DRV-031",
+            "value": 644000
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "PRUD",
+            "drvId": "DRV-032",
+            "id": "DRV-032",
+            "value": 19899.000000000004
+          }
+        ],
+        "employment": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M0 harmonogram / horizont vs. náběh zaměstnanosti (audit)",
+            "id": "P1-M0-SCHED",
+            "value": {
+              "constructionStart": "2026-Q2",
+              "employmentRampYearsEffective": 4,
+              "fullOperationPlanned": "2028",
+              "rampYearsGlobal": 5
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M0 PMJ struktura (směny / provoz — textový kontext)",
+            "id": "P1-M0-PMJ",
+            "value": {
+              "shifts": "Směnnost 2–3 směny; administrativa jednosměnně."
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M2 AS-IS trh práce — baseline (audit; úprava util jen při P1-M2-U)",
+            "id": "P1-M2-MKT",
+            "value": {
+              "employmentRate": 0.78,
+              "unemploymentRate": 0.035
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "util_RZPS škálováno podle M2 (nezaměstnanost 0.0350), mult=0.9617",
+            "id": "P1-M2-U",
+            "value": {
+              "after": 0.09616666666666668,
+              "before": 0.1
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje vstupů M3: baseline P1 vs CONFIGURABLE předpoklady vs most (ne nový výpočet)",
+            "id": "M3-SOURCE-MIX",
+            "value": {
+              "nInv": {
+                "driver": "P1_M0_FTE",
+                "nInvEffective": 386.40000000000003,
+                "nInvMvp": 420
+              },
+              "ramp": {
+                "m0Schedule": {
+                  "constructionStart": "2026-Q2",
+                  "employmentRampYearsEffective": 4,
+                  "fullOperationPlanned": "2028",
+                  "rampYearsGlobal": 5
+                },
+                "years": 4
+              },
+              "utilRZPS": {
+                "driver": "P1_M2_HEURISTIC_ON_ASSUMPTIONS",
+                "utilRzpsEffective": 0.09616666666666668
+              }
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_celkem = (1-k_inv)*N_inv",
+            "drvId": "DRV-007",
+            "id": "DRV-007",
+            "value": 301.39200000000005
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_inv z MVP=420, FTE faktor M0=0.9200 → efektivní N_inv=386.40",
+            "id": "P1-FTE",
+            "value": {
+              "fte": 0.92,
+              "nInvEffective": 386.40000000000003,
+              "nInvMvp": 420
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Územní kontext (M1) — audit; neovlivňuje DRV bez GIS API (ruční režim / poznámka)",
+            "id": "P1-M1-CTX",
+            "value": {
+              "isochronesMode": "manual_same_as_diad",
+              "isochronesNote": "Isochrony zatím nepočítány — pro vstup do modelu používáme DIAD níže (stejné čísla jako dostupnost).",
+              "municipality": "Kolín",
+              "region": "Středočeský kraj"
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "RZPS_raw = A + gamma*B + delta*C",
+            "drvId": "DRV-008",
+            "id": "DRV-008",
+            "value": 49.5
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "RZPS = RZPS_raw * util_RZPS",
+            "drvId": "DRV-009",
+            "id": "DRV-009",
+            "value": 4.760250000000001
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "S_m = alpha * (M_new-M_reg)/M_reg",
+            "drvId": "DRV-010",
+            "id": "DRV-010",
+            "value": 0.09375
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "S_t = (1-NP_vm/NP_tot)*S_m",
+            "drvId": "DRV-011",
+            "id": "DRV-011",
+            "value": 0.0796875
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "Z_ztrata = Z_i * M_i * S_t",
+            "drvId": "DRV-012",
+            "id": "DRV-012",
+            "value": 1.434375
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_mezera = N_celkem - RZPS - N_sub",
+            "drvId": "DRV-013",
+            "id": "DRV-013",
+            "value": 271.63175000000007
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_pendler = p * N_celkem",
+            "drvId": "DRV-014",
+            "id": "DRV-014",
+            "value": 27.125280000000004
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_agentura = N_mezera - N_pendler",
+            "drvId": "DRV-015",
+            "id": "DRV-015",
+            "value": 244.50647000000006
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "N_agentura / N_celkem — metodický rizikový signál při podílu > 5 %",
+            "drvId": "DRV-014/015",
+            "id": "M3-AGENCY-SHARE-SIGNAL",
+            "value": {
+              "agencyShare": 0.8112573326432023,
+              "nAgenturaCalc": 244.50647000000006,
+              "nCelkem": 301.39200000000005,
+              "threshold": 0.05
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Linear workforce ramp — not a closed PDF formula; MVP distribution only.",
+            "id": "RAMP",
+            "value": [
+              0.1,
+              0.2,
+              0.3,
+              0.4
+            ]
+          }
+        ],
+        "housing": [
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M0 harmonogram / horizont vs. náběh bydlení (audit)",
+            "id": "P1-M0-H",
+            "value": {
+              "constructionStart": "2026-Q2",
+              "fullOperationPlanned": "2028",
+              "housingRampYearsEffective": 4,
+              "rampYearsGlobal": 5
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M1 územní kontext pro M4 (bez GIS API)",
+            "id": "P1-M1-H",
+            "value": {
+              "isochronesMode": "manual_same_as_diad",
+              "isochronesNote": "Isochrony zatím nepočítány — pro vstup do modelu používáme DIAD níže (stejné čísla jako dostupnost).",
+              "municipality": "Kolín",
+              "region": "Středočeský kraj"
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "M2 AS-IS bydlení / demografie — baseline (audit; vstup do E_t přes vacant/migrace dle mostu)",
+            "id": "P1-M2-BL-H",
+            "value": {
+              "avgRentCzk": 280,
+              "population": 63000,
+              "vacantUnitsBaseline": 850
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "M4 vstupy N_agentura, N_pendler z výstupu M3 (DRV-014/015); místo ručních hodnot ve wizardu",
+            "id": "P1-M3-M4",
+            "value": {
+              "nAgenturaEffective": 244.50647000000006,
+              "nAgenturaMvp": 40,
+              "nPendlerEffective": 27.125280000000004,
+              "nPendlerMvp": 60
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "Efektivní vstupy M4 po P1 mostu (M2 → N_kmen, vacant; M3→M4 pokud zapnuto)",
+            "id": "P1-M4-EFFECTIVE",
+            "value": {
+              "m2VacantUsed": true,
+              "migrationAdjustment": 4.8,
+              "nKmenEffective": 99.8,
+              "nKmenMvp": 95,
+              "vTVacantEffective": 850,
+              "vTVacantMvp": 40
+            }
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "Zdroje M4: M0/M2 baseline vs M3 řetězec vs CONFIGURABLE (KH, nabídka)",
+            "id": "M4-SOURCE-MIX",
+            "value": {
+              "linkM3toM4": true,
+              "m0Schedule": {
+                "constructionStart": "2026-Q2",
+                "fullOperationPlanned": "2028",
+                "housingRampYearsEffective": 4,
+                "rampYearsGlobal": 5
+              },
+              "nAgenturaDriver": "M3_DRV",
+              "nKmenDriver": "P1_M2_MIGRATION_PROXY",
+              "nPendlerDriver": "M3_DRV",
+              "rampYears": 4,
+              "situation": "A",
+              "vacantDriver": "P1_M2_MAX_WITH_MVP"
+            }
+          },
+          {
+            "classification": "EXPLICIT_IN_METHODOLOGY",
+            "description": "OU Sit. A/B",
+            "drvId": "DRV-016",
+            "id": "DRV-016",
+            "value": 378.23847000000006
+          },
+          {
+            "classification": "OPEN_QUESTION_BRIDGE",
+            "description": "ZU default = N_kmen + N_agentura (PDF: dle příklad — override allowed)",
+            "drvId": "DRV-018",
+            "id": "DRV-018",
+            "value": 344.30647000000005
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "ZU_t, units_t, E_t simplified",
+            "drvId": "DRV-019/020/022",
+            "id": "TYPE-byt",
+            "value": {
+              "eff": 396.9,
+              "unitsRequired": 73.77995785714286,
+              "zuT": 154.9379115
+            }
+          },
+          {
+            "classification": "CONFIGURABLE_ASSUMPTION",
+            "description": "ZU_t, units_t, E_t simplified",
+            "drvId": "DRV-019/020/022",
+            "id": "TYPE-rodinny",
+            "value": {
+              "eff": 477.1000000000001,
+              "unitsRequired": 59.177674531250005,
+              "zuT": 189.36855850000003
+            }
+          }
+        ]
+      }
+    }
+  }
+}"
+`;
