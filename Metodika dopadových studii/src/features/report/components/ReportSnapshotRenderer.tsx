@@ -1,42 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Separator } from "@/components/ui/separator";
-import { InfoTip } from "@/components/info-tip";
-import { AgencyShareRiskCallout } from "@/components/agency-share-risk-callout";
-import { glossaryCs } from "@/content/glossary-cs";
-import {
-  baselineHasAgencyShareRisk,
-  snapshotUnionHasAgencyShareRisk,
-} from "@/features/report/agency-share-risk-snapshot";
-import { openQuestionLabelCs } from "@/features/studio/open-question-labels";
-import { SCENARIO_ORDER } from "@/features/studio/wizard-types";
-import { warningMessageCs } from "@/features/studio/warning-messages";
-import { cs as studioCs } from "@/features/studio/studio-copy";
-import {
-  compareWarningsForDisplay,
-  warningTitleLine,
-} from "@/features/studio/ux/warning-card-meta";
 import { cn } from "@/lib/utils";
-import type {
-  EconomicModuleReportSlice,
-  M8ContentLayer,
-  MethodologyReportSnapshot,
-} from "../types";
+import type { M8ContentLayer, MethodologyOutlineChapter, MethodologyReportSnapshot } from "../types";
 import { reportCs } from "../report-copy-cs";
+import { MethodologyChapterSubsectionContent } from "./methodology-chapter-subsection-content";
+import {
+  CompletenessChip,
+  methodologySubsectionAnchorId,
+} from "./methodology-subsection-shell";
+import { AgencyShareRiskCallout } from "@/components/agency-share-risk-callout";
+import { baselineHasAgencyShareRisk } from "@/features/report/agency-share-risk-snapshot";
+import {
+  LayerBadge,
+  type ReportSnapshotVariant,
+} from "./report-core-blocks";
 import {
   resolveTrustFraming,
   TRUST_DECISION_BULLETS_FALLBACK,
@@ -46,7 +24,7 @@ import {
   TRUST_SCENARIOS_SECONDARY,
 } from "@/content/trust-framing-cs";
 
-const AUDIT_PRINT_MAX_CHARS = 12_000;
+export type { ReportSnapshotVariant };
 
 // --- M8 vrstvové štítky a osnova ---
 
@@ -58,33 +36,6 @@ const LAYER_SCREEN_COLORS: Record<M8ContentLayer, string> = {
   assumptions_oq_fallback: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800",
 };
 
-function LayerBadge({
-  layer,
-  isPrint,
-}: {
-  layer: M8ContentLayer;
-  isPrint: boolean;
-}) {
-  const label = reportCs.m8.layers[layer];
-  if (isPrint) {
-    return (
-      <span className="ml-2 rounded border border-black px-1 py-0.5 text-[9pt] font-mono font-medium text-black">
-        {label}
-      </span>
-    );
-  }
-  return (
-    <span
-      className={cn(
-        "ml-2 rounded border px-1.5 py-0.5 text-[10px] font-mono font-medium",
-        LAYER_SCREEN_COLORS[layer],
-      )}
-    >
-      {label}
-    </span>
-  );
-}
-
 function M8OutlineBlock({
   snapshot,
   isPrint,
@@ -93,7 +44,9 @@ function M8OutlineBlock({
   isPrint: boolean;
 }) {
   const { outline, annexes } = snapshot.m8_report_completeness;
-  const mainPoints = outline.filter((item) => item.id.startsWith("bod-"));
+  const mainPoints = outline.filter(
+    (item) => item.id.startsWith("kap-") || item.id.startsWith("bod-"),
+  );
   const annexItems = outline.filter((item) => item.id.startsWith("priloha-"));
 
   if (isPrint) {
@@ -183,7 +136,148 @@ function M8OutlineBlock({
   );
 }
 
-export type ReportSnapshotVariant = "screen" | "print";
+function resolveChapterMeta(
+  snapshot: MethodologyReportSnapshot,
+  chapter: number,
+  fallbackTitle: string,
+): MethodologyOutlineChapter {
+  const found = snapshot.methodology_outline_1_10?.chapters.find(
+    (c) => c.chapter === chapter,
+  );
+  if (found) return found;
+  return {
+    chapter,
+    titleCs: fallbackTitle,
+    completeness: "partial",
+    coverageNoteCs:
+      "V této verzi snapshotu chybí metadatová osnova kapitoly — zobrazen obsah ze strukturovaných dat reportu.",
+    subsections: [],
+  };
+}
+
+function MethodologyChapterShell({
+  meta,
+  isPrint,
+  children,
+}: {
+  meta: MethodologyOutlineChapter;
+  isPrint: boolean;
+  children: React.ReactNode;
+}) {
+  const id = `metodika-kap-${meta.chapter}`;
+  return (
+    <section
+      id={id}
+      className={cn("space-y-4 scroll-mt-24", isPrint && "print:break-inside-avoid")}
+    >
+      <header
+        className={cn("border-b pb-3", isPrint ? "border-black" : "border-border")}
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <h2
+            className={cn(
+              "text-xl font-bold tracking-tight",
+              isPrint && "text-black",
+            )}
+          >
+            {meta.chapter}. {meta.titleCs}
+          </h2>
+          <CompletenessChip completeness={meta.completeness} isPrint={isPrint} />
+        </div>
+        {meta.coverageNoteCs ? (
+          <p
+            className={cn(
+              "mt-2 text-sm leading-snug",
+              isPrint ? "text-black" : "text-muted-foreground",
+            )}
+          >
+            {meta.coverageNoteCs}
+          </p>
+        ) : null}
+      </header>
+      {children}
+    </section>
+  );
+}
+
+function MethodologyTocBlock({
+  snapshot,
+  isPrint,
+}: {
+  snapshot: MethodologyReportSnapshot;
+  isPrint: boolean;
+}) {
+  const chapters = snapshot.methodology_outline_1_10?.chapters ?? [];
+  if (!chapters.length) return null;
+  if (isPrint) {
+    return (
+      <div className="rounded-md border border-black p-3 text-[9pt] text-black print:break-inside-avoid">
+        <p className="font-semibold">Obsah (kapitoly 1–10)</p>
+        <ol className="mt-2 list-decimal space-y-2 pl-5">
+          {chapters.map((c) => (
+            <li key={c.chapter}>
+              <span>
+                {c.chapter}. {c.titleCs}{" "}
+                <span className="text-[8pt] text-neutral-600">
+                  (
+                  {c.completeness === "complete"
+                    ? "kompletní"
+                    : c.completeness === "partial"
+                      ? "částečně"
+                      : "chybí / nezmapováno"}
+                  )
+                </span>
+              </span>
+              <span className="mt-1 block pl-4 text-[8pt] leading-snug text-neutral-700">
+                {c.subsections.map((s) => `§${s.id}`).join(" · ")}
+              </span>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-2 text-[8pt] text-neutral-700">
+          Podkapitoly 1.1–10.4 jsou v těle dokumentu jako vlastní sekce s obsahem; uvedeny jsou i metodické poznámky a audit zdrojů dat. Kotvy fungují pro kapitoly i podkapitoly.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <nav
+      className="rounded-lg border border-border/60 bg-card/80 p-4 shadow-sm backdrop-blur-sm"
+      aria-label="Obsah reportu dle metodické osnovy 1–10"
+    >
+      <p className="text-sm font-semibold text-foreground">
+        Obsah — kapitoly 1–10
+      </p>
+      <ol className="mt-3 space-y-3 text-sm">
+        {chapters.map((c) => (
+          <li key={c.chapter}>
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                className="font-medium text-primary hover:underline"
+                href={`#metodika-kap-${c.chapter}`}
+              >
+                {c.chapter}. {c.titleCs}
+              </a>
+              <CompletenessChip completeness={c.completeness} isPrint={false} />
+            </div>
+            <ol className="mt-2 space-y-1 border-l border-border/70 pl-3 text-xs">
+              {c.subsections.map((sub) => (
+                <li key={sub.id}>
+                  <a
+                    className="text-muted-foreground hover:text-primary hover:underline"
+                    href={`#${methodologySubsectionAnchorId(sub.id)}`}
+                  >
+                    {sub.id} {sub.titleCs}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
 
 function ReportInterpretationBlock({
   snapshot,
@@ -264,219 +358,6 @@ function ReportInterpretationBlock({
   );
 }
 
-function fmt(n: number, maxFrac = 1): string {
-  return new Intl.NumberFormat("cs-CZ", {
-    maximumFractionDigits: maxFrac,
-  }).format(n);
-}
-
-function M7ConsolidationBlock({
-  snapshot,
-  isPrint,
-}: {
-  snapshot: MethodologyReportSnapshot;
-  isPrint: boolean;
-}) {
-  const m7 = snapshot.m7_scenario_consolidation;
-  const box = isPrint ? "text-black" : "text-muted-foreground";
-  const varying = m7.sensitivitySummary.varyingAssumptionKeys;
-  return (
-    <div className="space-y-4 text-sm">
-      <p className={cn("leading-snug", box)}>
-        Tabulka níže shrnuje stejná čísla jako srovnání scénářů v průvodci — jeden přehled pro všechny tři varianty.
-      </p>
-      <div>
-        <h3 className={cn("font-semibold mb-1", isPrint && "text-black")}>
-          Co je sdílené vs. scénářová delta
-        </h3>
-        <ul className={cn("list-disc space-y-1 pl-5", box)}>
-          <li>
-            <span className="font-medium text-foreground">Sdílený vstup</span> — popis projektu, území,
-            společné symboly ve wizardu; viz také sekce 1–4 a klasifikaci níže.
-          </li>
-          <li>
-            <span className="font-medium text-foreground">Scénářová delta</span> — parametry lišící se mezi scénáři
-            {m7.sensitivitySummary.scenarioDeltaKeysPresent.length
-              ? `: ${m7.sensitivitySummary.scenarioDeltaKeysPresent.join(", ")}`
-              : " (žádné — všechny scénáře používají sdílené předpoklady)"}
-            .
-          </li>
-          <li>
-            <span className="font-medium text-foreground">Odvozené výstupy</span> — čísla v tabulce
-            pocházejí z toho samého výpočtu jako v průvodci; zde jsou jen přehledně seřazená.
-          </li>
-        </ul>
-      </div>
-      <div>
-        <h3 className={cn("font-semibold mb-1", isPrint && "text-black")}>
-          Assumptions vs. otevřené otázky vs. fallback
-        </h3>
-        <ul className={cn("list-disc space-y-1 pl-5", box)}>
-          <li>
-            Efektivní předpoklady po scénářích: sekce 12; symboly s odlišnou hodnotou mezi scénáři:{" "}
-            {varying.length ? (
-              <span className="break-all">{varying.join(", ")}</span>
-            ) : (
-              "— (v tomto běhu žádný takový symbol po sloučení M3–M6)"
-            )}
-            .
-          </li>
-          <li>
-            Otevřené otázky: unie napříč scénáři v M7 —{" "}
-            {m7.consolidatedRisks.openQuestionsUnion.join(", ") || "—"}.
-          </li>
-          <li>
-            Záložní vstupy (ekonomika):{" "}
-            {m7.consolidatedRisks.fallbackSignals.length
-              ? `${m7.consolidatedRisks.fallbackSignals.length} záložní vstup — výpočet použil výchozí nebo ručně zadanou hodnotu místo automatického profilu. Detail je v JSON exportu.`
-              : "žádný záložní vstup v tomto záměru."}
-          </li>
-          {snapshotUnionHasAgencyShareRisk(snapshot) ? (
-            <li>
-              <span className="font-medium text-foreground">
-                Rizikový signál agenturních pracovníků (M3)
-              </span>
-              {" — "}
-              v alespoň jednom scénáři překročil model podíl práce přes agentury metodickou hranici (&gt; 5 % vůči N_celkem). Stejný signál je rozveden u interpretace dokumentu a v sekci varování (baseline); nejde o chybu aplikace.
-            </li>
-          ) : null}
-        </ul>
-      </div>
-      <div>
-        <h3 className={cn("font-semibold mb-1", isPrint && "text-black")}>Citlivost (text M7)</h3>
-        <ul className={cn("list-disc space-y-1 pl-5", box)}>
-          {m7.sensitivitySummary.notesCs.map((line, i) => (
-            <li key={i}>{line}</li>
-          ))}
-        </ul>
-      </div>
-      <details className={cn("rounded-md border p-2", isPrint && "border-black")}>
-        <summary className={cn("cursor-pointer text-xs font-medium", isPrint && "text-black")}>
-          Klasifikace M7 (JSON)
-        </summary>
-        <pre
-          className={cn(
-            "mt-2 max-h-56 overflow-auto text-xs",
-            isPrint && "print-pre border-black bg-white",
-          )}
-        >
-          {JSON.stringify(m7.classification, null, 2)}
-        </pre>
-      </details>
-    </div>
-  );
-}
-
-function deltaHdpKpiSublabel(
-  source: EconomicModuleReportSlice["deltaHdpSource"],
-): string {
-  switch (source) {
-    case "computed_profile":
-      return "Profil M6 (CAPEX + M3 + multiplikátory § 2.4) — zjednodušený rámec, viz OQ-05 / OQ-11";
-    case "manual_fallback":
-      return "Ruční ΔHDP (záloha po neplatném nebo nulovém profilu M6) — není automatický profil";
-    default:
-      return "Ruční ΔHDP MVP — pro profil zapněte P1 → M6";
-  }
-}
-
-function householdConsumptionKpiSublabel(
-  source: EconomicModuleReportSlice["householdConsumptionSource"],
-  deltaSrc: EconomicModuleReportSlice["deltaHdpSource"],
-): string {
-  if (source === "payroll_proxy") {
-    return "Vypočteno z M3 (N_celkem × M_region) × MPC × M_spotreba — není škála k ΔHDP";
-  }
-  return deltaSrc === "manual_fallback"
-    ? "FALLBACK: škála k záložnímu / ručnímu ΔHDP — ne payroll z M3"
-    : "Škála k použitému ΔHDP (ruční MVP) — OPEN_QUESTION_BRIDGE";
-}
-
-function shortDeltaHdpSource(
-  source: EconomicModuleReportSlice["deltaHdpSource"],
-): string {
-  switch (source) {
-    case "computed_profile":
-      return "Profil";
-    case "manual_fallback":
-      return "Záloha";
-    default:
-      return "Ruční";
-  }
-}
-
-
-function formatAuditForPrint(snapshot: MethodologyReportSnapshot): string {
-  const full = JSON.stringify(snapshot.section13_audit, null, 2);
-  if (full.length <= AUDIT_PRINT_MAX_CHARS) return full;
-  return (
-    full.slice(0, AUDIT_PRINT_MAX_CHARS) +
-    `\n\n… ${reportCs.print.auditTruncatedNote}`
-  );
-}
-
-function ExecutiveBlock({
-  text,
-  variant,
-}: {
-  text: string;
-  variant: ReportSnapshotVariant;
-}) {
-  const box =
-    variant === "print"
-      ? "border border-black bg-white p-3 text-black"
-      : "space-y-2 rounded-md border bg-muted/30 p-4 text-sm leading-relaxed";
-  return (
-    <div className={box}>
-      {text.split("\n").map((line, i) => {
-        const t = line.trim();
-        if (t.startsWith("### ")) {
-          return (
-            <h3
-              key={i}
-              className={cn(
-                "pt-2 font-semibold first:pt-0",
-                variant === "print" ? "text-base" : "text-base",
-              )}
-            >
-              {t.slice(4)}
-            </h3>
-          );
-        }
-        if (t.startsWith("#### ")) {
-          return (
-            <h4
-              key={i}
-              className={cn(
-                "text-sm font-semibold",
-                variant === "print" ? "text-black" : "text-muted-foreground",
-              )}
-            >
-              {t.slice(5)}
-            </h4>
-          );
-        }
-        if (t.startsWith("- ")) {
-          return (
-            <li key={i} className="ml-4 list-disc">
-              {t.slice(2).replace(/\*\*(.+?)\*\*/g, "$1")}
-            </li>
-          );
-        }
-        if (t === "") return <br key={i} />;
-        return (
-          <p
-            key={i}
-            className={variant === "print" ? "text-black" : "text-muted-foreground"}
-          >
-            {line.replace(/\*\*(.+?)\*\*/g, "$1")}
-          </p>
-        );
-      })}
-    </div>
-  );
-}
-
 function PrintBreak({
   children,
   enabled,
@@ -490,85 +371,6 @@ function PrintBreak({
   );
 }
 
-function ComparisonTable({
-  snapshot,
-  isPrint,
-}: {
-  snapshot: MethodologyReportSnapshot;
-  isPrint: boolean;
-}) {
-  const thCell = (align: "left" | "right") =>
-    cn(
-      "p-1.5 font-medium",
-      align === "left" ? "text-left" : "text-right",
-      isPrint
-        ? "border border-black bg-neutral-100 print:bg-neutral-200"
-        : "border-b border-muted bg-muted/50",
-    );
-  const tdCell = (extra?: string) =>
-    cn(
-      "p-1.5",
-      isPrint ? "border border-black" : "border-b border-muted",
-      extra,
-    );
-
-  return (
-    <>
-    <table
-      className={cn(
-        "w-full border-collapse text-sm",
-        isPrint ? "border border-black print:text-[9pt]" : "border border-muted",
-      )}
-    >
-      <thead>
-        <tr>
-          <th className={thCell("left")}>{reportCs.labels.comparisonTable.scenario}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.nCelkem}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.nMezera}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.ou}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.housingDeficit}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.deltaHdp}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.deltaHdpSourceShort}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.taxYield}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.householdC}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.dznm}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.warnings}</th>
-          <th className={thCell("right")}>{reportCs.labels.comparisonTable.oq}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {snapshot.section11_comparison.rows.map((row) => (
-          <tr key={row.scenario}>
-            <td className={tdCell("font-medium text-left")}>
-              {studioCs.scenarios[row.scenario]}
-            </td>
-            <td className={tdCell("text-right")}>{fmt(row.employment.nCelkem, 0)}</td>
-            <td className={tdCell("text-right")}>{fmt(row.employment.nMezera, 0)}</td>
-            <td className={tdCell("text-right")}>{fmt(row.housing.ou)}</td>
-            <td className={tdCell("text-right")}>{fmt(row.housing.aggregateDeficit)}</td>
-            <td className={tdCell("text-right")}>{fmt(row.economic.deltaHdp, 0)}</td>
-            <td className={tdCell("text-right")}>{shortDeltaHdpSource(row.economic.deltaHdpSource)}</td>
-            <td className={tdCell("text-right")}>{fmt(row.economic.taxYield, 0)}</td>
-            <td className={tdCell("text-right")}>{fmt(row.economic.householdConsumptionAnnual, 0)}</td>
-            <td className={tdCell("text-right")}>{fmt(row.economic.dznmAnnual, 0)}</td>
-            <td className={tdCell("text-right")}>{row.warningsCount}</td>
-            <td className={tdCell("text-right")}>{row.openQuestionsCount}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-    <p
-      className={cn(
-        "mt-2 text-xs leading-snug",
-        isPrint ? "text-black" : "text-muted-foreground",
-      )}
-    >
-      {reportCs.labels.comparisonTable.deltaHdpFootnote}
-    </p>
-  </>
-  );
-}
-
 export function ReportSnapshotRenderer({
   snapshot,
   variant,
@@ -578,7 +380,8 @@ export function ReportSnapshotRenderer({
 }) {
   const isPrint = variant === "print";
   const [auditOpen, setAuditOpen] = useState(false);
-  const b = snapshot.primaryKpiAndModules.baseline;
+  const ch = (n: number, fallback: string) =>
+    resolveChapterMeta(snapshot, n, fallback);
 
   const shell = isPrint
     ? "mx-auto max-w-[190mm] space-y-6 px-2 py-4 text-black"
@@ -665,684 +468,83 @@ export function ReportSnapshotRenderer({
       )}
 
       <M8OutlineBlock snapshot={snapshot} isPrint={isPrint} />
-
-      <section className={cn("space-y-3", isPrint && "print:break-inside-avoid")}>
-        <h2 className="text-xl font-semibold">{reportCs.sections.executive}</h2>
-        <ExecutiveBlock
-          text={snapshot.executiveSummaryCs}
-          variant={variant}
-        />
-      </section>
-
-      <section className={cn("space-y-3", isPrint && "print:break-inside-avoid")}>
-        <h2 className="text-xl font-semibold">{reportCs.sections.kpi}</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Kpi label="Pracovní místa celkem" sublabel="přímá i navazující — baseline scénář" value={fmt(b.employment.nCelkem, 0)} isPrint={isPrint} />
-          <Kpi label="Využití regionální pracovní síly" sublabel="RZPS — koeficient pokrytí" value={fmt(b.employment.rzps)} isPrint={isPrint} />
-          <Kpi label="Noví obyvatelé k usazení" sublabel="odhad z bytové potřeby" value={fmt(b.housing.ou)} isPrint={isPrint} />
-          <Kpi
-            label={reportCs.labels.kpi.deltaHdp}
-            sublabel={deltaHdpKpiSublabel(b.economic.deltaHdpSource)}
-            value={`${fmt(b.economic.deltaHdp, 0)} Kč`}
-            isPrint={isPrint}
-          />
-          <Kpi label="Orientační daňový výnos (ročně)" sublabel="výpočet: efektivní daňová kvóta × ΔHDP" value={`${fmt(b.economic.taxYield, 0)} Kč`} isPrint={isPrint} />
-          <Kpi
-            label="Spotřeba domácností (orientačně, ročně)"
-            sublabel={householdConsumptionKpiSublabel(
-              b.economic.householdConsumptionSource,
-              b.economic.deltaHdpSource,
-            )}
-            value={`${fmt(b.economic.householdConsumptionAnnual, 0)} Kč`}
-            isPrint={isPrint}
-          />
-          {b.economic.deltaHdpBreakdown ? (
-            <>
-              <Kpi
-                label="Příspěvek investiční fáze k ΔHDP (ročně)"
-                sublabel="investiční impulz + indukované vládní výdaje — orientační (OQ)"
-                value={`${fmt(b.economic.deltaHdpBreakdown.investmentPhaseAnnual, 0)} Kč`}
-                isPrint={isPrint}
-              />
-              <Kpi
-                label="Příspěvek provozní fáze k ΔHDP (ročně)"
-                sublabel="mzdový proxy efekt — orientační (OQ-05)"
-                value={`${fmt(b.economic.deltaHdpBreakdown.operationalPhaseAnnual, 0)} Kč`}
-                isPrint={isPrint}
-              />
-            </>
-          ) : (
-            <Kpi
-              label="Složení ΔHDP (investice / provoz)"
-              sublabel="k dispozici pouze při zapnutém výpočtovém profilu P1→M6"
-              value="—"
-              isPrint={isPrint}
-            />
-          )}
-          <Kpi
-            label="Daňové výnosy pro veřejné rozpočty (ročně)"
-            sublabel="rozdělení: stát / kraj / obec"
-            value={`stát ${fmt(b.economic.publicBudgetStat, 0)} · kraj ${fmt(b.economic.publicBudgetKraj, 0)} · obec ${fmt(b.economic.publicBudgetObec, 0)} Kč`}
-            isPrint={isPrint}
-          />
-          <Kpi label="Daň z nemovitostí záměru (ročně)" sublabel="odhad na základě plochy a sazby" value={`${fmt(b.economic.dznmAnnual, 0)} Kč`} isPrint={isPrint} />
-          <Kpi
-            label="Spotřeba domácností v regionu (po retenci)"
-            sublabel="část spotřeby, která zůstane v lokální ekonomice"
-            value={`${fmt(b.economic.consumptionRetained, 0)} Kč`}
-            isPrint={isPrint}
-          />
-          <Kpi
-            label="Příspěvek obci z RUD (ročně)"
-            sublabel="orientační výpočet dle počtu nových obyvatel"
-            value={`${fmt(b.economic.prudAnnual, 0)} Kč`}
-            isPrint={isPrint}
-            glossaryTooltip={glossaryCs.RUD}
-          />
-        </div>
-      </section>
+      <MethodologyTocBlock snapshot={snapshot} isPrint={isPrint} />
 
       <PrintBreak enabled={isPrint}>
-        <ReportSection title={reportCs.sections.p1} isPrint={isPrint}>
-          <p
-            className={cn(
-              "text-sm mb-3",
-              isPrint ? "text-black" : "text-muted-foreground",
-            )}
-          >
-            Strukturovaná metodická příprava (M0–M2). Výchozí stav území (AS-IS) je v bloku „M2“ —
-            odděleně od vstupů do výpočtu dopadů v sekcích M3–M6 níže.
-          </p>
-          <div className="space-y-4 text-sm">
-            <div>
-              <h3 className="font-semibold mb-1">M0 — strukturovaný popis záměru</h3>
-              <pre
-                className={cn(
-                  "max-h-56 overflow-auto rounded-md border p-3 text-xs",
-                  isPrint ? "border-black bg-white print-pre" : "border-muted bg-muted/20",
-                )}
-              >
-                {JSON.stringify(snapshot.p1_layers.m0, null, 2)}
-              </pre>
+        <MethodologyChapterShell meta={ch(1, "Základní údaje o projektu")} isPrint={isPrint}>
+          <MethodologyChapterSubsectionContent chapter={1} snapshot={snapshot} isPrint={isPrint} variant={variant} auditOpen={auditOpen} setAuditOpen={setAuditOpen} />
+        </MethodologyChapterShell>
+        <MethodologyChapterShell meta={ch(2, "Informace o investorovi a zpracovateli dopadové studie")} isPrint={isPrint}>
+          <MethodologyChapterSubsectionContent chapter={2} snapshot={snapshot} isPrint={isPrint} variant={variant} auditOpen={auditOpen} setAuditOpen={setAuditOpen} />
+        </MethodologyChapterShell>
+        <MethodologyChapterShell meta={ch(3, "Charakteristika investičního záměru")} isPrint={isPrint}>
+          <MethodologyChapterSubsectionContent chapter={3} snapshot={snapshot} isPrint={isPrint} variant={variant} auditOpen={auditOpen} setAuditOpen={setAuditOpen} />
+        </MethodologyChapterShell>
+      </PrintBreak>
+
+      <PrintBreak enabled={isPrint}>
+        <MethodologyChapterShell meta={ch(4, "Vymezení řešeného území")} isPrint={isPrint}>
+          <MethodologyChapterSubsectionContent chapter={4} snapshot={snapshot} isPrint={isPrint} variant={variant} auditOpen={auditOpen} setAuditOpen={setAuditOpen} />
+        </MethodologyChapterShell>
+        <MethodologyChapterShell meta={ch(5, "Analytická část (AS-IS)")} isPrint={isPrint}>
+          <MethodologyChapterSubsectionContent chapter={5} snapshot={snapshot} isPrint={isPrint} variant={variant} auditOpen={auditOpen} setAuditOpen={setAuditOpen} />
+        </MethodologyChapterShell>
+      </PrintBreak>
+
+      <PrintBreak enabled={isPrint}>
+        <MethodologyChapterShell meta={ch(6, "Výpočtová část (TO-BE)")} isPrint={isPrint}>
+          <MethodologyChapterSubsectionContent chapter={6} snapshot={snapshot} isPrint={isPrint} variant={variant} auditOpen={auditOpen} setAuditOpen={setAuditOpen} />
+        </MethodologyChapterShell>
+      </PrintBreak>
+
+      <PrintBreak enabled={isPrint}>
+        <MethodologyChapterShell meta={ch(7, "Scénářová analýza")} isPrint={isPrint}>
+          <div className={cn("mb-4 space-y-2 rounded-md border p-3 text-sm", isPrint ? "border-black" : "border-border/60 bg-muted/10")}>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={cn("font-semibold", isPrint && "text-black")}>{reportCs.sections.s04}</span>
+              <LayerBadge layer="scenarios" isPrint={isPrint} />
             </div>
-            <div>
-              <h3 className="font-semibold mb-1">M1 — území a dostupnost (kontext)</h3>
-              <pre
-                className={cn(
-                  "max-h-56 overflow-auto rounded-md border p-3 text-xs",
-                  isPrint ? "border-black bg-white print-pre" : "border-muted bg-muted/20",
-                )}
-              >
-                {JSON.stringify(snapshot.p1_layers.m1, null, 2)}
-              </pre>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-1">M2 — AS-IS baseline území</h3>
-              <pre
-                className={cn(
-                  "max-h-64 overflow-auto rounded-md border p-3 text-xs",
-                  isPrint ? "border-black bg-white print-pre" : "border-muted bg-muted/20",
-                )}
-              >
-                {JSON.stringify(snapshot.p1_layers.m2AsIs, null, 2)}
-              </pre>
-            </div>
+            <p className={isPrint ? "text-black" : "text-muted-foreground"}>
+              Sdílené symboly (klíče):{" "}
+              <span className="break-all font-mono text-xs">
+                {snapshot.section04_scenarios.sharedAssumptionKeys.join(", ") || "—"}
+              </span>
+            </p>
           </div>
-        </ReportSection>
-        <ReportSection title={reportCs.sections.p1m34} isPrint={isPrint}>
-          <p
+          <MethodologyChapterSubsectionContent chapter={7} snapshot={snapshot} isPrint={isPrint} variant={variant} auditOpen={auditOpen} setAuditOpen={setAuditOpen} />
+        </MethodologyChapterShell>
+      </PrintBreak>
+
+      <PrintBreak enabled={isPrint}>
+        <MethodologyChapterShell meta={ch(8, "Riziková analýza a mitigace")} isPrint={isPrint}>
+          <MethodologyChapterSubsectionContent chapter={8} snapshot={snapshot} isPrint={isPrint} variant={variant} auditOpen={auditOpen} setAuditOpen={setAuditOpen} />
+        </MethodologyChapterShell>
+      </PrintBreak>
+
+      <PrintBreak enabled={isPrint}>
+        <MethodologyChapterShell meta={ch(9, "Závěry a doporučení")} isPrint={isPrint}>
+          <MethodologyChapterSubsectionContent chapter={9} snapshot={snapshot} isPrint={isPrint} variant={variant} auditOpen={auditOpen} setAuditOpen={setAuditOpen} />
+        </MethodologyChapterShell>
+      </PrintBreak>
+
+      <PrintBreak enabled={isPrint}>
+        <MethodologyChapterShell meta={ch(10, "Přílohy")} isPrint={isPrint}>
+          <div
             className={cn(
-              "text-sm mb-3",
-              isPrint ? "text-black" : "text-muted-foreground",
+              "flex flex-wrap items-center gap-3 py-2",
+              isPrint ? "border-t border-black" : "border-t",
             )}
           >
-            Stejné odvození jako při výpočtu M3/M4 — baseline vstupy a příznaky mostu z průvodce.
-          </p>
-          <pre
-            className={cn(
-              "max-h-72 overflow-auto rounded-md border p-3 text-xs",
-              isPrint ? "border-black bg-white print-pre" : "border-muted bg-muted/20",
-            )}
-          >
-            {JSON.stringify(snapshot.p1_m3_m4_bridge, null, 2)}
-          </pre>
-        </ReportSection>
-        <ReportSection title={reportCs.sections.p1m5} isPrint={isPrint}>
-          <p
-            className={cn(
-              "text-sm mb-3",
-              isPrint ? "text-black" : "text-muted-foreground",
-            )}
-          >
-            Stejné odvození jako při výpočtu M5 — příznaky mostu, kanonické zdroje a baseline hodnoty
-            skutečně použité v jádře (odpovídá stopě M5 v auditní příloze).
-          </p>
-          <pre
-            className={cn(
-              "max-h-72 overflow-auto rounded-md border p-3 text-xs",
-              isPrint ? "border-black bg-white print-pre" : "border-muted bg-muted/20",
-            )}
-          >
-            {JSON.stringify(snapshot.p1_m5_bridge, null, 2)}
-          </pre>
-        </ReportSection>
-        <ReportSection title={reportCs.sections.p1m6} isPrint={isPrint}>
-          <p
-            className={cn(
-              "text-sm mb-3",
-              isPrint ? "text-black" : "text-muted-foreground",
-            )}
-          >
-            Přínosy M6: zda se ΔHDP odvozuje z profilu (CAPEX, N_celkem z M3, multiplikátory) nebo zůstává
-            ruční MVP; baseline hodnoty odpovídají stopě M6 v auditní příloze.
-          </p>
-          <pre
-            className={cn(
-              "max-h-72 overflow-auto rounded-md border p-3 text-xs",
-              isPrint ? "border-black bg-white print-pre" : "border-muted bg-muted/20",
-            )}
-          >
-            {JSON.stringify(snapshot.p1_m6_bridge, null, 2)}
-          </pre>
-        </ReportSection>
-      </PrintBreak>
-
-      <PrintBreak enabled={isPrint}>
-        <ReportSection
-          title={reportCs.sections.s01}
-          layerBadge={<LayerBadge layer="inputs" isPrint={isPrint} />}
-          isPrint={isPrint}
-        >
-          <div className="grid gap-3 text-sm sm:grid-cols-2">
-            <Field label="Název" value={snapshot.section01_project.projectName} isPrint={isPrint} />
-            <Field label="Lokalita" value={snapshot.section01_project.locationDescription} isPrint={isPrint} />
-            <Field label="CZ-NACE" value={snapshot.section01_project.czNace} isPrint={isPrint} />
-            <Field label="CAPEX" value={`${fmt(snapshot.section01_project.capexTotalCzk, 0)} Kč`} isPrint={isPrint} />
-            <Field
-              label="N_inv (PMJ)"
-              value={String(snapshot.section01_project.nInv)}
-              isPrint={isPrint}
-              glossaryTooltip={glossaryCs.PMJ}
-            />
+            <h3 className={cn("text-base font-bold tracking-wide", isPrint ? "text-black" : "text-muted-foreground")}>
+              {reportCs.m8.annexesHeader}
+            </h3>
+            <span className={cn("text-xs", isPrint ? "text-black" : "text-muted-foreground")}>
+              {reportCs.m8.annexesNote}
+            </span>
           </div>
-        </ReportSection>
-        <ReportSection
-          title={reportCs.sections.s02}
-          layerBadge={<LayerBadge layer="inputs" isPrint={isPrint} />}
-          isPrint={isPrint}
-        >
-          <div className="grid gap-3 text-sm">
-            <Field label="Profil investora" value={snapshot.section02_investor.investorProfile} isPrint={isPrint} />
-            <Field label="Právní forma" value={snapshot.section02_investor.legalForm} isPrint={isPrint} />
-            <Field label="Strategické vazby" value={snapshot.section02_investor.strategicLinks || "—"} isPrint={isPrint} />
-          </div>
-        </ReportSection>
-        <ReportSection
-          title={reportCs.sections.s03}
-          layerBadge={<LayerBadge layer="inputs" isPrint={isPrint} />}
-          isPrint={isPrint}
-        >
-          <div className="grid gap-3 text-sm sm:grid-cols-2">
-            <Field label="Poslední míle d (km)" value={String(snapshot.section03_territory.dLastMileKm)} isPrint={isPrint} />
-            <Field label="DIAD pref. / akcept. (min)" value={`${snapshot.section03_territory.diadPrMinutes} / ${snapshot.section03_territory.diadAkMinutes}`} isPrint={isPrint} />
-            <Field label="Tinfr (min)" value={String(snapshot.section03_territory.tinfrMinutes)} isPrint={isPrint} />
-            <Field label="T0" value={snapshot.section03_territory.t0} isPrint={isPrint} />
-            <Field label="Horizont (roky)" value={String(snapshot.section03_territory.rampYearsGlobal)} isPrint={isPrint} />
-          </div>
-        </ReportSection>
+          <MethodologyChapterSubsectionContent chapter={10} snapshot={snapshot} isPrint={isPrint} variant={variant} auditOpen={auditOpen} setAuditOpen={setAuditOpen} />
+        </MethodologyChapterShell>
       </PrintBreak>
-
-      <PrintBreak enabled={isPrint}>
-        <ReportSection
-          title={reportCs.sections.s04}
-          layerBadge={<LayerBadge layer="scenarios" isPrint={isPrint} />}
-          isPrint={isPrint}
-        >
-          <p className={isPrint ? "text-sm text-black" : "text-sm text-muted-foreground"}>
-            Sdílené symboly (klíče):{" "}
-            {snapshot.section04_scenarios.sharedAssumptionKeys.join(", ") || "—"}
-          </p>
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            {SCENARIO_ORDER.map((kind) => (
-              <Card key={kind} className={isPrint ? "border-black print:break-inside-avoid" : ""}>
-                <CardHeader className="py-2">
-                  <CardTitle className="text-sm">{studioCs.scenarios[kind]}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs">
-                  <pre className={cn("whitespace-pre-wrap break-all", isPrint && "print-pre")}>
-                    {JSON.stringify(snapshot.section04_scenarios.scenarioDeltas[kind], null, 2)}
-                  </pre>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </ReportSection>
-        <ReportSection
-          title={reportCs.sections.s05}
-          layerBadge={<LayerBadge layer="baseline" isPrint={isPrint} />}
-          isPrint={isPrint}
-        >
-          <pre className={cn("max-h-48 overflow-auto rounded-md border bg-muted/20 p-3 text-xs", isPrint && "print-pre max-h-none border-black bg-white")}>
-            {JSON.stringify(snapshot.section05_asIs, null, 2)}
-          </pre>
-        </ReportSection>
-      </PrintBreak>
-
-      <PrintBreak enabled={isPrint}>
-        <ModulePre title={reportCs.sections.s06} note={reportCs.labels.moduleJsonNote} json={b.employment} isPrint={isPrint} layer="module_results" />
-        <ModulePre title={reportCs.sections.s07} note={reportCs.labels.moduleJsonNote} json={b.housing} isPrint={isPrint} layer="module_results" />
-        <ModulePre title={reportCs.sections.s08} note={reportCs.labels.moduleJsonNote} json={b.civic} isPrint={isPrint} layer="module_results" />
-        <ModulePre title={reportCs.sections.s09} note={reportCs.labels.moduleJsonNote} json={b.economic} isPrint={isPrint} layer="module_results" />
-      </PrintBreak>
-
-      <PrintBreak enabled={isPrint}>
-        <section className="space-y-3">
-          <h2 className="flex flex-wrap items-center text-xl font-semibold">
-            {reportCs.sections.s10r}
-            <LayerBadge layer="assumptions_oq_fallback" isPrint={isPrint} />
-          </h2>
-          <ul className="space-y-2">
-            {snapshot.section10_risks.map((r) => (
-              <li
-                key={r.id}
-                className={cn(
-                  "rounded-md p-3 text-sm",
-                  isPrint
-                    ? "print-box-risk"
-                    : "border border-amber-500/30 bg-amber-50/60 dark:bg-amber-950/30",
-                )}
-              >
-                <Badge variant="outline" className={cn("mr-2", isPrint && "border-black")}>
-                  {r.severity}
-                </Badge>
-                <span className="font-medium">{r.titleCs}</span>
-                <p className={cn("mt-1", isPrint ? "text-black" : "text-muted-foreground")}>
-                  {r.detailCs}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold">{reportCs.sections.s10m}</h2>
-          <ul className="space-y-2">
-            {snapshot.section10_mitigations.map((m) => (
-              <li
-                key={m.id}
-                className={cn(
-                  "rounded-md border p-3 text-sm",
-                  isPrint && "border-black",
-                )}
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{m.titleCs}</span>
-                  <Badge
-                    variant={m.source === "heuristic" ? "secondary" : "outline"}
-                    className={isPrint ? "border-black" : undefined}
-                  >
-                    {m.source === "heuristic"
-                      ? reportCs.labels.mitigationSourceHeuristic
-                      : reportCs.labels.mitigationSourceCivic}
-                  </Badge>
-                </div>
-                <p className={cn("mt-1", isPrint ? "text-black" : "text-muted-foreground")}>
-                  {m.detailCs}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      </PrintBreak>
-
-      {/* ── PŘÍLOHY ──────────────────────────────────────────────────────── */}
-      <div className={cn(
-        "flex items-center gap-3 py-2",
-        isPrint ? "border-t border-black" : "border-t",
-      )}>
-        <h2 className={cn(
-          "text-lg font-bold tracking-wide",
-          isPrint ? "text-black" : "text-muted-foreground",
-        )}>
-          {reportCs.m8.annexesHeader}
-        </h2>
-        <span className={cn(
-          "text-xs",
-          isPrint ? "text-black" : "text-muted-foreground",
-        )}>
-          {reportCs.m8.annexesNote}
-        </span>
-      </div>
-
-      <PrintBreak enabled={isPrint}>
-        <ReportSection
-          title={reportCs.sections.s11}
-          layerBadge={<LayerBadge layer="scenarios" isPrint={isPrint} />}
-          isPrint={isPrint}
-        >
-          <div className="overflow-x-auto print:overflow-visible">
-            <ComparisonTable snapshot={snapshot} isPrint={isPrint} />
-          </div>
-        </ReportSection>
-        <ReportSection
-          title={reportCs.sections.m7}
-          layerBadge={<LayerBadge layer="scenarios" isPrint={isPrint} />}
-          isPrint={isPrint}
-        >
-          <M7ConsolidationBlock snapshot={snapshot} isPrint={isPrint} />
-        </ReportSection>
-      </PrintBreak>
-
-      <PrintBreak enabled={isPrint}>
-        <ReportSection
-          title={reportCs.sections.s12}
-          layerBadge={<LayerBadge layer="assumptions_oq_fallback" isPrint={isPrint} />}
-          isPrint={isPrint}
-        >
-          <div className="space-y-6">
-            <div
-              className={cn(
-                isPrint && "print-box-warn rounded-md",
-                !isPrint && "rounded-md",
-              )}
-            >
-              <h3
-                className={cn(
-                  "text-sm font-semibold",
-                  !isPrint && "text-amber-900 dark:text-amber-100",
-                )}
-              >
-                {reportCs.labels.warningsBlock}
-              </h3>
-              <p
-                className={cn(
-                  "mt-1 text-xs",
-                  isPrint ? "text-black" : "text-muted-foreground",
-                )}
-              >
-                {reportCs.labels.baselineWarningsNote}
-              </p>
-              {baselineHasAgencyShareRisk(snapshot) ? (
-                <div className={cn("mt-3", isPrint && "print:break-inside-avoid")}>
-                  <AgencyShareRiskCallout density="compact" isPrint={isPrint} />
-                </div>
-              ) : null}
-              <ul className="mt-3 space-y-2 text-sm">
-                {[...b.warnings].sort(compareWarningsForDisplay).map((w, i) => (
-                  <li
-                    key={`${w.code}-${i}`}
-                    className={cn(isPrint ? "text-black" : "text-foreground")}
-                  >
-                    <span className="font-medium">{warningTitleLine(w)}</span>
-                    <span className={cn("text-xs", !isPrint && "text-muted-foreground")}>
-                      {" "}
-                      (<code>{w.code}</code>)
-                    </span>
-                    <span className="block text-sm leading-snug">
-                      {warningMessageCs(w.code, w.message)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <Separator className={isPrint ? "bg-black" : undefined} />
-            <div className={cn(isPrint && "print-box-assum rounded-md")}>
-              <h3
-                className={cn(
-                  "text-sm font-semibold",
-                  !isPrint && "text-blue-900 dark:text-blue-100",
-                )}
-              >
-                {reportCs.labels.assumptionsBlock}
-              </h3>
-              <div className="mt-3 grid gap-4 md:grid-cols-3">
-                {SCENARIO_ORDER.map((kind) => {
-                  const ass =
-                    snapshot.section12_assumptionsUncertainty
-                      .assumptionsMergedByScenario[kind];
-                  return (
-                    <div
-                      key={kind}
-                      className={cn(
-                        isPrint && "print:break-inside-avoid",
-                      )}
-                    >
-                      <div className="mb-1 text-xs font-medium">{studioCs.scenarios[kind]}</div>
-                      <pre className={cn("max-h-40 overflow-auto rounded-md border p-2 text-xs", isPrint ? "print-pre border-black bg-white" : "border bg-blue-50/50 dark:bg-blue-950/30")}>
-                        {ass ? JSON.stringify(ass, null, 2) : "—"}
-                      </pre>
-                    </div>
-                  );
-                })}
-              </div>
-              {snapshot.section12_assumptionsUncertainty.m7VaryingEffectiveAssumptionKeys
-                ?.length ? (
-                <p
-                  className={cn(
-                    "mt-3 text-xs leading-snug",
-                    isPrint ? "text-black" : "text-muted-foreground",
-                  )}
-                >
-                  <span className="font-medium">M7 index:</span> symboly s odlišnou efektivní hodnotou
-                  mezi scénáři (shodné se sekcí M7):{" "}
-                  <span className="break-all">
-                    {snapshot.section12_assumptionsUncertainty.m7VaryingEffectiveAssumptionKeys.join(
-                      ", ",
-                    )}
-                  </span>
-                </p>
-              ) : null}
-            </div>
-            <Separator className={isPrint ? "bg-black" : undefined} />
-            <div>
-              <h3
-                className={cn(
-                  "text-sm font-semibold",
-                  isPrint ? "print-box-oq" : "text-violet-900 dark:text-violet-100",
-                )}
-              >
-                {reportCs.labels.oqBlock}
-              </h3>
-              <div className="mt-3 grid gap-4 md:grid-cols-3">
-                {SCENARIO_ORDER.map((kind) => {
-                  const oqs =
-                    snapshot.section12_assumptionsUncertainty
-                      .openQuestionsByScenario[kind];
-                  return (
-                    <div
-                      key={kind}
-                      className={cn(isPrint && "print:break-inside-avoid")}
-                    >
-                      <div className="mb-1 text-xs font-medium">{studioCs.scenarios[kind]}</div>
-                      <ul className="list-disc space-y-1 pl-4 text-sm">
-                        {oqs.length ? (
-                          oqs.map((id) => (
-                            <li key={id}>
-                              <strong>{id}</strong> — {openQuestionLabelCs(id)}
-                            </li>
-                          ))
-                        ) : (
-                          <li className="list-none text-muted-foreground">—</li>
-                        )}
-                      </ul>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </ReportSection>
-      </PrintBreak>
-
-      <PrintBreak enabled={isPrint}>
-        <section className="space-y-2 print:break-inside-auto">
-          <h2 className="flex flex-wrap items-center text-xl font-semibold">
-            {reportCs.sections.s13}
-            <LayerBadge layer="assumptions_oq_fallback" isPrint={isPrint} />
-          </h2>
-          <p className={cn("text-sm", isPrint ? "text-black" : "text-muted-foreground")}>
-            {reportCs.labels.traceNote}
-          </p>
-          {isPrint ? (
-            <pre className="print-pre max-h-[220mm] overflow-hidden rounded-md border border-black bg-white p-3 text-black">
-              {formatAuditForPrint(snapshot)}
-            </pre>
-          ) : (
-            <Collapsible open={auditOpen} onOpenChange={setAuditOpen}>
-              <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium">
-                {auditOpen ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
-                {reportCs.labels.auditTraceToggle}
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2">
-                <pre className="max-h-96 overflow-auto rounded-md border bg-muted/30 p-3 text-xs">
-                  {JSON.stringify(snapshot.section13_audit, null, 2)}
-                </pre>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-        </section>
-      </PrintBreak>
-    </div>
-  );
-}
-
-function ModulePre({
-  title,
-  note,
-  json,
-  isPrint,
-  layer,
-}: {
-  title: string;
-  note: string;
-  json: unknown;
-  isPrint: boolean;
-  layer?: M8ContentLayer;
-}) {
-  return (
-    <ReportSection
-      title={title}
-      isPrint={isPrint}
-      layerBadge={layer ? <LayerBadge layer={layer} isPrint={isPrint} /> : undefined}
-    >
-      <p className="mb-2 text-xs text-muted-foreground">{note}</p>
-      <pre className={cn("rounded-md border bg-muted/20 p-3 text-sm", isPrint && "print-pre border-black bg-white")}>
-        {JSON.stringify(json, null, 2)}
-      </pre>
-    </ReportSection>
-  );
-}
-
-function ReportSection({
-  title,
-  children,
-  isPrint,
-  layerBadge,
-}: {
-  title: string;
-  children: React.ReactNode;
-  isPrint: boolean;
-  layerBadge?: React.ReactNode;
-}) {
-  return (
-    <section className={cn("space-y-2", isPrint && "print:break-inside-avoid")}>
-      <h2 className="flex flex-wrap items-center text-xl font-semibold">
-        {title}
-        {layerBadge}
-      </h2>
-      {children}
-    </section>
-  );
-}
-
-function Kpi({
-  label,
-  value,
-  isPrint,
-  sublabel,
-  glossaryTooltip,
-}: {
-  label: string;
-  value: string;
-  isPrint: boolean;
-  sublabel?: string;
-  /** Na obrazovce — slovníček u KPI; tisk bez ikony (text zůstává v sublabel). */
-  glossaryTooltip?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-md border p-3",
-        isPrint ? "border-black bg-white" : "border bg-card",
-      )}
-    >
-      <div
-        className={cn(
-          "flex flex-wrap items-center gap-1 text-xs",
-          isPrint ? "text-black" : "text-muted-foreground",
-        )}
-      >
-        <span>{label}</span>
-        {!isPrint && glossaryTooltip ? (
-          <InfoTip
-            text={glossaryTooltip}
-            ariaLabel={`Vysvětlení: ${label}`}
-            className="shrink-0"
-          />
-        ) : null}
-      </div>
-      {sublabel ? (
-        <div
-          className={cn(
-            "mt-0.5 text-[11px] leading-snug",
-            isPrint ? "text-black" : "text-muted-foreground",
-          )}
-        >
-          {sublabel}
-        </div>
-      ) : null}
-      <div className="text-lg font-semibold">{value}</div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  isPrint,
-  glossaryTooltip,
-}: {
-  label: string;
-  value: string;
-  isPrint: boolean;
-  glossaryTooltip?: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-md border p-3",
-        isPrint ? "border-black bg-neutral-50" : "border bg-muted/20",
-      )}
-    >
-      <div
-        className={cn(
-          "flex flex-wrap items-center gap-1 text-xs",
-          isPrint ? "text-black" : "text-muted-foreground",
-        )}
-      >
-        <span>{label}</span>
-        {!isPrint && glossaryTooltip ? (
-          <InfoTip
-            text={glossaryTooltip}
-            ariaLabel={`Vysvětlení: ${label}`}
-            className="shrink-0"
-          />
-        ) : null}
-      </div>
-      <div className="font-medium">{value}</div>
     </div>
   );
 }

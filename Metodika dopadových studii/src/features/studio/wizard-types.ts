@@ -96,6 +96,11 @@ export interface StudioStore {
   state: WizardState;
   /** Výsledky pipeline po scénářích (client-side, bez DB). */
   results: Record<ScenarioKind, FullCalculationPipelineResult | null>;
+  /**
+   * True po změně vstupů, pokud už jednou existuje baseline výsledek — dokud uživatel znovu nepřepočte.
+   * Nepersistuje se (po F5 bez výsledků nemá smysl).
+   */
+  resultsMayBeStale: boolean;
   setStep: (n: number) => void;
   patchState: (partial: Partial<WizardState>) => void;
   setScenarioDelta: (

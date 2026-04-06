@@ -710,4 +710,11 @@ export function validateWizardStep(
 
 }
 
+/** První krok 0–7 s blokující validací — navigace ze shrnutí průvodce. */
+export function firstInvalidWizardStepIndex(state: WizardState): number | null {
+  for (let i = 0; i < 8; i++) {
+    if (!validateWizardStep(i, state).ok) return i;
+  }
+  return null;
+}
 

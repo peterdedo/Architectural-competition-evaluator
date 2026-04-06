@@ -8,7 +8,9 @@ export const cs = {
     homeStepsHint:
       "Průvodce → kroky Další → výsledky se přepočítají → zkontrolujte shrnutí → otevřete report.",
     studioBanner:
-      "Údaje jsou předvyplněné pro rychlý náhled. Po změně vstupů použijte na obrazovce výsledků tlačítko Přepočíst.",
+      "Údaje jsou předvyplněné pro rychlý náhled. Rozpracovaný stav vstupů se ukládá v tomto prohlížeči — můžete se k práci vrátit později (stejné zařízení a prohlížeč). Po změně vstupů použijte na obrazovce výsledků tlačítko Přepočíst.",
+    /** Krátký `<summary>` pro sbalený banner — méně vizuálního šumu nahoře. */
+    studioBannerSummary: "Poznámka k ukázkovým datům, uložení a přepočtu",
     /** Po F5: vstupy z prohlížeče, pozice průvodce vždy od začátku (viz persist currentStep). */
     restoredInputsHint:
       "Vstupy byly obnoveny z uloženého stavu — průvodce začíná od prvního kroku.",

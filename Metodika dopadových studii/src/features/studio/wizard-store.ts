@@ -71,9 +71,13 @@ export const useWizardStore = create<StudioStore>()(
       currentStep: 0,
       state: createDemoWizardState(),
       results: emptyResults(),
+      resultsMayBeStale: false,
       setStep: (n) => set({ currentStep: Math.max(0, Math.min(9, n)) }),
       patchState: (partial) =>
-        set((s) => ({ state: { ...s.state, ...partial } })),
+        set((s) => ({
+          state: { ...s.state, ...partial },
+          resultsMayBeStale: s.results.baseline != null,
+        })),
       setScenarioDelta: (kind, delta) =>
         set((s) => ({
           state: {
@@ -83,13 +87,15 @@ export const useWizardStore = create<StudioStore>()(
               [kind]: delta,
             },
           },
+          resultsMayBeStale: s.results.baseline != null,
         })),
-      setResults: (r) => set({ results: r }),
+      setResults: (r) => set({ results: r, resultsMayBeStale: false }),
       resetDemo: () =>
         set({
           state: createDemoWizardState(),
           results: emptyResults(),
           currentStep: 0,
+          resultsMayBeStale: false,
         }),
     }),
     {

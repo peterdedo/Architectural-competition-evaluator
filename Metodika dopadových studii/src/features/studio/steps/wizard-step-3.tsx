@@ -12,9 +12,15 @@ import {
   scenarioDeltaFieldErrorPath,
 } from "@/content/scenario-delta-bounds";
 import { InfoTip, InfoPanel } from "@/components/info-tip";
+import { getDemoWizardReference } from "../demo-wizard-reference";
 import { useWizardStore } from "../wizard-store";
 import { cs } from "../studio-copy";
-import { ScenarioNum, num, StepFields } from "../studio-wizard-shared";
+import {
+  ScenarioNum,
+  num,
+  StepFields,
+  WIZARD_SECTION_INTRO_CLASS,
+} from "../studio-wizard-shared";
 import { useWizardStep3Slice } from "../wizard-step-selectors";
 import { SCENARIO_ORDER } from "../wizard-types";
 import { uxWizard } from "../ux/studio-ux-copy";
@@ -28,6 +34,7 @@ export function WizardStep3({
 }: {
   fieldErrors: Record<string, string>;
 }) {
+  const demo = getDemoWizardReference();
   const patchState = useWizardStore((s) => s.patchState);
   const state = useWizardStep3Slice();
 
@@ -44,6 +51,7 @@ export function WizardStep3({
             int: true,
             helper:
               "T0 je v kroku „Záměr a popis“ — zde nastavujete horizont pro přehled a srovnání.",
+            demoValue: String(demo.rampYearsGlobal),
           },
         ]}
         onChange={(key, raw) => {
@@ -55,7 +63,7 @@ export function WizardStep3({
       />
       <Separator />
       <div className="space-y-2">
-        <p className="text-sm text-muted-foreground">
+        <p className={WIZARD_SECTION_INTRO_CLASS}>
           Odchylky oproti sdíleným předpokladům — u každého pole je metodický symbol v tooltipu
           (najeďte na popisek). Čísla v kartách níže mají stejné meze jako validace průvodce (0–1).
         </p>
@@ -97,6 +105,9 @@ export function WizardStep3({
                     },
                   })
                 }
+                demoNumeric={
+                  demo.scenarioAssumptionDelta[kind]?.util_RZPS
+                }
               />
               <ScenarioNum
                 id={`scenario-${kind}-theta`}
@@ -119,6 +130,7 @@ export function WizardStep3({
                     },
                   })
                 }
+                demoNumeric={demo.scenarioAssumptionDelta[kind]?.theta}
               />
               <ScenarioNum
                 id={`scenario-${kind}-p_pendler`}
@@ -165,6 +177,7 @@ export function WizardStep3({
                     },
                   })
                 }
+                demoNumeric={demo.scenarioAssumptionDelta[kind]?.k_inv}
               />
             </CardContent>
           </Card>

@@ -1,3 +1,10 @@
+/**
+ * Next 14.2.34+ volá patchIncorrectLockfile: při doplnění chybějících @next/swc-* do lockfile
+ * dotahuje metadata pro verzi = verze balíčku `next`, ale na npm existují jen swc release do 14.2.33
+ * → TypeError a hluk v logu. Oficiální opt-out (viz next/dist/lib/patch-incorrect-lockfile.js).
+ */
+process.env.NEXT_IGNORE_INCORRECT_LOCKFILE ??= "1";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,

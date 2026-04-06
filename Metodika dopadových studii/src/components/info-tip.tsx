@@ -15,12 +15,22 @@ import { cn } from "@/lib/utils";
 export function InfoTip({
   text,
   side = "top",
+  align = "center",
+  sideOffset = 6,
+  collisionPadding = 12,
+  contentClassName,
   className,
   ariaLabel = "Vysvětlení pojmu",
 }: {
   text: string;
   side?: "top" | "bottom" | "left" | "right";
+  /** Zarovnání vůči spoušti — u hlavičky průvodce často „end“, aby obsah zůstal ve sloupci karty. */
+  align?: "start" | "center" | "end";
+  sideOffset?: number;
+  /** Odstup od okrajů viewportu při collision (Radix). */
+  collisionPadding?: number;
   className?: string;
+  contentClassName?: string;
   /** Popisek pro čtečky obrazovky (např. „Vysvětlení: PMJ“). */
   ariaLabel?: string;
 }) {
@@ -41,8 +51,16 @@ export function InfoTip({
           <Info className="h-3.5 w-3.5" aria-hidden />
         </button>
       </TooltipTrigger>
-      <TooltipContent side={side}>
-        <p className="leading-relaxed">{text}</p>
+      <TooltipContent
+        side={side}
+        align={align}
+        sideOffset={sideOffset}
+        collisionPadding={collisionPadding}
+        className={contentClassName}
+      >
+        <p className="max-w-[min(20rem,calc(100vw-2rem))] leading-relaxed">
+          {text}
+        </p>
       </TooltipContent>
     </Tooltip>
   );

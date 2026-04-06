@@ -1,9 +1,9 @@
-# Known Limitations — MHDSI MVP (1.0.0-rc.1)
+# Known Limitations — MHDSI MVP (1.0.0)
 
-Datum: 2026-04-04  
+Datum: 2026-04-04 (aktualizováno při uzavření 1.0.0)  
 Zdroj: finální end-to-end systémový audit po uzavření EPIC 1–5.
 
-Tato omezení jsou **záměrně ponechána otevřená** pro release candidate; jsou zdokumentována a nevyžadují opravu před RC.
+Tato omezení jsou **záměrně ponechána otevřená** pro vydanou verzi 1.0.0; jsou transparentně zdokumentována — uživatel i provozovatel vědí, co aplikace záměrně neřeší.
 
 ---
 
@@ -52,10 +52,10 @@ Tato omezení jsou **záměrně ponechána otevřená** pro release candidate; j
 - **Popis:** Všechny uživatelské texty jsou hardcoded v češtině. Neexistuje i18n vrstva.
 - **Možná cesta v2:** Extrakce textů do jazykového slovníku (bez změny výpočetního jádra).
 
-## 9. Žádná CI/CD pipeline v repozitáři
+## 9. Žádná CI/CD pipeline v tomto projektu
 
-- **Popis:** Automatizované kontroly (lint, typecheck, test, build, e2e) jsou definovány v `package.json`, ale žádná CI pipeline (GitHub Actions, GitLab CI apod.) není součástí repozitáře.
-- **Dopad:** Ověření před release probíhá ručně dle `RELEASE_CHECKLIST.md`.
+- **Popis:** Skripty (lint, typecheck, test, build, e2e) jsou v `package.json` a `npm run lint` je provozuschopný (ESLint sladěný s Next 14). Samotná CI pipeline (GitHub Actions apod.) v tomto podadresáři není — release gate je lokální checklist.
+- **Dopad:** Ověření před release probíhá ručně dle `RELEASE_CHECKLIST.md` (nebo vlastní pipeline nad tímto adresářem).
 
 ## 10. Legační doménový model (`src/domain/raw/`, `src/domain/outputs/`, …)
 
@@ -68,6 +68,12 @@ Tato omezení jsou **záměrně ponechána otevřená** pro release candidate; j
 - **Popis:** Průvodce (`/studio`) vždy pracuje s právě jednou sadou vstupů, ale engine (`runFullCalculationPipeline`) počítá M3–M6 pro každý scénář zvlášť. M7 provádí konsolidaci přes scénáře, ale UI zobrazuje pouze výsledky prvního (baseline) scénáře v detailu; srovnání scénářů je v sekci 11.
 - **Dopad:** Pokud uživatel definuje více scénářů, nevidí jejich detail ve wizardu — pouze konsolidaci v reportu.
 
+## 12. Next.js — auto-patch `package-lock` a `@next/swc-*`
+
+- **Popis:** Od Next **14.2.34** utilita `patchIncorrectLockfile` při doplnění chybějících platformních balíčků `@next/swc-*` dotahuje z npm verzi rovnou verzi `next`, zatímco publikované binárky `@next/swc-*` v řadě 14.2 končí u **14.2.33** → při pokusu o patch vzniká TypeError a hluk v konzoli (`Failed to patch lockfile` / `reading 'os'`).
+- **Řešení v repu:** V `next.config.mjs` je výchozí `NEXT_IGNORE_INCORRECT_LOCKFILE=1` (oficiální opt-out ve zdroji Nextu). Build zůstává na **next@14.2.35** (bezpečnostní patch řady 14.2).
+- **Možná cesta později:** Odstranění po opravě upstream, nebo generování lockfile v prostředí, kde Next patch projde bez chyby.
+
 ---
 
-*Aktualizovat před každým release. Poslední audit: 2026-04-04.*
+*Aktualizovat před každým release. Verze dokumentu: 1.0.0 · Poslední audit: 2026-04-04.*

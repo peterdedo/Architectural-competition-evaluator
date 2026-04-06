@@ -191,6 +191,7 @@ export function createDemoWizardState(): WizardState {
     capRegZs: 480,
     enrolledMs: 95,
     enrolledZs: 410,
+    /** OQ-08: NX = OU/PX — kladné měřítko, ne podíl 0–1 (viz civic.ts). */
     pxSpecialistsAggregate: 180,
     kstandardLeisure: 2.4,
     nCelkemM3: 420,

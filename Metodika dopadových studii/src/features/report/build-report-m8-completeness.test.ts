@@ -3,7 +3,7 @@
  *
  * Co se testuje:
  * - přítomnost m8_report_completeness ve snapshotu
- * - verze schématu 1.4.0
+ * - verze schématu (aktuální METHODOLOGY_REPORT_SCHEMA_VERSION)
  * - struktura osnovy (outline): 10 bodů § 3.1 + 4 přílohy
  * - struktura annexes: 4 standardizované přílohy
  * - contentLayerIndex: všech 5 vrstev přítomno
@@ -40,9 +40,8 @@ describe("M8 report completeness — snapshot structure", () => {
     expect(snap).not.toBeNull();
   });
 
-  it("schema verze je 1.4.0", () => {
-    expect(METHODOLOGY_REPORT_SCHEMA_VERSION).toBe("1.4.0");
-    expect(snap!.metadata.schemaVersion).toBe("1.4.0");
+  it("schema verze odpovídá METHODOLOGY_REPORT_SCHEMA_VERSION", () => {
+    expect(snap!.metadata.schemaVersion).toBe(METHODOLOGY_REPORT_SCHEMA_VERSION);
   });
 
   it("m8_report_completeness je přítomno", () => {
@@ -54,13 +53,13 @@ describe("M8 report completeness — snapshot structure", () => {
       expect(snap!.m8_report_completeness.outline).toHaveLength(14);
     });
 
-    it("10 bodů má id 'bod-1' až 'bod-10'", () => {
+    it("10 kapitol má id 'kap-1' až 'kap-10'", () => {
       const bodyItems = snap!.m8_report_completeness.outline.filter((i) =>
-        i.id.startsWith("bod-"),
+        i.id.startsWith("kap-"),
       );
       expect(bodyItems).toHaveLength(10);
       for (let n = 1; n <= 10; n++) {
-        expect(bodyItems.find((i) => i.id === `bod-${n}`)).toBeDefined();
+        expect(bodyItems.find((i) => i.id === `kap-${n}`)).toBeDefined();
       }
     });
 
@@ -147,6 +146,14 @@ describe("M8 ↔ exporty — jedna pravda", () => {
     expect(json.m8_report_completeness).toBeDefined();
     expect(json.m8_report_completeness.outline).toHaveLength(14);
     expect(json.m8_report_completeness.annexes).toHaveLength(4);
+  });
+
+  it("serializeReportSnapshot nese explainability_summary (baseline)", () => {
+    const json = JSON.parse(serializeReportSnapshot(snap)) as typeof snap;
+    expect(Array.isArray(json.explainability_summary)).toBe(true);
+    expect(
+      json.explainability_summary.some((sec: { id: string }) => sec.id === "m4_ou"),
+    ).toBe(true);
   });
 
   it("exportovaná schema verze odpovídá METHODOLOGY_REPORT_SCHEMA_VERSION", () => {

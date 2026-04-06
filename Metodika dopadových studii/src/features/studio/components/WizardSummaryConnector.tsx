@@ -18,7 +18,13 @@ function countIncompleteSteps(state: StudioStore["state"]): number {
 }
 
 /** Izolovaný subscribe — hlavní průvodce nemusí držet celý `state`. */
-export function WizardSummaryConnector() {
+export function WizardSummaryConnector({
+  onNavigateToWarningField,
+  onGoToFirstInvalidStep,
+}: {
+  onNavigateToWarningField?: (field: string) => void;
+  onGoToFirstInvalidStep?: () => void;
+} = {}) {
   const { currentStep, state, baseline } = useWizardStore(
     useShallow((s) => ({
       currentStep: s.currentStep,
@@ -40,6 +46,8 @@ export function WizardSummaryConnector() {
       missingCount={missingCount}
       baselineWarnings={baselineWarnings}
       hasBaselineResult={!!baseline}
+      onNavigateToWarningField={onNavigateToWarningField}
+      onGoToFirstInvalidStep={onGoToFirstInvalidStep}
     />
   );
 }

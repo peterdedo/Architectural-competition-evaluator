@@ -8,9 +8,8 @@ import {
   CardContent,
   CardHeader,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { runAllScenarioPipelines } from "./run-all-scenarios";
-import { validateWizardStep } from "./wizard-schema";
+import { firstInvalidWizardStepIndex, validateWizardStep } from "./wizard-schema";
 import {
   hasPersistedWizardStateInBrowserStorage,
   useWizardStore,
@@ -55,8 +54,6 @@ export function StudioWizard() {
   const [expandedIntermediate, setExpandedIntermediate] = useState(false);
   const [showRestoredInputsHint, setShowRestoredInputsHint] = useState(false);
   const [pipelineBusy, setPipelineBusy] = useState(false);
-
-  const progressPct = ((currentStep + 1) / NUM_STEPS) * 100;
 
   useEffect(() => {
     const applyHint = () => {
@@ -112,39 +109,49 @@ export function StudioWizard() {
     }
   }, []);
 
+  const onSummaryNavigateWarning = useCallback(
+    (field: string) => {
+      onNavigateToWarningField(field, "baseline");
+    },
+    [onNavigateToWarningField],
+  );
+
+  const onGoToFirstInvalidStep = useCallback(() => {
+    const st = useWizardStore.getState();
+    const idx = firstInvalidWizardStepIndex(st.state);
+    if (idx !== null) st.setStep(idx);
+  }, []);
+
   return (
-    <div className="studio-shell mx-auto min-h-screen max-w-6xl space-y-6 px-4 pb-24 pt-6">
+    <div className="studio-shell mx-auto min-h-screen max-w-6xl space-y-5 px-4 pb-28 pt-5">
       <WizardHeader />
 
-      {/* Banner — pouze info, bez blokování pohledu */}
-      <p className="rounded-md border border-dashed border-muted-foreground/25 bg-muted/30 px-3 py-2 text-xs text-muted-foreground leading-snug">
-        {cs.usability.studioBanner}
-      </p>
+      <details className="group rounded-md border border-border/40 bg-muted/10 text-muted-foreground">
+        <summary className="cursor-pointer list-none rounded-md px-3 py-2 text-[11px] font-medium text-muted-foreground marker:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden">
+          <span className="underline-offset-2 group-open:underline">
+            {cs.usability.studioBannerSummary}
+          </span>
+        </summary>
+        <p className="border-t border-border/30 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground/90">
+          {cs.usability.studioBanner}
+        </p>
+      </details>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         <MacroProgressBar currentStep={currentStep} />
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">
-            {cs.wizard.progress(currentStep + 1, NUM_STEPS)}
-          </span>
-          <Progress value={progressPct} className="h-1.5 flex-1 max-w-[200px]" />
-          <span className="text-xs font-medium text-foreground">
-            {Math.round(progressPct)} %
-          </span>
-        </div>
         {showRestoredInputsHint && currentStep === 0 ? (
-          <p className="text-xs text-muted-foreground/90 leading-snug">
+          <p className="text-[11px] leading-snug text-muted-foreground">
             {cs.usability.restoredInputsHint}
           </p>
         ) : null}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_minmax(260px,300px)] lg:items-start">
-        <Card className="min-w-0 border-border/80 shadow-sm">
-          <CardHeader className="space-y-1 pb-2">
+      <div className="grid gap-7 lg:grid-cols-[1fr_minmax(240px,280px)] lg:items-start lg:gap-8">
+        <Card className="min-w-0 border-border/60 bg-card shadow-sm ring-1 ring-border/30">
+          <CardHeader className="space-y-2 border-b border-border/40 bg-muted/5 pb-4 pt-5">
             <WizardStepHeader stepIndex={currentStep} />
           </CardHeader>
-          <CardContent className="space-y-4 pt-2">
+          <CardContent className="space-y-6 px-5 pb-6 pt-5 sm:px-6">
             {currentStep === 0 && <WizardStep0 fieldErrors={fieldErrors} />}
             {currentStep === 1 && <WizardStep1 fieldErrors={fieldErrors} />}
             {currentStep === 2 && <WizardStep2 fieldErrors={fieldErrors} />}
@@ -168,40 +175,49 @@ export function StudioWizard() {
           </CardContent>
         </Card>
 
-        <WizardSummaryConnector />
+        <WizardSummaryConnector
+          onNavigateToWarningField={onSummaryNavigateWarning}
+          onGoToFirstInvalidStep={onGoToFirstInvalidStep}
+        />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-4">
-        <Button
-          type="button"
-          variant="ghost"
-          disabled={currentStep === 0 || pipelineBusy}
-          onClick={goBack}
-        >
-          ← {cs.wizard.back}
-        </Button>
-        {currentStep < NUM_STEPS - 1 ? (
-          <div className="flex flex-col items-end gap-1">
-            <Button
-              type="button"
-              size="default"
-              onClick={goNext}
-              disabled={pipelineBusy}
-              aria-busy={pipelineBusy}
-            >
-              {pipelineBusy && currentStep === 7
-                ? cs.wizard.calculating
-                : currentStep === 7
-                  ? "Vypočítat výsledky →"
-                  : `${cs.wizard.next} →`}
-            </Button>
-            {pipelineBusy && currentStep === 7 ? (
-              <p className="max-w-xs text-right text-xs text-muted-foreground">
-                {cs.wizard.calculatingHint}
-              </p>
-            ) : null}
-          </div>
-        ) : null}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/80 bg-background/95 shadow-[0_-6px_24px_rgba(0,0,0,0.06)] backdrop-blur supports-[backdrop-filter]:bg-background/85 dark:shadow-[0_-6px_28px_rgba(0,0,0,0.35)]"
+        role="navigation"
+        aria-label="Navigace mezi kroky průvodce"
+      >
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={currentStep === 0 || pipelineBusy}
+            onClick={goBack}
+          >
+            ← {cs.wizard.back}
+          </Button>
+          {currentStep < NUM_STEPS - 1 ? (
+            <div className="flex flex-col items-end gap-1 rounded-md bg-primary/[0.04] p-1 pl-2">
+              <Button
+                type="button"
+                size="default"
+                onClick={goNext}
+                disabled={pipelineBusy}
+                aria-busy={pipelineBusy}
+              >
+                {pipelineBusy && currentStep === 7
+                  ? cs.wizard.calculating
+                  : currentStep === 7
+                    ? "Vypočítat výsledky →"
+                    : `${cs.wizard.next} →`}
+              </Button>
+              {pipelineBusy && currentStep === 7 ? (
+                <p className="max-w-xs text-right text-xs text-foreground/80">
+                  {cs.wizard.calculatingHint}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
       </div>
     </div>
   );

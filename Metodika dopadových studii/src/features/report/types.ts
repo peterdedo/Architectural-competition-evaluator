@@ -28,8 +28,59 @@ import type { P1PipelineBridgeFlags } from "@/domain/methodology/p1-pipeline-bri
  *   1.2.0 — přidán P1 bridge M6, economic baseline, p1_layers (EPIC 3)
  *   1.3.0 — přidána M7 scénářová konsolidace, section12 M7 index (EPIC 4)
  *   1.4.0 — přidána M8 report completeness: osnova § 3.1, přílohy, index vrstev (EPIC 5)
+ *   1.5.0 — přidán explainability_summary (efektivní vstupy M4–M6, bez nových výpočtů)
+ *   1.6.0 — methodology_outline_1_10: závazná osnova kapitol 1–10 (prezentační vrstva)
+ *   1.6.1 — podkapitoly 1.1–10.4: závazné názvy MHDSI + dataSourceHintCs (mapování na snapshot)
  */
-export const METHODOLOGY_REPORT_SCHEMA_VERSION = "1.4.0" as const;
+export const METHODOLOGY_REPORT_SCHEMA_VERSION = "1.6.1" as const;
+
+/**
+ * Report-only: pokrytí kapitoly vůči metodické osnově.
+ * `partial` = částečně pokryto; `missing` = data v aplikaci nejsou / nejsou strukturovaná (nezaměňovat za chybu výpočtu).
+ */
+export type MethodologyChapterCompleteness = "complete" | "partial" | "missing";
+
+export interface MethodologyOutlineSubsection {
+  id: string;
+  titleCs: string;
+  completeness: MethodologyChapterCompleteness;
+  noteCs?: string;
+  /** Kde brát data ve snapshotu / průvodci (jedna pravda — bez duplicitního obsahu). */
+  dataSourceHintCs?: string;
+}
+
+export interface MethodologyOutlineChapter {
+  chapter: number;
+  titleCs: string;
+  completeness: MethodologyChapterCompleteness;
+  coverageNoteCs?: string;
+  subsections: MethodologyOutlineSubsection[];
+}
+
+/** Závazná osnova 1–10 pro TOC a štítky — bez nových výpočtů */
+export interface MethodologyOutline110 {
+  chapters: MethodologyOutlineChapter[];
+}
+
+/** Lidsky čitelný přehled efektivních vstupů — jedna pravda s UI výsledků. */
+export interface ReportExplainabilityRow {
+  metric: string;
+  /** Hodnota zobrazená v průvodci (raw). */
+  wizardValueCs: string | null;
+  /** Hodnota použitá v engine po mostech. */
+  engineValueCs: string;
+  whyCs: string | null;
+}
+
+export interface ReportExplainabilitySection {
+  id: string;
+  titleCs: string;
+  introCs?: string;
+  rows?: ReportExplainabilityRow[];
+  bulletsCs?: string[];
+}
+
+export type ReportExplainabilitySummary = ReportExplainabilitySection[];
 
 // --- M7 scénářová konsolidace (EPIC 4) — bez nových výpočtů M3–M6 ---
 
@@ -468,7 +519,7 @@ export type M8ContentLayer =
  * Mapuje metodický bod na cestu do existujícího snapshotu — bez nových výpočtů.
  */
 export interface M8OutlineItem {
-  /** Interní ID pro renderer a tisk (např. "bod-1", "priloha-A"). */
+  /** Interní ID pro renderer a tisk (např. "kap-1", "priloha-A"). */
   id: string;
   /** Odkaz na bod metodiky dle § 3.1 (např. "§ 3.1 bod 1", "Příloha A"). */
   methodologyRef: string;
@@ -539,6 +590,13 @@ export interface MethodologyReportSnapshot {
    * Čistě prezentační / indexační — žádné výpočty.
    */
   m8_report_completeness: M8ReportCompleteness;
+  /** Osnova kapitol 1–10 dle minimální závazné struktury DS (TOC + completeness) */
+  methodology_outline_1_10: MethodologyOutline110;
   /** Manažerské shrnutí (česky) — čistě textová interpretace výše */
   executiveSummaryCs: string;
+  /**
+   * Ověřitelnost: srovnání rušných vstupů průvodce s efektivními vstupy baseline pipeline.
+   * Čistě odvozeno z inputsUsed/trace — žádný paralelní výpočet.
+   */
+  explainability_summary: ReportExplainabilitySummary;
 }

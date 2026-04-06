@@ -1,6 +1,6 @@
 # MHDSI — studie dopadů strategických investic (MVP)
 
-**Verze:** 1.0.0-rc.1 · **Stav:** Release Candidate
+**Verze:** 1.0.0 · **Stav:** vydaná MVP / metodická aplikace (omezení viz `docs/KNOWN_LIMITATIONS.md`)
 
 České rozhraní nad výpočetním jádrem, průvodce vstupy, výstupní report a tisková verze (PDF přes prohlížeč).  
 Výpočetní jádro pokrývá moduly M3 (Zaměstnanost), M4 (Bydlení), M5 (Občanská vybavenost), M6 (Ekonomika), M7 (Scénáře) a M8 (Report completeness).

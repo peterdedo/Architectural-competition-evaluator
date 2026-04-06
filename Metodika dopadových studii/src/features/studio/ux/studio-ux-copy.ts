@@ -12,6 +12,13 @@ export const uxWizard = {
 
   /** Viditelných 6 makrokroků — pořadí odpovídá toku kroků 0–9 */
 
+  /** Vysvětlení vztahu 6 fází / 10 podkroků — lišta makrokroků + postranní panel. */
+  macroVersusSubstepsExplainer:
+    "Šest fází = hlavní témata; přesná pozice je v hlavičce karty („Krok x z 10“).",
+
+  macroClickHint:
+    "U již vyplněných fází můžete kliknout a vrátit se na jejich začátek.",
+
   macroSteps: [
 
     { id: "intent", label: "Záměr", hint: "Co a kdo investuje, rozsah, T0" },
@@ -110,6 +117,10 @@ export const uxWizard = {
 
     none: "Žádná",
 
+    warningNavigateToField: "Přejít k poli ve formuláři",
+
+    firstStepWithErrors: "Přejít k prvnímu kroku s chybou",
+
     uncertainModule: "Slabě podložená oblast (podle varování)",
 
     expertNoteTitle: "Technická poznámka (metodika)",
@@ -179,6 +190,15 @@ export const uxWizard = {
     audit: "Přehled použitých předpokladů a otevřených otázek metodiky — transparentní vrstva pro audit a dokumentaci.",
   } as const,
 
+  /** Po změně vstupů při existujícím baseline — výsledková obrazovka / report. */
+  resultsStale: {
+    title: "Vstupy se změnily od posledního přepočtu",
+    body:
+      "Zobrazená čísla odpovídají poslednímu úspěšnému přepočtu. Pro shodu s aktuálními vstupy stiskněte „Přepočíst všechny scénáře“.",
+    shortHint:
+      "Změnili jste vstupy — výsledky mohou být neaktuální, dokud znovu nepřepočítáte.",
+  },
+
   decision: {
 
     title: "Shrnutí pro rozhodnutí",
@@ -194,6 +214,9 @@ export const uxWizard = {
     deepDive: "Detail a scénáře",
 
     expertJson: "Technický detail výpočtu (pro audit)",
+
+    explainabilityIntro:
+      "Níže: srovnání polí průvodce s tím, co engine skutečně použil po mostech P1 — bez syrového JSON.",
 
   },
 

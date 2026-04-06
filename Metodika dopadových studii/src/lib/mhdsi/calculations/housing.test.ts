@@ -12,6 +12,16 @@ describe("housing OU / ZU", () => {
     expect(computeOuSituationA(10, 20, 1.34)).toBeCloseTo(10 + 20 * 1.34);
   });
 
+  it("DRV-016: KH se neaplikuje na N_agentura (regrese proti mylnému výkladu)", () => {
+    const nA = 100;
+    const nK = 50;
+    const kh = 2;
+    const ou = computeOuSituationA(nA, nK, kh);
+    expect(ou).toBe(nA + nK * kh);
+    const wrongIfKhOnBoth = (nA + nK) * kh;
+    expect(ou).not.toBe(wrongIfKhOnBoth);
+  });
+
   it("DRV-017 Sit. B with relokace", () => {
     expect(computeOuSituationB(10, 20, 5, 1.34)).toBeCloseTo(10 + 25 * 1.34);
   });

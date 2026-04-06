@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { Button } from "@/components/ui/button";
 import { buildMethodologyReportSnapshot } from "../build-report-snapshot";
 import { reportCs } from "../report-copy-cs";
@@ -12,7 +13,13 @@ import { ReportDocument } from "./ReportDocument";
 import { ReportEmptyState } from "./ReportEmptyState";
 
 export function ReportPageClient() {
-  const { state, results } = useWizardStore();
+  const { state, results, resultsMayBeStale } = useWizardStore(
+    useShallow((s) => ({
+      state: s.state,
+      results: s.results,
+      resultsMayBeStale: s.resultsMayBeStale,
+    })),
+  );
 
   const snapshot = useMemo(
     () => buildMethodologyReportSnapshot(state, results),
@@ -30,14 +37,32 @@ export function ReportPageClient() {
           <Button variant="outline" size="sm" asChild>
             <Link href="/studio">{reportCs.linkStudio}</Link>
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-primary/40 bg-primary/[0.06] font-medium"
+            asChild
+          >
+            <Link href="/studio?step=0">{reportCs.editWizard.openWizard}</Link>
+          </Button>
           <Button variant="default" size="sm" asChild>
             <Link href="/report/print">{reportCs.print.linkPrintView}</Link>
           </Button>
         </div>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/">{reportCs.linkHome}</Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/">{reportCs.editWizard.backToHome}</Link>
+          </Button>
+        </div>
       </div>
+      {resultsMayBeStale && results.baseline ? (
+        <div
+          className="mx-4 rounded-lg border border-amber-500/45 bg-amber-50/90 px-4 py-3 text-sm leading-snug text-amber-950 dark:border-amber-600/45 dark:bg-amber-950/35 dark:text-amber-50"
+          role="status"
+        >
+          {reportCs.staleFromInputs}
+        </div>
+      ) : null}
       <div
         className="mx-4 rounded-lg border border-border/70 bg-muted/25 px-4 py-3"
         aria-labelledby="report-edit-wizard-heading"
@@ -52,9 +77,6 @@ export function ReportPageClient() {
           {reportCs.editWizard.hint}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button variant="default" size="sm" asChild>
-            <Link href="/studio">{reportCs.editWizard.openWizard}</Link>
-          </Button>
           {reportCs.editWizard.steps.map(({ step, label }) => (
             <Button key={step} variant="outline" size="sm" asChild>
               <Link href={`/studio?step=${step}`}>{label}</Link>

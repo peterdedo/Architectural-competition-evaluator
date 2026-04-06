@@ -299,7 +299,25 @@ export function runHousingCalculation(
       "EXPLICIT_IN_METHODOLOGY",
       input.situation === "A" ? "DRV-016" : "DRV-017",
       "OU Sit. A/B",
-      ou,
+      input.situation === "A"
+        ? {
+            ou,
+            formulaCs: "N_agentura + N_kmen × KH (KH jen u kmenových)",
+            nAgentura: input.nAgentura,
+            nKmen: input.nKmen,
+            kH,
+            nPendlerInOu: false,
+            nPendlerNoteCs:
+              "N_pendler do OU v situaci A nevstupuje (M4 dle metodického listu).",
+          }
+        : {
+            ou,
+            formulaCs: "N_agentura + (N_kmen + N_relokace) × KH",
+            nAgentura: input.nAgentura,
+            nKmen: input.nKmen,
+            nRelokace: nRelok,
+            kH,
+          },
     ),
   );
 

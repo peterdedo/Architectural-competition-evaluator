@@ -19,6 +19,8 @@ import { buildDecisionScreenCopy, type ConfidenceLevel } from "../ux/decision-sc
 import { uxWizard } from "../ux/studio-ux-copy";
 import { tips } from "../ux/tooltips";
 import { mergeModuleAssumptionsUsed } from "../pipeline-result-helpers";
+import { buildPipelineExplainabilitySummary } from "../pipeline-explainability";
+import { ExplainabilitySummaryView } from "@/features/report/components/ExplainabilitySummaryView";
 import { InfoTip } from "@/components/info-tip";
 import { glossaryCs } from "@/content/glossary-cs";
 import {
@@ -278,13 +280,18 @@ export function ResultsStudioView({
   setExpandedIntermediate: (v: boolean) => void;
   onNavigateToWarningField: (field: string, scenario: ScenarioKind) => void;
 }) {
-  const { state, results } = useWizardStore(
-    useShallow((s) => ({ state: s.state, results: s.results })),
+  const { state, results, resultsMayBeStale } = useWizardStore(
+    useShallow((s) => ({
+      state: s.state,
+      results: s.results,
+      resultsMayBeStale: s.resultsMayBeStale,
+    })),
   );
 
   const [activeScenarioTab, setActiveScenarioTab] =
     useState<ScenarioKind>("baseline");
   const [recalcBusy, setRecalcBusy] = useState(false);
+  const [explainOpen, setExplainOpen] = useState(false);
 
   const snapshot = useMemo(() => {
     if (!results.baseline) return null;
@@ -303,12 +310,30 @@ export function ResultsStudioView({
   );
 
   const recalculate = useCallback(() => {
-    const st = useWizardStore.getState();
-    st.setResults(runAllScenarioPipelines(st.state));
+    setRecalcBusy(true);
+    window.setTimeout(() => {
+      const st = useWizardStore.getState();
+      st.setResults(runAllScenarioPipelines(st.state));
+      setRecalcBusy(false);
+    }, 0);
   }, []);
 
   return (
     <div className="space-y-8">
+      {baseline && resultsMayBeStale ? (
+        <div
+          className="rounded-lg border border-amber-500/50 bg-amber-50/90 px-4 py-3 dark:border-amber-600/50 dark:bg-amber-950/35"
+          role="status"
+          aria-live="polite"
+        >
+          <p className="text-sm font-semibold text-amber-950 dark:text-amber-100">
+            {uxWizard.resultsStale.title}
+          </p>
+          <p className="mt-1 text-sm leading-snug text-amber-950/90 dark:text-amber-50/90">
+            {uxWizard.resultsStale.body}
+          </p>
+        </div>
+      ) : null}
 
       {/* Prázdný stav */}
       {!baseline && (
@@ -426,18 +451,23 @@ export function ResultsStudioView({
 
       {/* Přepočíst CTA */}
       {baseline && (
-        <div className="flex items-center gap-3 rounded-lg border border-dashed border-border/70 bg-muted/20 px-4 py-3">
+        <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border/70 bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:gap-3">
           <Button
             type="button"
             onClick={recalculate}
-            className="gap-2"
+            className="gap-2 shrink-0"
             variant="default"
+            disabled={recalcBusy}
+            aria-busy={recalcBusy}
           >
-            <RefreshCw className="h-4 w-4" />
-            {cs.wizard.recalculate}
+            <RefreshCw
+              className={cn("h-4 w-4", recalcBusy && "animate-spin")}
+              aria-hidden
+            />
+            {recalcBusy ? cs.wizard.calculating : cs.wizard.recalculate}
           </Button>
-          <p className="text-xs text-muted-foreground">
-            Změnili jste vstupy? Přepočítejte výsledky.
+          <p className="text-xs leading-snug text-foreground/85">
+            {uxWizard.resultsStale.shortHint}
           </p>
         </div>
       )}
@@ -581,6 +611,34 @@ export function ResultsStudioView({
         <HumanAssumptionsBlock result={baseline} />
         <OpenQuestionsBlock ids={baseline?.allOpenQuestions ?? []} />
       </section>
+
+      {/* Explainability — lidský přehled před JSON */}
+      {results[activeScenarioTab] ? (
+        <Collapsible open={explainOpen} onOpenChange={setExplainOpen}>
+          <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-md border border-primary/25 bg-primary/[0.04] px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-primary/[0.07]">
+            {explainOpen ? (
+              <ChevronDown className="h-4 w-4 shrink-0" />
+            ) : (
+              <ChevronRight className="h-4 w-4 shrink-0" />
+            )}
+            Jak aplikace došla k číslům — efektivní vstupy ({cs.scenarios[activeScenarioTab]})
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-2 data-[state=closed]:animate-none">
+            <p className="mb-2 text-xs text-muted-foreground">
+              {uxWizard.decision.explainabilityIntro}
+            </p>
+            <ExplainabilitySummaryView
+              sections={buildPipelineExplainabilitySummary(
+                state,
+                activeScenarioTab,
+                results[activeScenarioTab]!,
+              )}
+              isPrint={false}
+              variant="embedded"
+            />
+          </CollapsibleContent>
+        </Collapsible>
+      ) : null}
 
       {/* Technický detail — sbalený */}
       <Collapsible

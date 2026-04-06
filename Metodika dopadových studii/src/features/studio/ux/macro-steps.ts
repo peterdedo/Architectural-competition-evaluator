@@ -1,5 +1,7 @@
 /** Mapování interního kroku 0–9 na viditelný makrokrok 0–5 (P1 + Fáze F). */
 
+import { uxWizard } from "./studio-ux-copy";
+
 /** První interní krok průvodce pro daný makrokrok (pro navigaci z lišty). */
 export const MACRO_FIRST_WIZARD_STEP = [0, 1, 2, 3, 4, 8] as const;
 
@@ -24,4 +26,10 @@ export function getMacroStepIndex(currentStep: number): number {
 
 }
 
+/** Lidský název makrofáze pro daný interní krok (6 tematických bloků nahoře). */
+export function macroPhaseLabelForWizardStep(currentStep: number): string {
+  const idx = getMacroStepIndex(currentStep);
+  const m = uxWizard.macroSteps[idx];
+  return m?.label ?? "";
+}
 

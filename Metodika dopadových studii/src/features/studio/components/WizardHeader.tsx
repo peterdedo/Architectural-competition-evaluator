@@ -11,12 +11,12 @@ export const WizardHeader = memo(function WizardHeader() {
   const resetDemo = useWizardStore((s) => s.resetDemo);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-5">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
+    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/50 pb-4">
+      <div className="min-w-0 space-y-0.5">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">
           {cs.wizard.title}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs text-muted-foreground md:text-sm">
           {projectName?.trim()
             ? projectName
             : "Název záměru doplníte v prvním kroku průvodce"}

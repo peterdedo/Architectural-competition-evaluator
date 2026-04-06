@@ -135,14 +135,18 @@ export function effectiveNInvForEmployment(
   return { nInvEffective: nInvMvp * fteFactor, fteFactor };
 }
 
-export function effectiveEmploymentRampYears(state: WizardState): number {
+export function effectiveEmploymentRampYears(
+  state: Pick<WizardState, "employmentRampYears" | "rampYearsGlobal" | "p1PipelineBridge">,
+): number {
   const { p1PipelineBridge, employmentRampYears, rampYearsGlobal } = state;
   const base = Math.max(1, Math.floor(employmentRampYears));
   if (!p1PipelineBridge.alignEmploymentRampToProjectHorizon) return base;
   return Math.max(1, Math.min(base, Math.max(1, Math.floor(rampYearsGlobal))));
 }
 
-export function effectiveHousingRampYears(state: WizardState): number {
+export function effectiveHousingRampYears(
+  state: Pick<WizardState, "housingRampYears" | "rampYearsGlobal" | "p1PipelineBridge">,
+): number {
   const { p1PipelineBridge, housingRampYears, rampYearsGlobal } = state;
   const base = Math.max(1, Math.floor(housingRampYears));
   if (!p1PipelineBridge.alignHousingRampToProjectHorizon) return base;

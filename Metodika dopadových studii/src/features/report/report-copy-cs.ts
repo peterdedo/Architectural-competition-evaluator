@@ -20,19 +20,21 @@ export const reportCs = {
     "Toto jsou stejná data jako na obrazovce výsledků průvodce — bez nového přepočtu.",
   noDataTitle: "Zatím není co zobrazit",
   noDataLead:
-    "Report vznikne až po tom, co v průvodci dokončíte vstupy a jednou spustíte přepočet všech scénářů. Zatím v prohlížeči nejsou uložené výsledky.",
+    "Report vznikne po dokončení vstupů a jednom přepočtu všech scénářů v průvodci (krok Výsledky). Výsledky výpočtu se do localStorage neukládají — po obnovení stránky (F5), nové kartě nebo na jiném zařízení tedy tato stránka zůstane prázdná, dokud znovu nepřepočítáte; vstupy v průvodci na tomto zařízení obvykle zůstanou.",
   noDataWhatToDo: "Co udělat",
   noDataStep1:
     "Otevřete průvodce a projděte kroky až po sekci ekonomika a veřejné rozpočty.",
   noDataStep2:
     "Klikněte na Další — zobrazí se výsledky; tam stiskněte Přepočíst všechny scénáře.",
-  noDataStep3: "Vraťte se na tuto stránku — report se naplní automaticky.",
+  noDataStep3:
+    "Vraťte se sem ve stejném sezení prohlížeče — report se naplní z aktuálních výsledků v paměti.",
   linkStudio: "Otevřít průvodce",
   linkHome: "Úvodní stránka",
   editWizard: {
     title: "Upravit vstupy v průvodci",
-    hint: "Data zůstávají uložená v tomto prohlížeči — po úpravách znovu přepočtěte scénáře na obrazovce výsledků.",
-    openWizard: "Otevřít průvodce od začátku",
+    hint: "Vstupy a rozpracovaný stav zůstávají v tomto prohlížeči (localStorage tohoto zařízení). Po úpravách otevřete průvodce, jděte na výsledky a stiskněte „Přepočíst všechny scénáře“ — teprve pak tento report odpovídá novým vstupům.",
+    openWizard: "Průvodce od začátku",
+    backToHome: "Úvodní stránka aplikace",
     quickLinksTitle: "Rychlý skok na krok",
     steps: [
       { step: 0, label: "Záměr a projekt" },
@@ -42,6 +44,8 @@ export const reportCs = {
       { step: 8, label: "Výsledky v průvodci" },
     ] as const,
   },
+  staleFromInputs:
+    "Změnili jste vstupy v průvodci od posledního přepočtu — čísla v tomto reportu mohou být neaktuální. Otevřete průvodce na krok výsledků a přepočítejte scénáře.",
   exportsAria: {
     inputs: "Stáhnout JSON: vstupy podle scénářů",
     wizardState: "Stáhnout JSON: uložené odpovědi průvodce",
@@ -76,7 +80,7 @@ export const reportCs = {
     s10r: "10. Rizika",
     s10m: "10. Mitigace rizik",
     s11: "11. Srovnání scénářů",
-    m7: "Scénářová konsolidace — přehled všech tří scénářů (M7)",
+    m7: "Scénářová konsolidace — přehled všech tří variant",
     s12: "12. Předpoklady a nejistoty",
     s13: "13. Auditní příloha",
   },

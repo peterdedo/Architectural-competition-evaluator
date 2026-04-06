@@ -32,8 +32,9 @@ export const MacroProgressBar = memo(function MacroProgressBar({
       aria-label="Průběh průvodce — u již zpracovaných fází můžete kliknout a vrátit se na jejich začátek"
       className="space-y-1"
     >
-      <p className="text-[10px] text-muted-foreground sm:text-xs">
-        U dokončených fází klikněte pro návrat na začátek této části.
+      <p className="text-[11px] leading-snug text-muted-foreground sm:text-xs">
+        <span className="text-foreground/85">{uxWizard.macroVersusSubstepsExplainer}</span>{" "}
+        <span className="text-muted-foreground/90">{uxWizard.macroClickHint}</span>
       </p>
       {/* Mobilní: compact chips */}
       <ul className="m-0 flex list-none gap-1.5 p-0 sm:hidden">

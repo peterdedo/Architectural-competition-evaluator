@@ -3,6 +3,88 @@
 exports[`buildMethodologyReportSnapshot (golden) > produces stable output for demo seed (normalized metadata) 1`] = `
 "{
   "executiveSummaryCs": "### Hlavní závěry\\n\\nProjekt **Skladová a logistická zóna — ukázkový záměr** — výpočet metodiky MHDSI (baseline / střední scénář) uvádí celkovou potřebu pracovních míst **301** a **odhad změny HDP (ΔHDP) 828 936 198 Kč** z profilu M6 (CAPEX, výstup M3 a konfigurovatelné multiplikátory § 2.4 — detail v auditní stopě a v sekci P1→M6). Jedná se o zjednodušený rámec (bez plného (X−M), bez NPV — OQ-05, OQ-11), nikoli o uzavřený makro výsledek. Další ekonomické ukazatele (včetně θ×ΔHDP) vycházejí z této báze — interpretujte je jako orientační, nikoli jako jisté číslo bez kontextu předpokladů.\\n\\n#### Co je v tomto shrnutí potvrzené\\n- Hodnoty vycházejí přímo z výpočetního jádra (moduly zaměstnanost, bydlení, občanská vybavenost, ekonomika).\\n- Klíčové ukazatele baseline: RZPS 23,8, obyvatelé k usazení (OU) 366,7, daňový výnos (θ×ΔHDP) 281 838 307 Kč/rok (orientačně).\\n\\n#### Co závisí na předpokladech\\n- Ekonomické a fiskální ukazatele používají konfigurovatelné symboly (θ, MPC, alokace rozpočtů) — viz sekce předpokladů.\\n- Scénářové rozdíly (optimistický / pesimistický) mění vstupní symboly; interpretujte je jako rozptyl, nikoli jako jistý interval.\\n\\n#### Nejistoty a otevřené otázky\\n- Počet aktivovaných otevřených otázek metodiky (baseline): **3**.\\n- Počet varování z výpočtu (baseline): **2** — mohou signalizovat substituce, výchozí předpoklady nebo chybějící vstupy.\\n- **Rizikový signál (M3):** podíl agenturních pracovníků vůči potřebě PMJ překračuje metodickou hranici (> 5 %) — stejný text je v rozhraní výsledků, v interpretaci reportu a v sekci varování; jde o signál pro rozhodování, nikoli o chybu aplikace.\\n\\n#### Scénářová citlivost (stručně)\\n- Potřeba PMJ: optimistický 301 vs. pesimistický 301.\\n- Odhad změny HDP (ΔHDP): **828 936 198 Kč** u všech tří scénářů v tomto běhu (stejná výsledná hodnota ve sloupci srovnání — typicky při shodných vstupech do M6 nebo ručním MVP bez rozdílu mezi scénáři).\\n- Výnos daní (θ×ΔHDP): optimistický 265 259 583 vs. pesimistický 331 574 479 Kč/rok.\\n- Proxy spotřeba domácností (C): stejná ve všech scénářích (166 657 720 Kč/rok); zdroj výpočtu: payroll_proxy.\\n\\n#### M7 — scénářová konsolidace (bez nových výpočtů)\\n- Tři scénáře nepředstavují interval spolehlivosti ani statistickou jistotu — jde o pevně zvolené varianty předpokladů dle metodiky (§ 1.5).\\n- Symboly s odlišnou efektivní hodnotou mezi scénáři (po sloučení assumptionsUsed): M_i, k_inv, p_pendler, theta, util_RZPS.\\n- Sdílená báze zahrnuje mimo jiné klíče: KH, MPC, M_spotreba, Rp_RUD, T_ref_years, alpha_elast, alpha_obec, beds_per_1000, delta, free_cap_factor, gamma, market_coverage, ….\\n- Sjednocené kódy varování (unie scénářů): **2**; OQ (unie): **3**.\\n\\n*Toto shrnutí nenahrazuje metodický text ani právní posouzení; slouží jako řídicí přehled pro další kroky.*",
+  "explainability_summary": [
+    {
+      "bulletsCs": [
+        "Ruční vstup — hodnota v poli průvodce (nebo výchozí předpoklad), jak ji uživatel vidí před přepočtem.",
+        "Efektivní vstup — číslo, které engine skutečně dosadil do modulu po mostech P1 (M2, M3→M4, M4→M5, …).",
+        "Výstup výpočtu — výsledek vzorce (např. OU, N_celkem), nelze ho přímo „přepsat“ bez změny vstupů nebo předpokladů.",
+        "Rozdíl mezi ručním a efektivním vstupem není chyba aplikace — jde o metodické odvození nebo zapnutý most mezi moduly."
+      ],
+      "id": "terminology",
+      "titleCs": "Slovník pro čtení čísel"
+    },
+    {
+      "id": "m3_m4_inputs",
+      "introCs": "Sloupce: co je v průvodci vs. co engine použil. Rozdíl znamená most P1 nebo M3→M4.",
+      "rows": [
+        {
+          "engineValueCs": "99,8",
+          "metric": "N_kmen (M4)",
+          "whyCs": "Úprava N_kmen podle migračního mostu M2 → M4 (P1).",
+          "wizardValueCs": "95"
+        },
+        {
+          "engineValueCs": "233",
+          "metric": "N_agentura (M4)",
+          "whyCs": "Zapnuté propojení M3→M4: N_agentura a N_pendler berou výstupy DRV-014/015 z modulu zaměstnanosti.",
+          "wizardValueCs": "40"
+        },
+        {
+          "engineValueCs": "19,59",
+          "metric": "N_pendler (audit M4)",
+          "whyCs": "Zapnuté propojení M3→M4: N_agentura a N_pendler berou výstupy DRV-014/015 z modulu zaměstnanosti.",
+          "wizardValueCs": "60"
+        },
+        {
+          "engineValueCs": "850",
+          "metric": "V_t vacant (M4)",
+          "whyCs": "Most M2 → volné jednotky: efektivní nabídka je max. z AS-IS a pole průvodce.",
+          "wizardValueCs": "40"
+        }
+      ],
+      "titleCs": "Vstupy modulu bydlení (M4) — scénář střední (baseline)"
+    },
+    {
+      "bulletsCs": [
+        "N_agentura + N_kmen × KH (KH jen u kmenových)",
+        "N_agentura v M4: 233",
+        "N_kmen v M4: 99,8",
+        "KH: 1,34",
+        "OU (výstup): 366,7",
+        "N_pendler do OU v situaci A nevstupuje (M4 dle metodického listu)."
+      ],
+      "id": "m4_ou",
+      "titleCs": "Obyvatelé k usazení (OU) — odvození M4"
+    },
+    {
+      "id": "m5_civic",
+      "rows": [
+        {
+          "engineValueCs": "366,73",
+          "metric": "OU (M5)",
+          "whyCs": "Zapnutý most M4→M5: do občanské vybavenosti jde OU z modulu bydlení, ne číslo v poli výše.",
+          "wizardValueCs": "210"
+        },
+        {
+          "engineValueCs": "301,39",
+          "metric": "N_celkem M3 (M5 bezpečnost)",
+          "whyCs": "Zapnutý most M3→M5: pro bezpečnostní FTE se použije N_celkem z M3.",
+          "wizardValueCs": "420"
+        }
+      ],
+      "titleCs": "Občanská vybavenost (M5) — kanonické vstupy"
+    },
+    {
+      "bulletsCs": [
+        "Δ roční HDP je odvozeno z profilu investice a M3 (automatický výpočet M6).",
+        "Δ roční HDP (výstup): 828 936 198 Kč",
+        "Domácnostní spotřeba — zdroj: odvozeno od mezd (proxy)"
+      ],
+      "id": "m6_economic",
+      "titleCs": "Ekonomika (M6) — zdroj hlavních agregátů"
+    }
+  ],
   "m7_scenario_consolidation": {
     "auditLinks": {
       "byScenario": {
@@ -258,14 +340,14 @@ exports[`buildMethodologyReportSnapshot (golden) > produces stable output for de
         "contentLayer": "scenarios",
         "id": "annex-A",
         "snapshotPath": "section11_comparison,m7_scenario_consolidation",
-        "titleCs": "Příloha A — Scénářová analýza a konsolidace (M7)"
+        "titleCs": "Příloha A — Scénářová konsolidace (detailní struktura)"
       },
       {
         "availableInJsonExport": true,
         "contentLayer": "assumptions_oq_fallback",
         "id": "annex-B",
         "snapshotPath": "section12_assumptionsUncertainty",
-        "titleCs": "Příloha B — Předpoklady, otevřené otázky a fallbacky"
+        "titleCs": "Příloha B — Předpoklady a otevřené otázky"
       },
       {
         "availableInJsonExport": true,
@@ -279,7 +361,7 @@ exports[`buildMethodologyReportSnapshot (golden) > produces stable output for de
         "contentLayer": "baseline",
         "id": "annex-D",
         "snapshotPath": "p1_layers,p1_m3_m4_bridge,p1_m5_bridge,p1_m6_bridge",
-        "titleCs": "Příloha D — Kanonické metodické mosty P1"
+        "titleCs": "Příloha D — Vstupní vrstvy a mosty"
       }
     ],
     "contentLayerIndex": {
@@ -316,87 +398,87 @@ exports[`buildMethodologyReportSnapshot (golden) > produces stable output for de
     "outline": [
       {
         "contentLayer": "inputs",
-        "id": "bod-1",
-        "methodologyRef": "§ 3.1 bod 1",
-        "snapshotPath": "section01_project",
+        "id": "kap-1",
+        "methodologyRef": "Kap. 1",
+        "snapshotPath": "section01_project,section03_territory.t0,rampYearsGlobal,p1_layers.m0.schedule",
         "titleCs": "Základní údaje o projektu"
       },
       {
         "contentLayer": "inputs",
-        "id": "bod-2",
-        "methodologyRef": "§ 3.1 bod 2",
+        "id": "kap-2",
+        "methodologyRef": "Kap. 2",
         "snapshotPath": "section02_investor",
-        "titleCs": "Investor a charakteristika záměru"
+        "titleCs": "Informace o investorovi a zpracovateli dopadové studie"
       },
       {
         "contentLayer": "inputs",
-        "id": "bod-3",
-        "methodologyRef": "§ 3.1 bod 3",
-        "snapshotPath": "section03_territory,p1_layers",
-        "titleCs": "Vymezení území a časový rámec (P1: M0–M2)"
+        "id": "kap-3",
+        "methodologyRef": "Kap. 3",
+        "snapshotPath": "p1_layers.m0",
+        "titleCs": "Charakteristika investičního záměru"
       },
       {
-        "contentLayer": "scenarios",
-        "id": "bod-4",
-        "methodologyRef": "§ 3.1 bod 4",
-        "snapshotPath": "section04_scenarios",
-        "titleCs": "Scénáře hodnocení — vstupní delty"
+        "contentLayer": "inputs",
+        "id": "kap-4",
+        "methodologyRef": "Kap. 4",
+        "snapshotPath": "section03_territory,p1_layers.m1",
+        "titleCs": "Vymezení řešeného území"
       },
       {
         "contentLayer": "baseline",
-        "id": "bod-5",
-        "methodologyRef": "§ 3.1 bod 5",
-        "snapshotPath": "section05_asIs,p1_m3_m4_bridge,p1_m5_bridge,p1_m6_bridge",
-        "titleCs": "Výchozí stav (AS-IS) a baseline vstupy"
+        "id": "kap-5",
+        "methodologyRef": "Kap. 5",
+        "snapshotPath": "p1_layers.m2AsIs,section05_asIs",
+        "titleCs": "Analytická část (AS-IS)"
       },
       {
         "contentLayer": "module_results",
-        "id": "bod-6",
-        "methodologyRef": "§ 3.1 bod 6",
-        "snapshotPath": "primaryKpiAndModules.baseline.employment",
-        "titleCs": "Dopady na zaměstnanost (M3)"
+        "id": "kap-6",
+        "methodologyRef": "Kap. 6",
+        "snapshotPath": "primaryKpiAndModules.baseline",
+        "titleCs": "Výpočtová část (TO-BE)"
       },
       {
-        "contentLayer": "module_results",
-        "id": "bod-7",
-        "methodologyRef": "§ 3.1 bod 7",
-        "snapshotPath": "primaryKpiAndModules.baseline.housing",
-        "titleCs": "Dopady na bydlení (M4)"
-      },
-      {
-        "contentLayer": "module_results",
-        "id": "bod-8",
-        "methodologyRef": "§ 3.1 bod 8",
-        "snapshotPath": "primaryKpiAndModules.baseline.civic",
-        "titleCs": "Dopady na občanskou vybavenost (M5)"
-      },
-      {
-        "contentLayer": "module_results",
-        "id": "bod-9",
-        "methodologyRef": "§ 3.1 bod 9",
-        "snapshotPath": "primaryKpiAndModules.baseline.economic",
-        "titleCs": "Ekonomické a fiskální přínosy (M6)"
+        "contentLayer": "scenarios",
+        "id": "kap-7",
+        "methodologyRef": "Kap. 7",
+        "snapshotPath": "section04_scenarios,section11_comparison,m7_scenario_consolidation",
+        "titleCs": "Scénářová analýza"
       },
       {
         "contentLayer": "assumptions_oq_fallback",
-        "id": "bod-10",
-        "methodologyRef": "§ 3.1 bod 10",
+        "id": "kap-8",
+        "methodologyRef": "Kap. 8",
         "snapshotPath": "section10_risks,section10_mitigations",
-        "titleCs": "Rizika, mitigace a doporučení"
+        "titleCs": "Riziková analýza a mitigace"
+      },
+      {
+        "contentLayer": "module_results",
+        "id": "kap-9",
+        "methodologyRef": "Kap. 9",
+        "snapshotPath": "executiveSummaryCs",
+        "titleCs": "Závěry a doporučení"
+      },
+      {
+        "contentLayer": "assumptions_oq_fallback",
+        "id": "kap-10",
+        "methodologyRef": "Kap. 10",
+        "snapshotPath": "explainability_summary,section12_assumptionsUncertainty,section13_audit,p1_bridges",
+        "titleCs": "Přílohy"
       },
       {
         "contentLayer": "scenarios",
         "id": "priloha-A",
         "methodologyRef": "Příloha A",
         "snapshotPath": "section11_comparison,m7_scenario_consolidation",
-        "titleCs": "Scénářová analýza a konsolidace (M7)"
+        "titleCs": "Scénářová konsolidace — detailní struktura"
       },
       {
         "contentLayer": "assumptions_oq_fallback",
         "id": "priloha-B",
         "methodologyRef": "Příloha B",
         "snapshotPath": "section12_assumptionsUncertainty",
-        "titleCs": "Předpoklady, otevřené otázky a fallbacky"
+        "titleCs": "Předpoklady, otevřené otázky a výstupy výpočtu"
       },
       {
         "contentLayer": "assumptions_oq_fallback",
@@ -410,16 +492,384 @@ exports[`buildMethodologyReportSnapshot (golden) > produces stable output for de
         "id": "priloha-D",
         "methodologyRef": "Příloha D",
         "snapshotPath": "p1_layers,p1_m3_m4_bridge,p1_m5_bridge,p1_m6_bridge",
-        "titleCs": "Kanonické metodické mosty P1 (M0–M2 → M3–M6)"
+        "titleCs": "Vstupní vrstvy a mosty (technická příloha)"
       }
     ]
   },
   "metadata": {
     "generatedAt": "2000-01-01T00:00:00.000Z",
     "id": "golden-rc",
-    "schemaVersion": "1.4.0",
+    "schemaVersion": "1.6.1",
     "source": "mhdsi-studio",
     "title": "Skladová a logistická zóna — ukázkový záměr"
+  },
+  "methodology_outline_1_10": {
+    "chapters": [
+      {
+        "chapter": 1,
+        "completeness": "complete",
+        "subsections": [
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "section01_project.projectName",
+            "id": "1.1",
+            "titleCs": "Název projektu / záměru"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "section01_project.locationDescription, p1_layers.m1.definitionPointLabel, m1.municipality",
+            "id": "1.2",
+            "noteCs": "AOIVuz / AOIDadm: textově v průvodci a vrstvě M1; přesné GIS hranice nejsou v MVP generovány.",
+            "titleCs": "Místo realizace (AOIVuz, nebo definiční bod, AOIDadm)"
+          },
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "section01_project.capexTotalCzk, section03_territory.t0, section03_territory.rampYearsGlobal",
+            "id": "1.3",
+            "noteCs": "Etapizace v odvozeném smyslu: CAPEX + T0 + horizont; detailní milníky viz harmonogram v 1.4.",
+            "titleCs": "Předpokládané souhrnné investiční náklady a časový rámec projektu (etapizace)"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "p1_layers.m0.schedule",
+            "id": "1.4",
+            "noteCs": "Textové štítky harmonogramu ve vrstvě záměru (M0); strukturovaná Gantt osa v aplikaci není.",
+            "titleCs": "Projektové období (fáze příprava – výstavba – provoz)"
+          }
+        ],
+        "titleCs": "Základní údaje o projektu"
+      },
+      {
+        "chapter": 2,
+        "completeness": "partial",
+        "coverageNoteCs": "Údaje o zpracovateli DS (název organizace, IČO, odpovědná osoba) nejsou v této verzi aplikace ve strukturovaných vstupech — doplní se v textu finální studie.",
+        "subsections": [
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "section02_investor.investorProfile, section02_investor.legalForm",
+            "id": "2.1",
+            "noteCs": "K dispozici volný text profilu a právní forma — strukturované IČO, sídlo a kontakt nejsou v polích MVP.",
+            "titleCs": "Základní údaje o investorovi (název, IČO, sídlo, právní forma, kontaktní osoba)"
+          },
+          {
+            "completeness": "missing",
+            "dataSourceHintCs": "— (mimo snapshot)",
+            "id": "2.2",
+            "noteCs": "Nejsou součástí výstupu z aplikace — doplní zpracovatel mimo MHDSI UI.",
+            "titleCs": "Základní údaje o zpracovateli DS (název, IČO, sídlo, odpovědný garant, kontaktní osoba)"
+          },
+          {
+            "completeness": "missing",
+            "dataSourceHintCs": "— (mimo snapshot)",
+            "id": "2.3",
+            "noteCs": "Nejsou součástí strukturovaných vstupů — doplní se v textu finální dokumentace.",
+            "titleCs": "Popis role zpracovatele DS, způsob spolupráce se zadavatelem a investorem"
+          }
+        ],
+        "titleCs": "Informace o investorovi a zpracovateli dopadové studie"
+      },
+      {
+        "chapter": 3,
+        "completeness": "partial",
+        "coverageNoteCs": "Profesní klasifikace (CZ-ISCO), typ investice a vazby na jiné projekty nejsou ve strukturovaných polích reportu.",
+        "subsections": [
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "p1_layers.m0 (capacityNarrative, scopeCapacity, pmjPortfolio)",
+            "id": "3.1",
+            "titleCs": "Popis projektu (kapacita, funkce, technologie)"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "section02_investor.strategicLinks, p1_layers.m0.strategicDocuments",
+            "id": "3.2",
+            "titleCs": "Strategický význam projektu (vazba na státní a krajské strategie, průmyslové priority, politiky transformace)"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "section01_project.czNace, p1_layers.m0.secondaryNace",
+            "id": "3.3",
+            "noteCs": "CZ-NACE je ve vstupech; CZ-ISCO a typ investice jako samostatná pole v MVP nejsou.",
+            "titleCs": "Odvětvová klasifikace (CZ-NACE), profesní klasifikace (CZ-ISCO) a typ investice (výrobní, technologická, výzkumná)"
+          },
+          {
+            "completeness": "missing",
+            "dataSourceHintCs": "p1_layers.m0.capacityNarrative (částečný kontext)",
+            "id": "3.4",
+            "noteCs": "Samostatná strukturovaná kapitola není v datech — část kontextu může být v popisu záměru (M0).",
+            "titleCs": "Popis stávající situace a zdůvodnění potřebnosti záměru"
+          },
+          {
+            "completeness": "missing",
+            "dataSourceHintCs": "—",
+            "id": "3.5",
+            "noteCs": "Nejsou k dispozici ve strukturovaných vstupech.",
+            "titleCs": "Vazby na jiné investiční projekty v území, synergie a odlišnosti"
+          }
+        ],
+        "titleCs": "Charakteristika investičního záměru"
+      },
+      {
+        "chapter": 4,
+        "completeness": "partial",
+        "coverageNoteCs": "Mapové přílohy a přesné hranice AOI nejsou generovány z aplikace; metrické vstupy dostupnosti (DIAD) a text M1 slouží jako náhrada.",
+        "subsections": [
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "p1_layers.m1.definitionPointLabel, m1.geoJsonText, m1.boundaryNote",
+            "id": "4.1",
+            "titleCs": "AOIVuz – vlastní území záměru"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "p1_layers.m1.municipality, m1.region, m1.cadastralArea, m1.aoiUnitsLabel",
+            "id": "4.2",
+            "titleCs": "AOIDadm – dotčené administrativní území"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "section03_territory (diad*, dLastMileKm, tinfrMinutes), p1_layers.m1.isochronesMode, m1.isochronesManualNote",
+            "id": "4.3",
+            "noteCs": "Preferovaná / akceptovatelná doba dojížďky (DIAD) a poslední míle — viz číselná pole v reportu; isochrony dle režimu M1.",
+            "titleCs": "AOISiadpr / AOISiadak – spádové území podle doby dojížďky (preferovaná, akceptovaná)"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "p1_layers.m1 (isochrones*, geoJsonText)",
+            "id": "4.4",
+            "noteCs": "Režim isochron a poznámky jsou v datech M1 (JSON příloha); plná metodická citace je v textu studie mimo šablonu.",
+            "titleCs": "Způsob stanovení spádového území, použitá metodika a zdroje dat"
+          }
+        ],
+        "titleCs": "Vymezení řešeného území"
+      },
+      {
+        "chapter": 5,
+        "completeness": "partial",
+        "coverageNoteCs": "Kompletní AS-IS je v datové vrstvě M2 a shrnutí vstupů; digitální infrastruktura a samostatný environmentální blok nejsou plně strukturovány.",
+        "subsections": [
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "p1_layers.m2AsIs.demographics, m2.ageShares, section05_asIs",
+            "id": "5.1",
+            "titleCs": "Demografický profil území (obyvatelstvo, migrace, struktura domácností)"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "p1_layers.m2AsIs (nezaměstnanost, mzdy, migrace — dle vyplnění)",
+            "id": "5.2",
+            "titleCs": "Trh práce (zaměstnanost, nezaměstnanost, kvalifikační struktura, mzdová úroveň)"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "section03_territory, p1_layers.m1",
+            "id": "5.3",
+            "noteCs": "Částečně přes metrické vstupy dostupnosti v kapitole 4 a text M1; technická infrastruktura není plná tabulka.",
+            "titleCs": "Infrastruktura a dostupnost (dopravní, technická, digitální)"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "p1_layers.m2AsIs (bydlení baseline), section05_asIs",
+            "id": "5.4",
+            "titleCs": "Bydlení (dostupnost, kapacity, ceny, developerské projekty)"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "p1_layers.m2AsIs.civic, section05_asIs",
+            "id": "5.5",
+            "noteCs": "Baseline území; odhadované nároky z výpočtu jsou v kapitole 6.",
+            "titleCs": "Občanská vybavenost (školství, zdravotnictví, sociální a volnočasová infrastruktura)"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "p1_layers.m2AsIs.publicFinance, section05_asIs",
+            "id": "5.6",
+            "noteCs": "Kontext v baseline M2; detailní rozpočty nejsou vstupem MVP.",
+            "titleCs": "Veřejné finance a fiskální základna obcí"
+          },
+          {
+            "completeness": "missing",
+            "dataSourceHintCs": "—",
+            "id": "5.7",
+            "noteCs": "Samostatná strukturovaná část AS-IS v reportu z aplikace není.",
+            "titleCs": "Bezpečnostní a environmentální aspekty"
+          }
+        ],
+        "titleCs": "Analytická část (AS-IS)"
+      },
+      {
+        "chapter": 6,
+        "completeness": "complete",
+        "subsections": [
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "primaryKpiAndModules.baseline.employment (+ JSON modul v reportu)",
+            "id": "6.1",
+            "titleCs": "Zaměstnanost – přímá, nepřímá, indukovaná pracovní místa; substituční efekt; RZPS"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "section03_territory, scénářové delty",
+            "id": "6.2",
+            "noteCs": "Parametry vstupů a dostupnost vstupují do modelu; samostatný dopravní model není výstupem.",
+            "titleCs": "Mobilita a konektivita – dopady na dojížďku, dopravní zatížení, pendlery"
+          },
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "primaryKpiAndModules.baseline.housing",
+            "id": "6.3",
+            "titleCs": "Bydlení – očekávaný vliv na poptávku po bydlení, ceny a dostupnost"
+          },
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "primaryKpiAndModules.baseline.civic",
+            "id": "6.4",
+            "titleCs": "Občanská vybavenost"
+          },
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "primaryKpiAndModules.baseline.economic (veřejné rozpočty, daně)",
+            "id": "6.5",
+            "titleCs": "Fiskální dopady – příspěvek do veřejných rozpočtů (stát, kraj, obec), daň z nemovitostí, RUD"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "primaryKpiAndModules.baseline.economic",
+            "id": "6.6",
+            "noteCs": "Částečně přes výstupy ekonomického modulu (spotřeba domácností, retence).",
+            "titleCs": "Spotřební a multiplikační efekty"
+          },
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "primaryKpiAndModules.baseline.economic, KPI blok reportu",
+            "id": "6.7",
+            "noteCs": "Souhrn přes KPI a ukazatele ΔHDP / daňové výnosy v reportu.",
+            "titleCs": "Zhodnocení socioekonomických přínosů – HDP, kvalita života, image území"
+          }
+        ],
+        "titleCs": "Výpočtová část (TO-BE)"
+      },
+      {
+        "chapter": 7,
+        "completeness": "complete",
+        "subsections": [
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "section04_scenarios.scenarioDeltas.optimistic, section11_comparison řádek",
+            "id": "7.1",
+            "titleCs": "Optimistický scénář"
+          },
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "section04_scenarios.scenarioDeltas.baseline, section11_comparison",
+            "id": "7.2",
+            "titleCs": "Střední scénář"
+          },
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "section04_scenarios.scenarioDeltas.pessimistic, section11_comparison",
+            "id": "7.3",
+            "titleCs": "Pesimistický scénář"
+          },
+          {
+            "completeness": "complete",
+            "dataSourceHintCs": "m7_scenario_consolidation, section11_comparison",
+            "id": "7.4",
+            "noteCs": "Konsolidace scénářů, citlivost a srovnávací tabulka — viz m7_scenario_consolidation a sekce scénářů v reportu.",
+            "titleCs": "Diskuse rozdílů a klíčových faktorů"
+          }
+        ],
+        "titleCs": "Scénářová analýza"
+      },
+      {
+        "chapter": 8,
+        "completeness": "partial",
+        "coverageNoteCs": "Časový profil rizik a kvantifikace významnosti nejsou v generovaném výstupu plně strukturovány.",
+        "subsections": [
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "section10_risks, baseline warnings (section12)",
+            "id": "8.1",
+            "titleCs": "Identifikace klíčových rizik (zaměstnanost, agenturní pracovníci, substituční efekt, bydlení, dopravní kapacita)"
+          },
+          {
+            "completeness": "missing",
+            "dataSourceHintCs": "—",
+            "id": "8.2",
+            "noteCs": "V aktuální verzi aplikace není tato část strukturovaně generována — doplní analytik v textu studie.",
+            "titleCs": "Odhad významnosti rizik a jejich časový profil"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "section10_mitigations",
+            "id": "8.3",
+            "titleCs": "Návrh mitigačních opatření"
+          }
+        ],
+        "titleCs": "Riziková analýza a mitigace"
+      },
+      {
+        "chapter": 9,
+        "completeness": "partial",
+        "coverageNoteCs": "Manažerské shrnutí je generované z výstupů; závazná doporučení pro zadavatele doplní zpracovatel finálního dokumentu.",
+        "subsections": [
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "executiveSummaryCs (část)",
+            "id": "9.1",
+            "titleCs": "Shrnutí hlavních zjištění dopadové studie"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "executiveSummaryCs",
+            "id": "9.2",
+            "titleCs": "Celkové zhodnocení dopadů a přínosů"
+          },
+          {
+            "completeness": "missing",
+            "dataSourceHintCs": "— (mimo generovaný blok)",
+            "id": "9.3",
+            "noteCs": "Strukturované závazné doporučení zadavateli není v šabloně oddělené — doplní se v textu finální studie.",
+            "titleCs": "Doporučení pro rozhodování zadavatele"
+          }
+        ],
+        "titleCs": "Závěry a doporučení"
+      },
+      {
+        "chapter": 10,
+        "completeness": "partial",
+        "coverageNoteCs": "Mapové přílohy a některé metodické odkazy nejsou generovány z aplikace — viz JSON export a známá omezení MVP.",
+        "subsections": [
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "explainability_summary, section12 (předpoklady), glossary",
+            "id": "10.1",
+            "titleCs": "Použité datové zdroje a metodické odkazy"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "JSON modulů v reportu, section11_comparison, export snapshot",
+            "id": "10.2",
+            "titleCs": "Datové tabulky a modelové výpočty"
+          },
+          {
+            "completeness": "missing",
+            "dataSourceHintCs": "—",
+            "id": "10.3",
+            "noteCs": "Nejsou součástí výstupu z aplikace.",
+            "titleCs": "Mapové přílohy (AOIVuz, AOIDadm, AOIS, hustoty obyvatel, významná sídla, body vybavenosti)"
+          },
+          {
+            "completeness": "partial",
+            "dataSourceHintCs": "m7_scenario_consolidation, section11_comparison, section13_audit",
+            "id": "10.4",
+            "noteCs": "Tabulky a textová konsolidace scénářů v reportu; samostatné grafické podklady mimo aplikaci.",
+            "titleCs": "Scénářové výstupy a vizualizace"
+          }
+        ],
+        "titleCs": "Přílohy"
+      }
+    ]
   },
   "p1_layers": {
     "m0": {
@@ -1665,7 +2115,15 @@ exports[`buildMethodologyReportSnapshot (golden) > produces stable output for de
             "description": "OU Sit. A/B",
             "drvId": "DRV-016",
             "id": "DRV-016",
-            "value": 366.7322700000001
+            "value": {
+              "formulaCs": "N_agentura + N_kmen × KH (KH jen u kmenových)",
+              "kH": 1.34,
+              "nAgentura": 233.00027000000006,
+              "nKmen": 99.8,
+              "nPendlerInOu": false,
+              "nPendlerNoteCs": "N_pendler do OU v situaci A nevstupuje (M4 dle metodického listu).",
+              "ou": 366.7322700000001
+            }
           },
           {
             "classification": "OPEN_QUESTION_BRIDGE",
@@ -2179,7 +2637,15 @@ exports[`buildMethodologyReportSnapshot (golden) > produces stable output for de
             "description": "OU Sit. A/B",
             "drvId": "DRV-016",
             "id": "DRV-016",
-            "value": 361.73265000000004
+            "value": {
+              "formulaCs": "N_agentura + N_kmen × KH (KH jen u kmenových)",
+              "kH": 1.34,
+              "nAgentura": 228.00065000000004,
+              "nKmen": 99.8,
+              "nPendlerInOu": false,
+              "nPendlerNoteCs": "N_pendler do OU v situaci A nevstupuje (M4 dle metodického listu).",
+              "ou": 361.73265000000004
+            }
           },
           {
             "classification": "OPEN_QUESTION_BRIDGE",
@@ -2693,7 +3159,15 @@ exports[`buildMethodologyReportSnapshot (golden) > produces stable output for de
             "description": "OU Sit. A/B",
             "drvId": "DRV-016",
             "id": "DRV-016",
-            "value": 378.23847000000006
+            "value": {
+              "formulaCs": "N_agentura + N_kmen × KH (KH jen u kmenových)",
+              "kH": 1.34,
+              "nAgentura": 244.50647000000006,
+              "nKmen": 99.8,
+              "nPendlerInOu": false,
+              "nPendlerNoteCs": "N_pendler do OU v situaci A nevstupuje (M4 dle metodického listu).",
+              "ou": 378.23847000000006
+            }
           },
           {
             "classification": "OPEN_QUESTION_BRIDGE",

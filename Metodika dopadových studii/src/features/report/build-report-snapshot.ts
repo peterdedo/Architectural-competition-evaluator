@@ -11,8 +11,10 @@ import {
   summarizeP1M6BridgeForReport,
 } from "@/features/studio/p1-pipeline-derive";
 import { wizardStateToPipelineInput } from "@/features/studio/map-to-pipeline";
+import { buildMethodologyOutline110 } from "./build-methodology-outline-110";
 import { buildM7ScenarioConsolidation } from "./build-m7-scenario-consolidation";
 import { buildExecutiveSummaryCs } from "./build-executive-summary-cs";
+import { buildPipelineExplainabilitySummary } from "@/features/studio/pipeline-explainability";
 import {
   buildHeuristicMitigations,
   buildMitigationsFromCivic,
@@ -128,88 +130,89 @@ function buildAuditAnnex(
  * Čistě indexační — žádné výpočty, žádná druhá pravda.
  */
 function buildM8ReportCompleteness(): M8ReportCompleteness {
+  /** Zarovnáno na závaznou osnovu 1–10 + přílohy A–D (index pro export / tisk) */
   const outline: M8OutlineItem[] = [
     {
-      id: "bod-1",
-      methodologyRef: "§ 3.1 bod 1",
+      id: "kap-1",
+      methodologyRef: "Kap. 1",
       titleCs: "Základní údaje o projektu",
       contentLayer: "inputs",
-      snapshotPath: "section01_project",
+      snapshotPath: "section01_project,section03_territory.t0,rampYearsGlobal,p1_layers.m0.schedule",
     },
     {
-      id: "bod-2",
-      methodologyRef: "§ 3.1 bod 2",
-      titleCs: "Investor a charakteristika záměru",
+      id: "kap-2",
+      methodologyRef: "Kap. 2",
+      titleCs: "Informace o investorovi a zpracovateli dopadové studie",
       contentLayer: "inputs",
       snapshotPath: "section02_investor",
     },
     {
-      id: "bod-3",
-      methodologyRef: "§ 3.1 bod 3",
-      titleCs: "Vymezení území a časový rámec (P1: M0–M2)",
+      id: "kap-3",
+      methodologyRef: "Kap. 3",
+      titleCs: "Charakteristika investičního záměru",
       contentLayer: "inputs",
-      snapshotPath: "section03_territory,p1_layers",
+      snapshotPath: "p1_layers.m0",
     },
     {
-      id: "bod-4",
-      methodologyRef: "§ 3.1 bod 4",
-      titleCs: "Scénáře hodnocení — vstupní delty",
-      contentLayer: "scenarios",
-      snapshotPath: "section04_scenarios",
+      id: "kap-4",
+      methodologyRef: "Kap. 4",
+      titleCs: "Vymezení řešeného území",
+      contentLayer: "inputs",
+      snapshotPath: "section03_territory,p1_layers.m1",
     },
     {
-      id: "bod-5",
-      methodologyRef: "§ 3.1 bod 5",
-      titleCs: "Výchozí stav (AS-IS) a baseline vstupy",
+      id: "kap-5",
+      methodologyRef: "Kap. 5",
+      titleCs: "Analytická část (AS-IS)",
       contentLayer: "baseline",
-      snapshotPath: "section05_asIs,p1_m3_m4_bridge,p1_m5_bridge,p1_m6_bridge",
+      snapshotPath: "p1_layers.m2AsIs,section05_asIs",
     },
     {
-      id: "bod-6",
-      methodologyRef: "§ 3.1 bod 6",
-      titleCs: "Dopady na zaměstnanost (M3)",
+      id: "kap-6",
+      methodologyRef: "Kap. 6",
+      titleCs: "Výpočtová část (TO-BE)",
       contentLayer: "module_results",
-      snapshotPath: "primaryKpiAndModules.baseline.employment",
+      snapshotPath: "primaryKpiAndModules.baseline",
     },
     {
-      id: "bod-7",
-      methodologyRef: "§ 3.1 bod 7",
-      titleCs: "Dopady na bydlení (M4)",
-      contentLayer: "module_results",
-      snapshotPath: "primaryKpiAndModules.baseline.housing",
+      id: "kap-7",
+      methodologyRef: "Kap. 7",
+      titleCs: "Scénářová analýza",
+      contentLayer: "scenarios",
+      snapshotPath: "section04_scenarios,section11_comparison,m7_scenario_consolidation",
     },
     {
-      id: "bod-8",
-      methodologyRef: "§ 3.1 bod 8",
-      titleCs: "Dopady na občanskou vybavenost (M5)",
-      contentLayer: "module_results",
-      snapshotPath: "primaryKpiAndModules.baseline.civic",
-    },
-    {
-      id: "bod-9",
-      methodologyRef: "§ 3.1 bod 9",
-      titleCs: "Ekonomické a fiskální přínosy (M6)",
-      contentLayer: "module_results",
-      snapshotPath: "primaryKpiAndModules.baseline.economic",
-    },
-    {
-      id: "bod-10",
-      methodologyRef: "§ 3.1 bod 10",
-      titleCs: "Rizika, mitigace a doporučení",
+      id: "kap-8",
+      methodologyRef: "Kap. 8",
+      titleCs: "Riziková analýza a mitigace",
       contentLayer: "assumptions_oq_fallback",
       snapshotPath: "section10_risks,section10_mitigations",
     },
     {
+      id: "kap-9",
+      methodologyRef: "Kap. 9",
+      titleCs: "Závěry a doporučení",
+      contentLayer: "module_results",
+      snapshotPath: "executiveSummaryCs",
+    },
+    {
+      id: "kap-10",
+      methodologyRef: "Kap. 10",
+      titleCs: "Přílohy",
+      contentLayer: "assumptions_oq_fallback",
+      snapshotPath: "explainability_summary,section12_assumptionsUncertainty,section13_audit,p1_bridges",
+    },
+    {
       id: "priloha-A",
       methodologyRef: "Příloha A",
-      titleCs: "Scénářová analýza a konsolidace (M7)",
+      titleCs: "Scénářová konsolidace — detailní struktura",
       contentLayer: "scenarios",
       snapshotPath: "section11_comparison,m7_scenario_consolidation",
     },
     {
       id: "priloha-B",
       methodologyRef: "Příloha B",
-      titleCs: "Předpoklady, otevřené otázky a fallbacky",
+      titleCs: "Předpoklady, otevřené otázky a výstupy výpočtu",
       contentLayer: "assumptions_oq_fallback",
       snapshotPath: "section12_assumptionsUncertainty",
     },
@@ -223,7 +226,7 @@ function buildM8ReportCompleteness(): M8ReportCompleteness {
     {
       id: "priloha-D",
       methodologyRef: "Příloha D",
-      titleCs: "Kanonické metodické mosty P1 (M0–M2 → M3–M6)",
+      titleCs: "Vstupní vrstvy a mosty (technická příloha)",
       contentLayer: "baseline",
       snapshotPath: "p1_layers,p1_m3_m4_bridge,p1_m5_bridge,p1_m6_bridge",
     },
@@ -232,14 +235,14 @@ function buildM8ReportCompleteness(): M8ReportCompleteness {
   const annexes: M8AnnexDescriptor[] = [
     {
       id: "annex-A",
-      titleCs: "Příloha A — Scénářová analýza a konsolidace (M7)",
+      titleCs: "Příloha A — Scénářová konsolidace (detailní struktura)",
       snapshotPath: "section11_comparison,m7_scenario_consolidation",
       contentLayer: "scenarios",
       availableInJsonExport: true,
     },
     {
       id: "annex-B",
-      titleCs: "Příloha B — Předpoklady, otevřené otázky a fallbacky",
+      titleCs: "Příloha B — Předpoklady a otevřené otázky",
       snapshotPath: "section12_assumptionsUncertainty",
       contentLayer: "assumptions_oq_fallback",
       availableInJsonExport: true,
@@ -253,7 +256,7 @@ function buildM8ReportCompleteness(): M8ReportCompleteness {
     },
     {
       id: "annex-D",
-      titleCs: "Příloha D — Kanonické metodické mosty P1",
+      titleCs: "Příloha D — Vstupní vrstvy a mosty",
       snapshotPath: "p1_layers,p1_m3_m4_bridge,p1_m5_bridge,p1_m6_bridge",
       contentLayer: "baseline",
       availableInJsonExport: true,
@@ -432,10 +435,17 @@ export function buildMethodologyReportSnapshot(
     },
     section13_audit: buildAuditAnnex(results),
     m8_report_completeness: buildM8ReportCompleteness(),
+    methodology_outline_1_10: { chapters: [] },
     executiveSummaryCs: "",
+    explainability_summary: buildPipelineExplainabilitySummary(
+      state,
+      "baseline",
+      baseline,
+    ),
   };
 
   snapshot.executiveSummaryCs = buildExecutiveSummaryCs(snapshot);
+  snapshot.methodology_outline_1_10 = buildMethodologyOutline110(state, snapshot);
   return snapshot;
 }
 
