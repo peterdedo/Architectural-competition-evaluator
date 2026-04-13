@@ -79,6 +79,7 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
           const parsedData = await parseFile(file);
           
           if (parsedData) {
+            const hasUnmapped = Array.isArray(parsedData.mappingInfo?.unmappedColumns) && parsedData.mappingInfo.unmappedColumns.length > 0;
             noveNavrhy.push({
               id: Date.now() + Math.random(),
               nazev: parsedData.nazev,
@@ -88,8 +89,20 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
               data: parsedData.data || {},
               vybrany: false,
               fileFormat: format,
-              source: parsedData.source
+              source: parsedData.source,
+              mappingInfo: parsedData.mappingInfo || null,
+              warningMessage: hasUnmapped
+                ? `Některé CSV sloupce nebyly rozpoznány: ${parsedData.mappingInfo.unmappedColumns.join(', ')}`
+                : null
             });
+
+            if (hasUnmapped) {
+              showToast(
+                `CSV „${parsedData.nazev}“ bylo načteno jen částečně. Nerozpoznané sloupce: ${parsedData.mappingInfo.unmappedColumns.join(', ')}`,
+                'error',
+                0
+              );
+            }
           }
         } catch (error) {
           console.error('Error parsing file:', error);
@@ -495,6 +508,12 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
                             <div className="mt-2 text-xs text-red-600 bg-red-50 rounded px-2 py-1">
                               ❌ {navrh.errorMessage}
                         </div>
+                          )}
+
+                          {navrh.warningMessage && navrh.status === 'zpracován' && (
+                            <div className="mt-2 text-xs text-amber-800 bg-amber-50 rounded px-2 py-1 border border-amber-200">
+                              ⚠️ {navrh.warningMessage}
+                            </div>
                           )}
                           
                           {navrh.status === 'zpracován' && (

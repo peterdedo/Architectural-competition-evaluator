@@ -39,6 +39,7 @@ const StepWeights = ({
   const [showAIWeightManager, setShowAIWeightManager] = useState(false);
   const [contextText, setContextText] = useState('');
   const [aiSuccessBanner, setAiSuccessBanner] = useState('');
+  const [inputErrors, setInputErrors] = useState({});
 
   const { updateWeights, weights: wizardWeights, categoryWeights: wizardCategoryWeights } = useWizard();
   const { showToast } = useToast();
@@ -74,6 +75,7 @@ const StepWeights = ({
     setIndicatorWeights(weights);
     setShowAIWeightManager(false);
     setAiSuccessBanner('');
+    setInputErrors({});
     openSnapshotRef.current = JSON.stringify({ cat, ind: weights });
   }, [isOpen, selectedIndicators, vahy, globalCategoryWeights, allIndicatorsList]);
 
@@ -157,9 +159,14 @@ const StepWeights = ({
     const parsed = parseWeightInput(value);
     if (parsed === null) {
       setCategoryWeightsLocal((prev) => ({ ...prev, [categoryId]: 0 }));
+      setInputErrors((prev) => ({ ...prev, [`cat-${categoryId}`]: null }));
       return;
     }
-    if (Number.isNaN(parsed)) return;
+    if (Number.isNaN(parsed)) {
+      setInputErrors((prev) => ({ ...prev, [`cat-${categoryId}`]: 'Zadejte číslo od 0 do 100.' }));
+      return;
+    }
+    setInputErrors((prev) => ({ ...prev, [`cat-${categoryId}`]: null }));
     setCategoryWeightsLocal((prev) => ({ ...prev, [categoryId]: parsed }));
   }, []);
 
@@ -167,9 +174,14 @@ const StepWeights = ({
     const parsed = parseWeightInput(value);
     if (parsed === null) {
       setIndicatorWeights((prev) => ({ ...prev, [indicatorId]: 0 }));
+      setInputErrors((prev) => ({ ...prev, [`ind-${indicatorId}`]: null }));
       return;
     }
-    if (Number.isNaN(parsed)) return;
+    if (Number.isNaN(parsed)) {
+      setInputErrors((prev) => ({ ...prev, [`ind-${indicatorId}`]: 'Zadejte číslo od 0 do 100.' }));
+      return;
+    }
+    setInputErrors((prev) => ({ ...prev, [`ind-${indicatorId}`]: null }));
     setIndicatorWeights((prev) => ({ ...prev, [indicatorId]: parsed }));
   }, []);
 
@@ -268,7 +280,7 @@ const StepWeights = ({
   };
 
   const fieldClass = (key, base) => {
-    const has = validation.fieldErrors[key];
+    const has = validation.fieldErrors[key] || Boolean(inputErrors[key]);
     return `${base} ${has ? 'border-red-500 ring-1 ring-red-400' : 'border-slate-200'}`;
   };
 
@@ -413,7 +425,8 @@ const StepWeights = ({
               <div className="space-y-4">
                 {kategorie.map((category) => {
                   const weight = Number(categoryWeights[category.id]) || 0;
-                  const fe = validation.fieldErrors[`cat-${category.id}`];
+                  const fieldKey = `cat-${category.id}`;
+                  const fe = validation.fieldErrors[fieldKey] || inputErrors[fieldKey];
                   return (
                     <div
                       key={category.id}
@@ -443,14 +456,21 @@ const StepWeights = ({
                             step={1}
                             value={weight}
                             onChange={(e) => handleCategoryWeightChange(category.id, e.target.value)}
+                            aria-invalid={Boolean(fe)}
+                            aria-describedby={inputErrors[fieldKey] ? `err-${fieldKey}` : undefined}
                             className={fieldClass(
-                              `cat-${category.id}`,
+                              fieldKey,
                               `w-20 px-3 py-1.5 border rounded-lg text-center font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0066A4] ${getWeightColor(weight)}`
                             )}
                           />
                           <span className="text-sm text-slate-600">%</span>
                         </div>
                       </div>
+                      {inputErrors[fieldKey] && (
+                        <p id={`err-${fieldKey}`} className="text-xs text-red-700 mt-2">
+                          {inputErrors[fieldKey]}
+                        </p>
+                      )}
                       <div className="w-full bg-slate-200 rounded-full h-2">
                         <div
                           className="bg-gradient-to-r from-[#0066A4] to-[#4BB349] h-2 rounded-full transition-all duration-300"
@@ -494,7 +514,8 @@ const StepWeights = ({
                   {Object.entries(indicatorWeights).map(([indicatorId, weight]) => {
                     const indicator = allIndicatorsList.find((ind) => ind.id === indicatorId);
                     if (!indicator) return null;
-                    const fe = validation.fieldErrors[`ind-${indicatorId}`];
+                    const fieldKey = `ind-${indicatorId}`;
+                    const fe = validation.fieldErrors[fieldKey] || inputErrors[fieldKey];
                     return (
                       <div
                         key={indicatorId}
@@ -525,13 +546,20 @@ const StepWeights = ({
                             step={1}
                             value={weight}
                             onChange={(e) => handleIndicatorWeightChange(indicatorId, e.target.value)}
+                            aria-invalid={Boolean(fe)}
+                            aria-describedby={inputErrors[fieldKey] ? `err-${fieldKey}` : undefined}
                             className={fieldClass(
-                              `ind-${indicatorId}`,
+                              fieldKey,
                               `w-16 px-2 py-1 border rounded text-center text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0066A4] ${getWeightColor(weight)}`
                             )}
                           />
                           <span className="text-xs text-slate-600">%</span>
                         </div>
+                        {inputErrors[fieldKey] && (
+                          <p id={`err-${fieldKey}`} className="text-xs text-red-700 mt-1">
+                            {inputErrors[fieldKey]}
+                          </p>
+                        )}
                       </div>
                     );
                   })}

@@ -100,6 +100,9 @@ export const WizardProvider = ({ children }) => {
   const [storedWeights, setStoredWeights] = useLocalStorage('urban-analysis-vahy', {});
   const [storedCategoryWeights, setStoredCategoryWeights] = useLocalStorage('urban-analysis-category-weights', {});
   const [storedProjects, setStoredProjects] = useLocalStorage('urban-analysis-navrhy', []);
+  const [storedStep, setStoredStep] = useLocalStorage('urban-analysis-wizard-step', STEPS.CONFIG);
+  const [storedSelectedProjects, setStoredSelectedProjects] = useLocalStorage('urban-analysis-selected-projects', []);
+  const [storedSelectedCriteria, setStoredSelectedCriteria] = useLocalStorage('urban-analysis-selected-criteria', []);
 
   // Normalizácia poškodeného stavu – nie počas renderu (React 18)
   React.useEffect(() => {
@@ -147,9 +150,28 @@ export const WizardProvider = ({ children }) => {
     }
   }, [storedProjects]);
 
+  React.useEffect(() => {
+    if (storedStep && Object.values(STEPS).includes(storedStep)) {
+      dispatch({ type: 'SET_STEP', payload: storedStep });
+    }
+  }, [storedStep]);
+
+  React.useEffect(() => {
+    if (Array.isArray(storedSelectedProjects)) {
+      dispatch({ type: 'SET_SELECTED_PROJECTS', payload: new Set(storedSelectedProjects) });
+    }
+  }, [storedSelectedProjects]);
+
+  React.useEffect(() => {
+    if (Array.isArray(storedSelectedCriteria) && storedSelectedCriteria.length > 0) {
+      dispatch({ type: 'SET_SELECTED_CRITERIA', payload: new Set(storedSelectedCriteria) });
+    }
+  }, [storedSelectedCriteria]);
+
   const setStep = useCallback((step) => {
     dispatch({ type: 'SET_STEP', payload: step });
-  }, []);
+    setStoredStep(step);
+  }, [setStoredStep]);
 
   const setProjects = useCallback((projects) => {
     let projectsArray;
@@ -178,19 +200,29 @@ export const WizardProvider = ({ children }) => {
 
   const setSelectedProjects = useCallback((projects) => {
     dispatch({ type: 'SET_SELECTED_PROJECTS', payload: projects });
-  }, []);
+    setStoredSelectedProjects(Array.from(projects || []));
+  }, [setStoredSelectedProjects]);
 
   const toggleProjectSelection = useCallback((projectId) => {
-    dispatch({ type: 'TOGGLE_PROJECT_SELECTION', payload: projectId });
-  }, []);
+    const updated = new Set(state.selectedProjects);
+    if (updated.has(projectId)) updated.delete(projectId);
+    else updated.add(projectId);
+    dispatch({ type: 'SET_SELECTED_PROJECTS', payload: updated });
+    setStoredSelectedProjects(Array.from(updated));
+  }, [state.selectedProjects, setStoredSelectedProjects]);
 
   const setSelectedCriteria = useCallback((criteria) => {
     dispatch({ type: 'SET_SELECTED_CRITERIA', payload: criteria });
-  }, []);
+    setStoredSelectedCriteria(Array.from(criteria || []));
+  }, [setStoredSelectedCriteria]);
 
   const toggleCriteriaSelection = useCallback((criteriaId) => {
-    dispatch({ type: 'TOGGLE_CRITERIA_SELECTION', payload: criteriaId });
-  }, []);
+    const updated = new Set(state.selectedCriteria);
+    if (updated.has(criteriaId)) updated.delete(criteriaId);
+    else updated.add(criteriaId);
+    dispatch({ type: 'SET_SELECTED_CRITERIA', payload: updated });
+    setStoredSelectedCriteria(Array.from(updated));
+  }, [state.selectedCriteria, setStoredSelectedCriteria]);
 
   const setAnalysisResults = useCallback((results) => {
     dispatch({ type: 'SET_ANALYSIS_RESULTS', payload: results });
@@ -321,7 +353,11 @@ export const WizardProvider = ({ children }) => {
     setStoredModel('gpt-4o');
     setStoredWeights({});
     setStoredCategoryWeights({});
-  }, [setStoredModel, setStoredWeights, setStoredCategoryWeights]);
+    setStoredProjects([]);
+    setStoredStep(STEPS.CONFIG);
+    setStoredSelectedProjects([]);
+    setStoredSelectedCriteria([]);
+  }, [setStoredModel, setStoredWeights, setStoredCategoryWeights, setStoredProjects, setStoredStep, setStoredSelectedProjects, setStoredSelectedCriteria]);
 
   // Computed values - bezpečná kontrola pre state.projects
   const validProjects = useMemo(() => {

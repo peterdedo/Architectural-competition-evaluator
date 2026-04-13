@@ -5,6 +5,9 @@ import { Target, TrendingUp, Award } from 'lucide-react';
 import { withoutLegacyExcludedById } from '../config/legacyIndicatorFilters';
 
 const RadarChartAdvanced = ({ data, indicators, allIndicators = null }) => {
+  const shortenLabel = (label, max = 28) =>
+    label && label.length > max ? `${label.slice(0, max - 1)}…` : label;
+
   // Parser pre číselné hodnoty
   const parseNumericValue = (val) => {
     if (val === null || val === undefined) return null;
@@ -62,9 +65,7 @@ const RadarChartAdvanced = ({ data, indicators, allIndicators = null }) => {
 
     // Spracujeme každý indikátor
     zobrazovaneIndikatory.forEach((indikator) => {
-      const indicatorName = indikator.nazev.length > 50 ? indikator.nazev.slice(0, 50) + "…" : indikator.nazev;
-      
-      console.log(`🔍 RadarChart - spracovávam indikátor: ${indikator.nazev}`);
+      const indicatorName = shortenLabel(indikator.nazev, 32);
 
       // Získame všetky hodnoty pre tento indikátor
       const hodnoty = data.map(navrh => {
@@ -211,7 +212,7 @@ const RadarChartAdvanced = ({ data, indicators, allIndicators = null }) => {
             fontSize: 11,
             color: '#6B7280',
             fontWeight: '500',
-            width: 80,
+            width: 110,
             overflow: 'truncate'
           }
         })),
@@ -336,7 +337,7 @@ const RadarChartAdvanced = ({ data, indicators, allIndicators = null }) => {
                 className="w-4 h-4 rounded-full" 
                 style={{ backgroundColor: color }}
               />
-              <span className="text-sm text-gray-600">{navrh.nazev}</span>
+              <span className="text-sm text-gray-600" title={navrh.nazev}>{shortenLabel(navrh.nazev, 30)}</span>
               <span className="text-sm font-medium text-gray-900">
                 ({navrh.weightedScore || 0}%)
               </span>

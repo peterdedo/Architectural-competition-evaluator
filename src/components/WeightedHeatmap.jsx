@@ -13,6 +13,9 @@ import { withoutLegacyExcludedById } from '../config/legacyIndicatorFilters';
 echarts.use([HeatmapChart, GridComponent, VisualMapComponent, TooltipComponent, CanvasRenderer]);
 
 const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, categoryWeights = {} }) => {
+  const shortenLabel = (label, max = 26) =>
+    label && label.length > max ? `${label.slice(0, max - 1)}…` : label;
+
   // Real-time aktualizácia pri zmene váh alebo kategórií
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   
@@ -222,9 +225,10 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
       type: 'category',
       data: indicatorsForHeatmap.map((i) => i.nazev),
       axisLabel: {
-        rotate: 45,
+        rotate: 35,
         fontSize: 12,
-        color: '#666'
+        color: '#666',
+        formatter: (value) => shortenLabel(value, 26)
       },
       splitArea: {
         show: false

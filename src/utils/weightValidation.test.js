@@ -12,10 +12,10 @@ const inds = [
 ];
 
 describe('parseWeightInput', () => {
-  it('parses and clamps', () => {
+  it('parses and rejects out-of-range values', () => {
     expect(parseWeightInput('50')).toBe(50);
-    expect(parseWeightInput('101')).toBe(100);
-    expect(parseWeightInput('-1')).toBe(0);
+    expect(Number.isNaN(parseWeightInput('101'))).toBe(true);
+    expect(Number.isNaN(parseWeightInput('-1'))).toBe(true);
     expect(parseWeightInput('')).toBe(null);
     expect(parseWeightInput('abc')).toBe(null);
   });

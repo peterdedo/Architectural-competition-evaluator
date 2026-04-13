@@ -57,7 +57,7 @@ export function validateWeightModalState({
       }
       if (Math.abs(sumInd - 100) > tolerance) {
         errors.push(
-          `Váhy indikátorů v kategorii „${cat.nazev}“ musí dát dohromady 100 % (nyní ${sumInd.toFixed(1)} %).`
+          `Váhy indikátorů v kategorii „${cat.nazev}“ musí dát 100 % (nyní ${sumInd.toFixed(1)} %).`
         );
         fieldErrors[`cat-ind-${cat.id}`] = true;
         inCat.forEach((ind) => {
@@ -72,7 +72,7 @@ export function validateWeightModalState({
     if (!selected.has(ind.id)) continue;
     const iw = Number(indicatorWeights[ind.id]);
     if (!Number.isFinite(iw) || iw < 0 || iw > 100) {
-      errors.push(`Indikátor „${ind.nazev || ind.id}“ má neplatnou váhu (povolený rozsah 0–100 %).`);
+      errors.push(`Indikátor „${ind.nazev || ind.id}“: Zadejte číslo od 0 do 100.`);
       fieldErrors[`ind-${ind.id}`] = true;
       if (!firstScrollId) firstScrollId = `ind:${ind.id}`;
     }
@@ -96,5 +96,6 @@ export function parseWeightInput(raw) {
   if (cleaned === '' || cleaned === '-' || cleaned === '.') return null;
   const n = Number(cleaned);
   if (!Number.isFinite(n)) return NaN;
-  return Math.max(0, Math.min(100, Math.round(n * 100) / 100));
+  if (n < 0 || n > 100) return NaN;
+  return Math.round(n * 100) / 100;
 }

@@ -186,8 +186,11 @@ const App = () => {
 
   // Funkcia pre vyčistenie localStorage a reset aplikácie
   const resetApplication = () => {
-    if (confirm('Naozaj chcete resetovať aplikáciu? Všetky dáta sa stratia.')) {
-      localStorage.clear();
+    if (confirm('Opravdu chcete resetovat aplikaci? Všechna rozpracovaná data se smažou.')) {
+      const keysToClear = Object.keys(localStorage).filter(
+        (k) => k.startsWith('urban-analysis-') || k === 'apiTestPassed' || k === 'skipApiValidation' || k === 'gpt_model'
+      );
+      keysToClear.forEach((k) => localStorage.removeItem(k));
       window.location.reload();
     }
   };
@@ -350,7 +353,7 @@ const App = () => {
           <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-40">
             <div className="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
               <WifiOff size={16} />
-              <span>Offline mode - niektoré funkcie môžu byť obmedzené</span>
+              <span>Offline režim - některé funkce mohou být omezené</span>
             </div>
           </div>
         )}

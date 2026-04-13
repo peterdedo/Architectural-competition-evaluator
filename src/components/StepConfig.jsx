@@ -12,6 +12,7 @@ const StepConfig = ({ onNext }) => {
   const [showVersions, setShowVersions] = useState(false);
   const [versions, setVersions] = useState([]);
   const [versionName, setVersionName] = useState('');
+  const [versionNameError, setVersionNameError] = useState('');
   const wizardContext = useWizard();
   const { showToast } = useToast();
 
@@ -29,6 +30,12 @@ const StepConfig = ({ onNext }) => {
   };
 
   const handleSaveVersion = () => {
+    if (!versionName.trim()) {
+      setVersionNameError('Zadejte název konfigurace.');
+      showToast('Zadejte název konfigurace.', 'error', 5000);
+      return;
+    }
+    setVersionNameError('');
     try {
       const currentData = getCurrentProjectData(wizardContext);
       const savedVersion = saveVersion(currentData, versionName);
@@ -65,7 +72,7 @@ const StepConfig = ({ onNext }) => {
 
   const handleNext = async () => {
     if (!canContinue) {
-      alert('Nejprve otestujte připojení k serverovému proxy (tlačítko „Testovat API“) nebo použijte testovací režim.');
+      showToast('Nejprve otestujte připojení k serverovému proxy nebo použijte testovací režim.', 'error', 5000);
       return;
     }
 
@@ -142,18 +149,29 @@ const StepConfig = ({ onNext }) => {
                     type="text"
                     placeholder="Název verze..."
                     value={versionName}
-                    onChange={(e) => setVersionName(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    onChange={(e) => {
+                      setVersionName(e.target.value);
+                      if (versionNameError) setVersionNameError('');
+                    }}
+                    aria-invalid={Boolean(versionNameError)}
+                    aria-describedby={versionNameError ? 'version-name-error' : undefined}
+                    className={`flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                      versionNameError ? 'border-red-400 bg-red-50' : 'border-purple-300'
+                    }`}
                   />
                   <button
                     onClick={handleSaveVersion}
-                    disabled={!versionName.trim()}
                     className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500"
                   >
                     <Save size={16} />
                     Uložit verzi
                   </button>
                 </div>
+                {versionNameError && (
+                  <p id="version-name-error" className="text-sm text-red-700">
+                    {versionNameError}
+                  </p>
+                )}
 
                 {versions.length > 0 && (
                   <div className="max-h-40 overflow-y-auto space-y-2">

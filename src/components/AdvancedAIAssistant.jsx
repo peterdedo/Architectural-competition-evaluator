@@ -17,7 +17,6 @@ import {
 } from 'lucide-react';
 import useAIAssistant from '../hooks/useAIAssistant';
 import { useWizard } from '../contexts/WizardContext';
-import { sanitizeAiHtml } from '../utils/sanitizeAiHtml';
 
 const AdvancedAIAssistant = ({ 
   indikatory, 
@@ -38,6 +37,13 @@ const AdvancedAIAssistant = ({
   const { results } = useWizard();
 
   const { isAnalyzing, analysisProgress, analyzeComparison, generateComments } = useAIAssistant();
+
+  const normalizeReportText = (text) =>
+    String(text || '')
+      .replace(/<[^>]+>/g, '')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
 
   const vybraneIndikatoryList = indikatory.filter(ind => vybraneIndikatory.has(ind.id));
   
@@ -207,10 +213,9 @@ const AdvancedAIAssistant = ({
                   Shrnutí analýzy
                 </h4>
                 <div className="prose max-w-none">
-                  <div 
-                    className="text-gray-700 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: sanitizeAiHtml(aiAnalysis) }}
-                  />
+                  <pre className="text-gray-700 leading-relaxed whitespace-pre-wrap font-sans">
+                    {normalizeReportText(aiAnalysis)}
+                  </pre>
                 </div>
               </div>
             )}
@@ -222,10 +227,9 @@ const AdvancedAIAssistant = ({
                   <MessageSquare size={20} className="text-green-600" />
                   AI Komentáře a doporučení
                 </h4>
-                <div 
-                  className="prose max-w-none"
-                  dangerouslySetInnerHTML={{ __html: sanitizeAiHtml(aiComments) }}
-                />
+                <pre className="prose max-w-none whitespace-pre-wrap font-sans text-gray-700">
+                  {normalizeReportText(aiComments)}
+                </pre>
               </div>
             )}
 

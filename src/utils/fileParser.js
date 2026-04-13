@@ -6,6 +6,38 @@
  * - Parses JSON/CSV into internal data schema
  * - Converts to standard project format
  */
+import { indikatory } from '../data/indikatory';
+
+const normalizeHeader = (value) =>
+  String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+const indicatorAliases = {
+  f01: ['hpp bydleni', 'bydleni hpp', 'podlazni plocha bydleni'],
+  f02: ['hpp kancelare', 'hpp sluzby', 'administrativa hpp'],
+  f03: ['hpp komerce', 'hpp obchod', 'retail hpp'],
+  f04: ['hpp verejna vybavenost', 'vybavenost hpp', 'skoly hpp'],
+  f05: ['hpp sport', 'hpp rekreace', 'volny cas hpp'],
+  f06: ['hpp technicke', 'technicke hpp', 'zazemi hpp']
+};
+
+const buildHeaderToIndicatorMap = () => {
+  const map = new Map();
+  indikatory.forEach((indicator) => {
+    const idKey = normalizeHeader(indicator.id);
+    const nameKey = normalizeHeader(indicator.nazev);
+    map.set(idKey, indicator.id);
+    map.set(nameKey, indicator.id);
+    (indicatorAliases[idKey] || []).forEach((alias) => {
+      map.set(normalizeHeader(alias), indicator.id);
+    });
+  });
+  return map;
+};
 
 /**
  * Parse JSON file
@@ -45,9 +77,11 @@ export const parseCSVFile = async (file) => {
     
     // Parse header
     const headers = lines[0].split(',').map(h => h.trim());
+    const headerMap = buildHeaderToIndicatorMap();
     
     // Parse data rows
-    const data = {};
+    const mappedData = {};
+    const unmappedColumns = [];
     for (let i = 1; i < lines.length; i++) {
       const values = lines[i].split(',').map(v => v.trim());
       
@@ -58,15 +92,34 @@ export const parseCSVFile = async (file) => {
       
       // Create data object from CSV row
       headers.forEach((header, index) => {
-        data[header] = values[index];
+        const key = normalizeHeader(header);
+        const indicatorId = headerMap.get(key);
+        if (!indicatorId) {
+          if (!unmappedColumns.includes(header)) unmappedColumns.push(header);
+          return;
+        }
+
+        const raw = values[index];
+        const parsed = Number(String(raw).replace(',', '.'));
+        mappedData[indicatorId] = Number.isFinite(parsed) ? parsed : raw;
       });
+    }
+
+    if (Object.keys(mappedData).length === 0) {
+      throw new Error(
+        `CSV se nepodařilo namapovat na indikátory. Nerozpoznané sloupce: ${unmappedColumns.join(', ')}`
+      );
     }
     
     return {
       nazev: file.name.replace('.csv', ''),
-      data: data,
+      data: mappedData,
       status: 'zpracován',
-      source: 'csv'
+      source: 'csv',
+      mappingInfo: {
+        mappedCount: Object.keys(mappedData).length,
+        unmappedColumns
+      }
     };
   } catch (error) {
     throw new Error(`Chyba při parsování CSV: ${error.message}`);
