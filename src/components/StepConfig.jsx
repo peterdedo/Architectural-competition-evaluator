@@ -13,7 +13,7 @@ const StepConfig = ({ onNext }) => {
   const [versions, setVersions] = useState([]);
   const [versionName, setVersionName] = useState('');
   const wizardContext = useWizard();
-  const { toast } = useToast();
+  const { showToast } = useToast();
 
   const isTestMode = localStorage.getItem('skipApiValidation') === 'true';
   const canContinue = isTestMode || apiTestPassed;
@@ -33,20 +33,12 @@ const StepConfig = ({ onNext }) => {
       const currentData = getCurrentProjectData(wizardContext);
       const savedVersion = saveVersion(currentData, versionName);
 
-      toast({
-        type: 'success',
-        message: `Verze "${savedVersion.name}" byla uložena`,
-        duration: 3000
-      });
+      showToast(`Verze „${savedVersion.name}“ byla uložena`, 'success', 5000);
 
       setVersionName('');
       loadVersions();
     } catch (error) {
-      toast({
-        type: 'error',
-        message: `Chyba při ukládání verze: ${error.message}`,
-        duration: 3000
-      });
+      showToast(`Chyba při ukládání verze: ${error.message}`, 'error', 0);
     }
   };
 
@@ -54,19 +46,11 @@ const StepConfig = ({ onNext }) => {
     try {
       restoreVersion(versionId);
 
-      toast({
-        type: 'success',
-        message: 'Verze byla obnovena',
-        duration: 3000
-      });
+      showToast('Verze byla obnovena', 'success', 4000);
 
       setShowVersions(false);
     } catch (error) {
-      toast({
-        type: 'error',
-        message: `Chyba při obnovování verze: ${error.message}`,
-        duration: 3000
-      });
+      showToast(`Chyba při obnovování verze: ${error.message}`, 'error', 0);
     }
   };
 
@@ -75,11 +59,7 @@ const StepConfig = ({ onNext }) => {
       deleteVersion(versionId);
       loadVersions();
 
-      toast({
-        type: 'success',
-        message: 'Verze byla smazána',
-        duration: 3000
-      });
+      showToast('Verze byla smazána', 'success', 4000);
     }
   };
 
@@ -228,7 +208,7 @@ const StepConfig = ({ onNext }) => {
             disabled={isLoading}
             title="Použít pro testování bez ověření proxy"
           >
-            {isLoading ? '⏳ Načítavam...' : '🧪 Testovací režim'}
+            {isLoading ? '⏳ Načítám...' : '🧪 Testovací režim'}
           </button>
 
           <button
@@ -237,7 +217,7 @@ const StepConfig = ({ onNext }) => {
             disabled={!canContinue || isLoading}
             title={!canContinue ? 'Nejprve úspěšně otestujte proxy nebo použijte testovací režim' : ''}
           >
-            {isLoading ? '⏳ Načítavam...' : 'Pokračovat na Nahrání návrhů'}
+            {isLoading ? '⏳ Načítám...' : 'Pokračovat na výběr kritérií'}
             <span className="text-lg">{isLoading ? '' : '→'}</span>
           </button>
         </div>

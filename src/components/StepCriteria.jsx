@@ -602,28 +602,30 @@ const StepCriteria = ({ vybraneIndikatory, setVybraneIndikatory, onNext, onBack,
                 className="inline-flex items-center gap-2 px-6 py-3 text-slate-700 bg-slate-100 rounded-lg font-semibold hover:bg-slate-200 transition-all"
                 onClick={onBack}
               >
-            ← Zpět na Nahrání návrhů
+            ← Zpět na konfiguraci
           </button>
           
               <div className="flex items-center gap-4">
             {vybraneIndikatory.size > 0 && (
               <button
+                type="button"
                 onClick={() => setShowWeightSettings(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 text-[#0066A4] bg-blue-50 border-2 border-[#0066A4] rounded-lg font-semibold hover:bg-blue-100 transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3 text-[#0066A4] bg-blue-50 border-2 border-[#0066A4] rounded-lg font-semibold hover:bg-blue-100 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0066A4]"
               >
-                <Sliders size={18} />
+                <Sliders size={18} aria-hidden />
                 Nastavit váhy ({vybraneIndikatory.size})
               </button>
             )}
             
             <button
-                  className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[#0066A4] to-[#4BB349] text-white rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="button"
+                  className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-[#0066A4] to-[#4BB349] text-white rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0066A4]"
               onClick={onNext}
               disabled={vybraneIndikatory.size === 0}
             >
-                  <BarChart3 size={18} />
-                  Pokračovat na výsledky analýzy
-              <span className="text-lg">→</span>
+                  <BarChart3 size={18} aria-hidden />
+                  Pokračovat na nahrání návrhů
+              <span className="text-lg" aria-hidden>→</span>
             </button>
               </div>
             </div>
@@ -676,14 +678,8 @@ const StepCriteria = ({ vybraneIndikatory, setVybraneIndikatory, onNext, onBack,
         setVahy={setVahy}
         categoryWeights={globalCategoryWeights}
         setCategoryWeights={setCategoryWeights}
-        wizardWeights={wizardContext?.weights}
-        wizardCategoryWeights={wizardContext?.categoryWeights}
       />
-      {/* Debug logy */}
-      {console.log('🔍 StepCriteria - wizardContext?.weights:', wizardContext?.weights)}
-      {console.log('🔍 StepCriteria - wizardContext?.categoryWeights:', wizardContext?.categoryWeights)}
-
-      {/* AI Weight Manager Modal */}
+      {/* AI — správce vah (samostatné okno) */}
       <AnimatePresence>
         {showAIWeightManager && (
           <AIWeightManager

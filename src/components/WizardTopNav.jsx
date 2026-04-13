@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import ProgressIndicator from './ProgressIndicator';
 
-const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode }) => {
+const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedProposalCount = 0 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [completedSteps, setCompletedSteps] = useState(new Set());
   const [isScrolled, setIsScrolled] = useState(false);
@@ -62,6 +62,15 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode }) => {
   const aktualniIndex = krokyConfig.findIndex(krok => krok.id === aktualniKrok);
   const progress = ((aktualniIndex + 1) / krokyConfig.length) * 100;
 
+  /** Indexy: 0 konfigurace, 1 kritéria, 2 nahrání, 3 výsledky, 4 porovnání */
+  const canNavigateToStepIndex = (index) => {
+    if (index < 0 || index >= krokyConfig.length) return false;
+    if (index <= aktualniIndex) return true;
+    if (index === 3 || index === 4) return processedProposalCount >= 1;
+    if (index === 1 || index === 2) return true;
+    return false;
+  };
+
   // Track scroll for sticky behavior
   useEffect(() => {
     const handleScroll = () => {
@@ -97,7 +106,7 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode }) => {
   };
 
   const handleStepClick = (index) => {
-    if (index <= aktualniIndex || completedSteps.has(index)) {
+    if (canNavigateToStepIndex(index)) {
       onKrokChange(krokyConfig[index].id);
       setIsMobileMenuOpen(false);
     }
@@ -111,7 +120,10 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode }) => {
 
   const handleNextStep = () => {
     if (aktualniIndex < krokyConfig.length - 1) {
-      onKrokChange(krokyConfig[aktualniIndex + 1].id);
+      const next = aktualniIndex + 1;
+      if (canNavigateToStepIndex(next)) {
+        onKrokChange(krokyConfig[next].id);
+      }
     }
   };
 
@@ -135,15 +147,19 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode }) => {
             <div className="flex items-center space-x-4">
               {krokyConfig.map((krok, index) => {
                 const status = getKrokStatus(index);
-                const isClickable = index <= aktualniIndex || completedSteps.has(index);
+                const isClickable = canNavigateToStepIndex(index);
                 
                 return (
                   <motion.button
+                    type="button"
                     key={krok.id}
                     onClick={() => handleStepClick(index)}
                     disabled={!isClickable}
+                    aria-current={index === aktualniIndex ? 'step' : undefined}
+                    aria-label={`${krok.nazev}${!isClickable ? ' (zatím nedostupné)' : ''}`}
                     className={`
                       group relative flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200
+                      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500
                       ${isClickable 
                         ? 'cursor-pointer hover:scale-105' 
                         : 'cursor-not-allowed opacity-50'
@@ -249,6 +265,7 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode }) => {
             currentStep={aktualniIndex}
             completedSteps={completedSteps}
             onStepClick={handleStepClick}
+            canStepClick={canNavigateToStepIndex}
             variant="default"
           />
         </div>
@@ -260,9 +277,11 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode }) => {
         <div className="flex items-center justify-between px-4 py-4">
           <div className="flex items-center space-x-3">
             <button
+              type="button"
               onClick={handlePreviousStep}
               disabled={aktualniIndex === 0}
-              className="p-2 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Předchozí krok"
+              className="p-2 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               <ChevronLeft size={20} />
             </button>
@@ -277,17 +296,24 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode }) => {
             </div>
             
             <button
+              type="button"
               onClick={handleNextStep}
-              disabled={aktualniIndex === krokyConfig.length - 1}
-              className="p-2 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={
+                aktualniIndex === krokyConfig.length - 1 ||
+                !canNavigateToStepIndex(aktualniIndex + 1)
+              }
+              aria-label="Další krok"
+              className="p-2 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               <ChevronRight size={20} />
             </button>
           </div>
 
           <button
+            type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 rounded-lg bg-gray-100"
+            className="p-2 rounded-lg bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            aria-label={isMobileMenuOpen ? 'Zavřít menu kroků' : 'Otevřít menu kroků'}
           >
             {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -304,6 +330,7 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode }) => {
             currentStep={aktualniIndex}
             completedSteps={completedSteps}
             onStepClick={handleStepClick}
+            canStepClick={canNavigateToStepIndex}
             variant="minimal"
           />
         </div>
@@ -320,10 +347,11 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode }) => {
               <div className="px-4 py-4 space-y-2">
                 {krokyConfig.map((krok, index) => {
                   const status = getKrokStatus(index);
-                  const isClickable = index <= aktualniIndex || completedSteps.has(index);
+                  const isClickable = canNavigateToStepIndex(index);
                   
                   return (
                     <motion.button
+                      type="button"
                       key={krok.id}
                       onClick={() => handleStepClick(index)}
                       disabled={!isClickable}

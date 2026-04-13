@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import ErrorRecoveryBoundary from './components/ErrorRecoveryBoundary';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
@@ -65,6 +65,10 @@ const App = () => {
   );
   // Používame WizardContext namiesto lokálneho stavu
   const { projects: navrhy, setProjects: setNavrhy } = useWizard();
+  const processedProposalCount = useMemo(
+    () => navrhy.filter((n) => n.status === 'zpracován').length,
+    [navrhy]
+  );
   const [vybraneNavrhy, setVybraneNavrhy] = useState(() => 
     loadFromStorage('urban-analysis-vybrane-navrhy', new Set())
   );
@@ -239,7 +243,7 @@ const App = () => {
               aiWeights={aiWeights}
               aiCategoryWeights={aiCategoryWeights}
               onNext={() => setAktualniKrok(KROKY.POROVNANI)} 
-              onBack={() => setAktualniKrok(KROKY.KRITERIA)}
+              onBack={() => setAktualniKrok(KROKY.NAHRANI)}
             />
           </LazyWrapper>
         );
@@ -317,6 +321,7 @@ const App = () => {
           kroky={KROKY} 
           onKrokChange={setAktualniKrok}
           darkMode={darkMode}
+          processedProposalCount={processedProposalCount}
         />
         
         {/* Hlavný obsah */}

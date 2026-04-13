@@ -270,7 +270,7 @@ export default function AIWeightManager({
     <div className="space-y-6">
       <div className="text-center">
         <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          Context-Aware AI Weight Manager
+          Návrhy vah pomocí AI (s kontextem soutěže)
         </h3>
         <p className="text-sm text-gray-600">
           Zadejte kontext soutěže a AI optimalizuje váhy kategorií a indikátorů
@@ -304,7 +304,7 @@ export default function AIWeightManager({
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Generuji komentáře...
+              Generuji návrh vah...
             </>
           ) : (
             <>
@@ -318,7 +318,7 @@ export default function AIWeightManager({
       {/* Model info */}
       <div className="text-center">
         <p className="text-xs text-gray-400">
-          Použitý model: GPT-4o-mini (context-aware)
+          Použitý model: GPT-4o-mini (kontextový režim)
         </p>
       </div>
 

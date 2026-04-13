@@ -8,8 +8,15 @@ const ProgressIndicator = ({
   onStepClick, 
   completedSteps = new Set(),
   disabled = false,
+  /** Volitelné: přepíše výchozí pravidlo klikatelnosti kroků */
+  canStepClick = null,
   variant = 'default' // 'default', 'minimal', 'detailed'
 }) => {
+  const stepClickable = (index) => {
+    if (disabled) return false;
+    if (typeof canStepClick === 'function') return canStepClick(index);
+    return index <= currentStep || completedSteps.has(index);
+  };
   const getStepStatus = (stepIndex) => {
     if (completedSteps.has(stepIndex)) return 'completed';
     if (stepIndex === currentStep) return 'current';
@@ -54,14 +61,16 @@ const ProgressIndicator = ({
           return (
             <React.Fragment key={step.id}>
               <motion.button
-                whileHover={!disabled ? { scale: 1.1 } : {}}
-                whileTap={!disabled ? { scale: 0.95 } : {}}
-                onClick={() => !disabled && onStepClick && onStepClick(index)}
-                disabled={disabled}
+                type="button"
+                whileHover={stepClickable(index) ? { scale: 1.1 } : {}}
+                whileTap={stepClickable(index) ? { scale: 0.95 } : {}}
+                onClick={() => stepClickable(index) && onStepClick && onStepClick(index)}
+                disabled={!stepClickable(index)}
+                aria-label={`Krok ${index + 1}: ${step.title}`}
                 className={`
                   w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-200
                   ${getStepColor(status)}
-                  ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:shadow-md'}
+                  ${!stepClickable(index) ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:shadow-md'}
                 `}
               >
                 {getStepIcon(index, status)}
@@ -81,11 +90,13 @@ const ProgressIndicator = ({
       <div className="space-y-4">
         {steps.map((step, index) => {
           const status = getStepStatus(index);
-          const isClickable = !disabled && (index <= currentStep || completedSteps.has(index));
+          const isClickable = stepClickable(index);
           
           return (
             <motion.div
               key={step.id}
+              role="button"
+              tabIndex={isClickable ? 0 : -1}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -95,6 +106,13 @@ const ProgressIndicator = ({
                 ${isClickable ? 'cursor-pointer hover:shadow-md hover:border-blue-300' : 'cursor-not-allowed opacity-50'}
               `}
               onClick={() => isClickable && onStepClick && onStepClick(index)}
+              onKeyDown={(e) => {
+                if (!isClickable) return;
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onStepClick?.(index);
+                }
+              }}
             >
               <div className={`
                 w-10 h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0
@@ -148,15 +166,17 @@ const ProgressIndicator = ({
       <div className="relative flex justify-between">
         {steps.map((step, index) => {
           const status = getStepStatus(index);
-          const isClickable = !disabled && (index <= currentStep || completedSteps.has(index));
+          const isClickable = stepClickable(index);
           
           return (
             <motion.button
+              type="button"
               key={step.id}
               whileHover={isClickable ? { scale: 1.1 } : {}}
               whileTap={isClickable ? { scale: 0.95 } : {}}
               onClick={() => isClickable && onStepClick && onStepClick(index)}
               disabled={!isClickable}
+              aria-label={`Krok ${index + 1}: ${step.title}`}
               className={`
                 relative z-10 w-10 h-10 rounded-full border-2 flex items-center justify-center transition-all duration-200
                 ${getStepColor(status)}

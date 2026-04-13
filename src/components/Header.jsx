@@ -65,7 +65,7 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTest
             </motion.a>
             <div className="hidden sm:block">
               <h1 className="text-2xl font-bold text-gray-900">Archi Evaluator</h1>
-              <p className="text-sm text-gray-600">Proposal Analysis</p>
+              <p className="text-sm text-gray-600">Analýza návrhů</p>
             </div>
           </div>
 
@@ -87,7 +87,7 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTest
             <div className="hidden md:flex items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-sm font-medium">AI Aktivní</span>
+                <span className="text-sm font-medium">AI hodnocení zapnuto</span>
               </div>
               
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 text-blue-700">
@@ -175,7 +175,7 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTest
                           className="w-full flex items-center gap-3 px-3 py-2 text-sm text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
                         >
                           <Settings size={16} />
-                          Reset aplikácie
+                          Reset aplikace
                         </button>
                         <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                           <LogOut size={16} />

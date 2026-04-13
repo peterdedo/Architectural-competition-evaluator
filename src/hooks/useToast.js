@@ -9,7 +9,7 @@ export const useToast = () => {
     
     setToasts(prev => [...prev, toast]);
 
-    if (duration > 0) {
+    if (duration != null && duration > 0) {
       setTimeout(() => {
         setToasts(prev => prev.filter(t => t.id !== id));
       }, duration);

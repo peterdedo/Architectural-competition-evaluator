@@ -1,21 +1,6 @@
-import React, { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Upload, 
-  File, 
-  Check, 
-  X, 
-  AlertTriangle, 
-  Eye, 
-  EyeOff,
-  Download,
-  Trash2,
-  RefreshCw,
-  Zap,
-  Edit3,
-  Save
-} from 'lucide-react';
-import { useWizard } from '../contexts/WizardContext';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { X, Trash2, Edit3, Save } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
 import { usePdfProcessor } from '../hooks/usePdfProcessor';
 import { useVisionAnalyzer } from '../hooks/useVisionAnalyzer';
@@ -27,13 +12,17 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [editingName, setEditingName] = useState(null);
   const [editingValue, setEditingValue] = useState('');
-  
-  // Použitie WizardContext pre centralizované ukladanie návrhov
-  const wizardContext = useWizard();
-  const { setProjects } = wizardContext;
+  const [uploadError, setUploadError] = useState(null);
+  const [batchBusy, setBatchBusy] = useState(false);
+
+  const navrhyRef = useRef(navrhy);
+  const processingLockRef = useRef(false);
+  useEffect(() => {
+    navrhyRef.current = navrhy;
+  }, [navrhy]);
   
   const { processPdf, isProcessing, progress } = usePdfProcessor();
-  const { analyze, isAnalyzing: visionAnalyzing } = useVisionAnalyzer();
+  const { analyze } = useVisionAnalyzer();
   const { showToast } = useToast();
 
   const handleDrag = useCallback((e) => {
@@ -64,7 +53,8 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
       const validation = validateFileUpload(file);
       
       if (!validation.isValid) {
-        showToast(validation.message, 'error');
+        setUploadError(validation.message);
+        showToast(validation.message, 'error', 0);
         continue;
       }
       
@@ -103,23 +93,20 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
           }
         } catch (error) {
           console.error('Error parsing file:', error);
-          showToast(`Chyba při zpracování ${file.name}: ${error.message}`, 'error');
+          const em = `Chyba při zpracování ${file.name}: ${error.message}`;
+          setUploadError(em);
+          showToast(em, 'error', 0);
         }
       } else {
-        showToast(`Nepodporovaný formát: ${file.name}`, 'error');
+        const em = `Nepodporovaný formát: ${file.name}`;
+        setUploadError(em);
+        showToast(em, 'error', 0);
       }
     }
     
     if (noveNavrhy.length > 0) {
-      // Save to local state
-      setNavrhy(prev => [...prev, ...noveNavrhy]);
-      
-      // Save to WizardContext
-      setProjects(prev => {
-        const prevArray = Array.isArray(prev) ? prev : [];
-        return [...prevArray, ...noveNavrhy];
-      });
-      
+      setNavrhy((prev) => [...prev, ...noveNavrhy]);
+
       const pdfCount = noveNavrhy.filter(n => n.fileFormat === 'pdf').length;
       const jsonCount = noveNavrhy.filter(n => n.fileFormat === 'json').length;
       const csvCount = noveNavrhy.filter(n => n.fileFormat === 'csv').length;
@@ -131,17 +118,19 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
       
       showToast(message, 'success');
     }
-  }, [setNavrhy, setProjects, showToast]);
+  }, [setNavrhy, showToast]);
 
   const handleZpracovani = async (navrhId) => {
-    const navrh = navrhy.find(n => n.id === navrhId);
+    if (processingLockRef.current) return;
+    const navrh = navrhyRef.current.find((n) => n.id === navrhId);
     if (!navrh || !navrh.pdfSoubor) return;
 
-    setNavrhy(prev => prev.map(n => 
-      n.id === navrhId 
-        ? { ...n, status: 'zpracovává se' }
-        : n
-    ));
+    processingLockRef.current = true;
+    setUploadError(null);
+
+    setNavrhy((prev) =>
+      prev.map((n) => (n.id === navrhId ? { ...n, status: 'zpracovává se' } : n))
+    );
 
     setIsAnalyzing(true);
     
@@ -185,60 +174,55 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
       console.log('✅ AI analýza dokončena:', Object.keys(analysisResult.data).length, 'indikátorů');
       console.log('📊 analysisResult.data:', analysisResult.data);
       
-      // Krok 3: Ulož výsledky
-      const updatedNavrhy = navrhy.map(n => 
-            n.id === navrhId 
-              ? { 
-                  ...n, 
-                  status: 'zpracován',
-              data: analysisResult.data,
-                  errorMessage: null
-                }
-              : n
+      setNavrhy((prev) =>
+        prev.map((n) =>
+          n.id === navrhId
+            ? {
+                ...n,
+                status: 'zpracován',
+                data: analysisResult.data,
+                errorMessage: null,
+              }
+            : n
+        )
       );
-      
-      setNavrhy(updatedNavrhy);
-      
-      // Aktualizuj aj v WizardContext
-      setProjects(updatedNavrhy);
-      
-      showToast(`Návrh "${navrh.nazev}" úspěšně zpracován`, 'success');
+
+      showToast(`Návrh „${navrh.nazev}“ byl úspěšně zpracován`, 'success');
       
     } catch (error) {
       console.error('❌ Chyba při zpracování:', error);
       
-      const errorNavrhy = navrhy.map(n => 
-        n.id === navrhId 
-          ? { 
-              ...n, 
-              status: 'chyba',
-              errorMessage: error.message
-            }
-          : n
+      const em = `Chyba při zpracování „${navrh.nazev}“: ${error.message}`;
+      setUploadError(em);
+      showToast(em, 'error', 0);
+
+      setNavrhy((prev) =>
+        prev.map((n) =>
+          n.id === navrhId
+            ? {
+                ...n,
+                status: 'chyba',
+                errorMessage: error.message,
+              }
+            : n
+        )
       );
-      
-      setNavrhy(errorNavrhy);
-      
-      // Aktualizuj aj v WizardContext
-      setProjects(errorNavrhy);
-      
-      showToast(`Chyba při zpracování "${navrh.nazev}": ${error.message}`, 'error');
     } finally {
       setIsAnalyzing(false);
+      processingLockRef.current = false;
     }
   };
 
   const handleVymazani = (navrhId) => {
-    setNavrhy(prev => prev.filter(n => n.id !== navrhId));
-    showToast('Návrh smazán', 'success');
+    if (!window.confirm('Opravdu chcete tento návrh odebrat ze seznamu?')) return;
+    setNavrhy((prev) => prev.filter((n) => n.id !== navrhId));
+    showToast('Návrh byl odebrán', 'success');
   };
 
   const handleVybrani = (navrhId) => {
-    setNavrhy(prev => prev.map(n => 
-      n.id === navrhId 
-        ? { ...n, vybrany: !n.vybrany }
-        : n
-    ));
+    setNavrhy((prev) =>
+      prev.map((n) => (n.id === navrhId ? { ...n, vybrany: !n.vybrany } : n))
+    );
   };
 
   // Funkcie pre editáciu názvov
@@ -254,12 +238,11 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
 
   const saveEditingName = (id) => {
     if (editingValue.trim()) {
-      setNavrhy(prev => prev.map(navrh => 
-        navrh.id === id ? { ...navrh, nazev: editingValue.trim() } : navrh
-      ));
-      setProjects(prev => prev.map(navrh => 
-        navrh.id === id ? { ...navrh, nazev: editingValue.trim() } : navrh
-      ));
+      setNavrhy((prev) =>
+        prev.map((navrh) =>
+          navrh.id === id ? { ...navrh, nazev: editingValue.trim() } : navrh
+        )
+      );
     }
     setEditingName(null);
     setEditingValue('');
@@ -304,8 +287,6 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
   };
 
   const zpracovaneNavrhy = navrhy.filter(n => n.status === 'zpracován');
-  const vybraneNavrhy = navrhy.filter(n => n.vybrany);
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
@@ -328,6 +309,21 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
       </div>
       
       <div className="p-8 space-y-6">
+        {uploadError && (
+          <div
+            className="bg-red-50 border border-red-200 text-red-900 rounded-xl p-4 flex gap-3 items-start"
+            role="alert"
+          >
+            <div className="flex-1 text-sm">{uploadError}</div>
+            <button
+              type="button"
+              className="shrink-0 text-red-800 font-semibold px-2 py-1 rounded hover:bg-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+              onClick={() => setUploadError(null)}
+            >
+              Zavřít
+            </button>
+          </div>
+        )}
         {/* API Key Status */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <div className="flex items-start gap-3">
@@ -353,9 +349,10 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
             accept=".pdf,.json,.csv"
             multiple
             onChange={(e) => handleFileUpload(e.target.files)}
-            className="hidden"
+            className="sr-only"
+            aria-label="Nahrát návrhy (PDF, JSON, CSV)"
           />
-              <label htmlFor="navrhyFiles" className="cursor-pointer">
+              <label htmlFor="navrhyFiles" className="cursor-pointer block">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-4 bg-indigo-100 rounded-2xl flex items-center justify-center">
                     <span className="text-3xl">📄</span>
@@ -386,17 +383,31 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
               </h3>
                   <div className="flex gap-2">
                     <button 
+                      type="button"
                       className="btn btn-primary"
-                      onClick={() => {
+                      onClick={async () => {
                         const pendingNavrhy = navrhy.filter(n => n.status === 'připraven');
-                        pendingNavrhy.forEach(navrh => handleZpracovani(navrh.id));
+                        if (pendingNavrhy.length === 0) return;
+                        setBatchBusy(true);
+                        try {
+                          for (const navrh of pendingNavrhy) {
+                            await handleZpracovani(navrh.id);
+                          }
+                        } finally {
+                          setBatchBusy(false);
+                        }
                       }}
-                      disabled={isAnalyzing || navrhy.every(n => n.status === 'zpracován')}
+                      disabled={isAnalyzing || batchBusy || navrhy.every(n => n.status === 'zpracován')}
                     >
                       {isAnalyzing ? (
                         <>
-                          <div className="spinner w-4 h-4"></div>
-                          Zpracovává se... ({Math.round(progress)}%)
+                          <div className="spinner w-4 h-4" aria-hidden />
+                          <span>
+                            Zpracovává se…
+                            {isProcessing && progress > 0 && progress < 100
+                              ? ` (PDF ${Math.round(progress)} %)`
+                              : ''}
+                          </span>
                         </>
                       ) : (
                         <>
@@ -416,12 +427,13 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
                       animate={{ opacity: 1, scale: 1 }}
                       className={`project-card ${navrh.vybrany ? 'selected' : ''}`}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-4">
                     <input
                       type="checkbox"
                       checked={navrh.vybrany || false}
                           onChange={() => handleVybrani(navrh.id)}
-                      className="mt-1 w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                      className="mt-1 w-5 h-5 text-indigo-600 border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                      aria-label={`Vybrat návrh ${navrh.nazev}`}
                     />
                         <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
                           <span className="text-lg">{getStatusIcon(navrh.status)}</span>
@@ -438,16 +450,20 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
                                 autoFocus
                               />
                               <button
+                                type="button"
                                 onClick={() => saveEditingName(navrh.id)}
                                 className="p-1 text-green-600 hover:text-green-800 hover:bg-green-100 rounded transition-colors"
-                                title="Uložiť"
+                                title="Uložit název"
+                                aria-label="Uložit název návrhu"
                               >
                                 <Save size={14} />
                               </button>
                               <button
+                                type="button"
                                 onClick={cancelEditingName}
                                 className="p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded transition-colors"
-                                title="Zrušiť"
+                                title="Zrušit úpravu názvu"
+                                aria-label="Zrušit úpravu názvu"
                               >
                                 <X size={14} />
                               </button>
@@ -456,9 +472,11 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
                             <div className="flex items-center gap-2">
                               <h4 className="font-semibold text-slate-800 truncate flex-1">{navrh.nazev}</h4>
                               <button
+                                type="button"
                                 onClick={() => startEditingName(navrh.id, navrh.nazev)}
                                 className="p-1 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-colors"
-                                title="Editovať názov"
+                                title="Upravit název"
+                                aria-label={`Upravit název návrhu ${navrh.nazev}`}
                               >
                                 <Edit3 size={14} />
                               </button>
@@ -485,31 +503,35 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
                             </div>
                         )}
                       </div>
-                        <div className="flex gap-1">
+                        <div className="flex gap-3 items-center shrink-0">
                           {navrh.status === 'připraven' && (
                         <button
-                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none shadow-md bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 hover:shadow-lg"
+                          type="button"
+                          className="flex-1 min-w-0 inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none shadow-md bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500 hover:shadow-lg"
                           onClick={() => handleZpracovani(navrh.id)}
-                          disabled={navrh.status === 'zpracovává se' || navrh.status === 'zpracován'}
+                          disabled={isAnalyzing || batchBusy || navrh.status === 'zpracovává se' || navrh.status === 'zpracován'}
                         >
                           {navrh.status === 'zpracovává se' ? (
                             <>
-                              <div className="animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600 w-3 h-3"></div>
-                                  Zpracovává se...
+                              <div className="animate-spin rounded-full border-2 border-slate-300 border-t-indigo-600 w-3 h-3" aria-hidden />
+                                  Zpracovává se…
                             </>
                           ) : (
                             <>
-                              <span className="text-sm">🚀</span>
+                              <span className="text-sm" aria-hidden>🚀</span>
                               Zpracovat
                             </>
                           )}
                         </button>
                           )}
                           <button
+                            type="button"
                             onClick={() => handleVymazani(navrh.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2.5 text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                            title="Odebrat návrh"
+                            aria-label={`Odebrat návrh ${navrh.nazev}`}
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={16} aria-hidden />
                           </button>
                         </div>
                           </div>
@@ -520,17 +542,19 @@ const StepUpload = ({ navrhy, setNavrhy, onNext, onBack }) => {
         )}
 
             {/* Navigation */}
-        <div className="flex justify-between items-center pt-6 border-t border-slate-200">
-              <button className="btn btn-secondary" onClick={onBack}>
-            ← Zpět na Konfiguraci
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-6 border-t border-slate-200">
+              <button type="button" className="btn btn-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400" onClick={onBack}>
+            ← Zpět na výběr kritérií
           </button>
               <button
-                className="btn btn-primary btn-lg"
-                onClick={onNext}
+                type="button"
+                className="btn btn-primary btn-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                onClick={() => onNext()}
                 disabled={zpracovaneNavrhy.length === 0}
+                title={zpracovaneNavrhy.length === 0 ? 'Nejprve úspěšně zpracujte alespoň jeden návrh' : ''}
               >
-            Pokračovat na Výběr kritérií
-            <span className="text-lg">→</span>
+            Pokračovat na výsledky analýzy
+            <span className="text-lg" aria-hidden>→</span>
           </button>
         </div>
           </div>
