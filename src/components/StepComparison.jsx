@@ -19,9 +19,10 @@ const StepComparison = ({ navrhy, vybraneNavrhy, setVybraneNavrhy, vybraneIndika
   const [aiWeights, setAiWeights] = useState(null);
   const [showAiComment, setShowAiComment] = useState(false);
   const [showAiWeights, setShowAiWeights] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   // AI Hook
-  const { isAnalyzing, analysisProgress, analyzeComparison, suggestWeights } = useAIAssistant();
+  const { isAnalyzing, analyzeComparison, suggestWeights } = useAIAssistant();
 
   // Napojenie na globálny stav z WizardContext
   let globalWeights = {};
@@ -43,6 +44,8 @@ const StepComparison = ({ navrhy, vybraneNavrhy, setVybraneNavrhy, vybraneIndika
   const vybraneIndikatoryList = withoutLegacyExcludedById(
     indikatory.filter((ind) => vybraneIndikatory.has(ind.id))
   );
+
+  const vybraneNavrhyData = zpracovaneNavrhy.filter((navrh) => vybraneNavrhy.has(navrh.id));
 
   // Použitie results z WizardContext namiesto vlastného výpočtu
   const compareResults = useMemo(() => {
@@ -165,14 +168,15 @@ const StepComparison = ({ navrhy, vybraneNavrhy, setVybraneNavrhy, vybraneIndika
     setVybraneNavrhy(new Set());
   };
 
-  const vybraneNavrhyData = zpracovaneNavrhy.filter(navrh => vybraneNavrhy.has(navrh.id));
-
   // AI Handlers
   const handleAIReview = async () => {
+    setAiError('');
     try {
       const analysisData = {
-        navrhy: vybraneNavrhyData,
-        indikatory: vybraneIndikatoryList
+        navrhy: navrhyWithScores,
+        indikatory: vybraneIndikatoryList,
+        vahy: globalWeights,
+        categoryWeights: globalCategoryWeights
       };
 
       const result = await analyzeComparison(analysisData);
@@ -180,21 +184,29 @@ const StepComparison = ({ navrhy, vybraneNavrhy, setVybraneNavrhy, vybraneIndika
         setAiComment(result.analysis);
         setShowAiComment(true);
       } else {
-        alert(`Chyba: ${result.error}`);
+        setAiComment(null);
+        setShowAiComment(false);
+        setAiError(
+          result.error ||
+            'Nepodařilo se získat AI analýzu. Zkuste to znovu.'
+        );
       }
     } catch (error) {
       console.error('AI Review Error:', error);
-      alert('Chyba při generování AI shrnutí');
+      setAiComment(null);
+      setShowAiComment(false);
+      setAiError('Nepodařilo se získat AI analýzu. Zkuste to znovu.');
     }
   };
 
   const handleAISuggest = async () => {
+    setAiError('');
     try {
       const criteria = vybraneIndikatoryList.map(ind => ({
         id: ind.id,
         nazev: ind.nazev,
         kategorie: ind.kategorie,
-        vaha: ind.vaha || 10
+        vaha: globalWeights[ind.id] ?? ind.vaha ?? 10
       }));
 
       const result = await suggestWeights(criteria, 'urbanistická soutěž');
@@ -202,11 +214,11 @@ const StepComparison = ({ navrhy, vybraneNavrhy, setVybraneNavrhy, vybraneIndika
         setAiWeights(result.suggestions);
         setShowAiWeights(true);
       } else {
-        alert(`Chyba: ${result.error}`);
+        setAiError(result.error || 'Chyba při návrhu vah.');
       }
     } catch (error) {
       console.error('AI Suggest Error:', error);
-      alert('Chyba při návrhu vah');
+      setAiError('Chyba při návrhu vah.');
     }
   };
 
@@ -406,7 +418,7 @@ const StepComparison = ({ navrhy, vybraneNavrhy, setVybraneNavrhy, vybraneIndika
                   {isAnalyzing ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
-                      Analýza... ({analysisProgress}%)
+                      Generuji analýzu...
                     </>
                   ) : (
                     <>
@@ -436,6 +448,11 @@ const StepComparison = ({ navrhy, vybraneNavrhy, setVybraneNavrhy, vybraneIndika
                 </motion.button>
               </div>
             </div>
+            {aiError && (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+                {aiError}
+              </div>
+            )}
           </motion.div>
         )}
 

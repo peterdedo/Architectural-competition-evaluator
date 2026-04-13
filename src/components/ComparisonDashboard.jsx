@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BarChart3, 
@@ -32,6 +32,7 @@ import PdfExportPanel from './PdfExportPanel';
 import useAIAssistant from '../hooks/useAIAssistant';
 import { useWizard } from '../contexts/WizardContext';
 import { withoutLegacyExcludedById } from '../config/legacyIndicatorFilters';
+import AIReportPanel from './AIReportPanel';
 
 const ComparisonDashboard = ({ 
   navrhy, 
@@ -61,9 +62,20 @@ const ComparisonDashboard = ({
   const [showAiWeights, setShowAiWeights] = useState(false);
   const [demoNotice, setDemoNotice] = useState('');
   const [errorNotice, setErrorNotice] = useState('');
+  const [aiAssistantContext, setAiAssistantContext] = useState('');
+  const [aiSlowHint, setAiSlowHint] = useState(false);
 
   // AI Hook (volania cez /api/openai/chat)
-  const { isAnalyzing, analysisProgress, analyzeComparison, suggestWeights } = useAIAssistant();
+  const { isAnalyzing, analyzeComparison, suggestWeights } = useAIAssistant();
+
+  useEffect(() => {
+    if (!isAnalyzing) {
+      setAiSlowHint(false);
+      return undefined;
+    }
+    const t = window.setTimeout(() => setAiSlowHint(true), 25000);
+    return () => window.clearTimeout(t);
+  }, [isAnalyzing]);
 
   // WizardContext hook
   const wizardContext = useWizard();
@@ -77,13 +89,9 @@ const ComparisonDashboard = ({
   );
 
   const vybraneIndikatoryList = useMemo(() => {
-    const filtered = withoutLegacyExcludedById(
+    return withoutLegacyExcludedById(
       indikatory.filter((ind) => vybraneIndikatory.has(ind.id))
     );
-    console.log('🔍 ComparisonDashboard - vybraneIndikatory.size:', vybraneIndikatory.size);
-    console.log('🔍 ComparisonDashboard - vybraneIndikatoryList.length:', filtered.length);
-    console.log('🔍 ComparisonDashboard - vybraneIndikatory:', Array.from(vybraneIndikatory));
-    return filtered;
   }, [vybraneIndikatory]);
 
   const vybraneNavrhyData = useMemo(() => 
@@ -93,10 +101,6 @@ const ComparisonDashboard = ({
 
   // Výpočet váženého skóre pre každý návrh
   const navrhyWithScores = useMemo(() => {
-    console.log('🔍 ComparisonDashboard - spracovávam návrhy:', vybraneNavrhyData.map(n => n.nazev));
-    console.log('🔍 ComparisonDashboard - indikátory:', vybraneIndikatoryList.map(i => i.nazev));
-    console.log('🔍 ComparisonDashboard - váhy:', vahy);
-    
     return vybraneNavrhyData.map(navrh => {
       let totalScore = 0;
       let totalWeight = 0;
@@ -146,8 +150,6 @@ const ComparisonDashboard = ({
 
       const weightedScore = totalWeight > 0 ? (totalScore / totalWeight) * 100 : 0;
 
-      console.log(`📊 ${navrh.nazev}: skóre=${Math.round(weightedScore)}%, dokončenosť=${Math.round(completionRate)}%`);
-
       return {
         ...navrh,
         weightedScore: Math.round(weightedScore),
@@ -187,23 +189,38 @@ const ComparisonDashboard = ({
   };
 
   const handleAIReview = async () => {
+    if (vybraneNavrhyData.length === 0) {
+      setErrorNotice('Vyberte alespoň jeden návrh pro AI analýzu.');
+      return;
+    }
+    setErrorNotice('');
+    setDemoNotice('');
     try {
       const analysisData = {
         navrhy: navrhyWithScores,
-        indikatory: vybraneIndikatoryList
+        indikatory: vybraneIndikatoryList,
+        vahy,
+        categoryWeights
       };
 
-      const result = await analyzeComparison(analysisData);
+      const result = await analyzeComparison(analysisData, aiAssistantContext.trim());
       if (result.success) {
         setAiComment(result.analysis);
         setShowAiComment(true);
         setErrorNotice('');
       } else {
-        setErrorNotice(result.error || 'Nepodařilo se vygenerovat AI shrnutí.');
+        setAiComment(null);
+        setShowAiComment(false);
+        setErrorNotice(
+          result.error ||
+            'Nepodařilo se získat AI analýzu. Zkuste to znovu.'
+        );
       }
     } catch (error) {
       console.error('AI Review Error:', error);
-      setErrorNotice('Chyba při generování AI shrnutí.');
+      setAiComment(null);
+      setShowAiComment(false);
+      setErrorNotice('Nepodařilo se získat AI analýzu. Zkuste to znovu.');
     }
   };
 
@@ -379,13 +396,22 @@ const ComparisonDashboard = ({
             <div className="flex flex-wrap gap-3">
               <motion.button
                 type="button"
-                onClick={() => setDemoNotice('AI asistent bude dostupný v další verzi (demo režim).')}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 rounded-lg font-medium cursor-not-allowed"
-                aria-label="AI asistent není v demo režimu dostupný"
-                title="AI asistent není v demo režimu dostupný"
+                onClick={handleAIReview}
+                disabled={isAnalyzing || vybraneNavrhyData.length === 0}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                  isAnalyzing || vybraneNavrhyData.length === 0
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-violet-600 to-blue-600 text-white hover:from-violet-700 hover:to-blue-700 shadow-md'
+                }`}
+                aria-label="Spustit AI analýzu porovnání návrhů"
+                title="Spustí analýzu přes stejné API jako test připojení (OpenAI proxy)."
               >
-                <Brain size={18} />
-                AI asistent (demo)
+                {isAnalyzing ? (
+                  <Loader2 size={18} className="animate-spin shrink-0" />
+                ) : (
+                  <Brain size={18} />
+                )}
+                {isAnalyzing ? 'Generuji analýzu...' : 'AI asistent'}
               </motion.button>
 
 
@@ -416,13 +442,37 @@ const ComparisonDashboard = ({
               </motion.button>
             </div>
           </div>
+          <div className="mt-4 flex flex-col gap-2 lg:flex-row lg:items-end lg:gap-4">
+            <div className="flex-1 min-w-0">
+              <label htmlFor="ai-assistant-context" className="block text-xs font-medium text-gray-600 mb-1">
+                Volitelný kontext pro AI (zadání soutěže, poznámky)
+              </label>
+              <input
+                id="ai-assistant-context"
+                type="text"
+                value={aiAssistantContext}
+                onChange={(e) => setAiAssistantContext(e.target.value)}
+                disabled={isAnalyzing}
+                placeholder="Nechte prázdné pro obecný kontext"
+                className="w-full max-w-xl px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+              />
+            </div>
+          </div>
+          {isAnalyzing && (
+            <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 flex flex-col gap-1">
+              <span className="font-medium">Generuji analýzu...</span>
+              {aiSlowHint && (
+                <span className="text-blue-800">Analýza trvá déle než obvykle…</span>
+              )}
+            </div>
+          )}
           {demoNotice && (
             <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
               {demoNotice}
             </div>
           )}
           {errorNotice && (
-            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
               {errorNotice}
             </div>
           )}
@@ -512,8 +562,8 @@ const ComparisonDashboard = ({
                     <Brain size={20} className="text-white" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-blue-900">🧠 AI Shrnutí porovnání</h3>
-                    <p className="text-sm text-blue-700">Automaticky vygenerované hodnocení návrhů</p>
+                    <h3 className="text-lg font-semibold text-blue-900">AI shrnutí porovnání</h3>
+                    <p className="text-sm text-blue-700">Textový výstup podle dostupných dat (bez HTML)</p>
                   </div>
                 </div>
                 <button
@@ -523,8 +573,8 @@ const ComparisonDashboard = ({
                   <X size={20} />
                 </button>
               </div>
-              <div className="bg-white rounded-lg p-4 border border-blue-100">
-                <p className="text-gray-700 whitespace-pre-line leading-relaxed text-sm">{aiComment}</p>
+              <div className="bg-white rounded-lg p-4 md:p-5 border border-blue-100">
+                <AIReportPanel reportText={aiComment} />
               </div>
             </motion.div>
           )}

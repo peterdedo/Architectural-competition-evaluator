@@ -38,6 +38,17 @@ const server = http.createServer(async (req, res) => {
     });
     res.end(body);
   };
+  const sendError = (status, message, details = '', code = '') => {
+    sendJson(status, {
+      error: message,
+      details,
+      ...(code
+        ? {
+            errorInfo: { code, message, details },
+          }
+        : {}),
+    });
+  };
 
   // Diagnostika: vždy pred kontrolou KEY – aby šlo zistiť „proxy beží“ aj bez .env
   if (req.method === 'GET' && pathname === '/api/openai/health') {
@@ -52,16 +63,12 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (!KEY) {
-    sendJson(503, {
-      error: {
-        code: 'OPENAI_KEY_MISSING',
-        message: 'OPENAI_API_KEY is not set',
-        details: {
-          hint:
-            'V kořenovém adresáři projektu (viz výstup terminálu „Kořen pro .env“) vytvořte nebo upravte .env nebo .env.local s řádkem OPENAI_API_KEY=sk-... (ne VITE_OPENAI_KEY – to proxy nečte). Po změně úplně zastavte a znovu spusťte npm run dev. Viz .env.example. GET /api/openai/health stále funguje pro diagnostiku.',
-        },
-      },
-    });
+    sendError(
+      503,
+      'OPENAI_API_KEY is not set',
+      'V kořenovém adresáři projektu (viz výstup terminálu „Kořen pro .env“) vytvořte nebo upravte .env nebo .env.local s řádkem OPENAI_API_KEY=sk-... (ne VITE_OPENAI_KEY – to proxy nečte). Po změně úplně zastavte a znovu spusťte npm run dev. Viz .env.example. GET /api/openai/health stále funguje pro diagnostiku.',
+      'OPENAI_KEY_MISSING'
+    );
     return;
   }
 
@@ -73,17 +80,12 @@ const server = http.createServer(async (req, res) => {
       for await (const chunk of req) {
         total += chunk.length;
         if (total > maxBytes) {
-          sendJson(413, {
-            error: {
-              code: 'OPENAI_CHAT_PAYLOAD_TOO_LARGE',
-              message: `Chat request body exceeds limit (${total} > ${maxBytes} bytes)`,
-              details: {
-                hint:
-                  'Zmenšete tělo požadavku nebo nastavte OPENAI_CHAT_MAX_BODY_BYTES v .env (viz .env.example).',
-                maxBytes,
-              },
-            },
-          });
+          sendError(
+            413,
+            `Chat request body exceeds limit (${total} > ${maxBytes} bytes)`,
+            'Zmenšete tělo požadavku nebo nastavte OPENAI_CHAT_MAX_BODY_BYTES v .env (viz .env.example).',
+            'OPENAI_CHAT_PAYLOAD_TOO_LARGE'
+          );
           req.destroy();
           return;
         }
@@ -95,41 +97,33 @@ const server = http.createServer(async (req, res) => {
       try {
         parsedBody = JSON.parse(rawBody.toString('utf8'));
       } catch {
-        sendJson(400, {
-          error: {
-            code: 'OPENAI_CHAT_BODY_INVALID',
-            message: 'Invalid JSON body',
-            details: { hint: 'Tělo musí být platný JSON objekt (Chat Completions).' },
-          },
-        });
+        sendError(
+          400,
+          'Invalid JSON body',
+          'Tělo musí být platný JSON objekt (Chat Completions).',
+          'OPENAI_CHAT_BODY_INVALID'
+        );
         return;
       }
       if (!parsedBody || typeof parsedBody !== 'object') {
-        sendJson(400, {
-          error: {
-            code: 'OPENAI_CHAT_BODY_INVALID',
-            message: 'Expected JSON object body',
-            details: { hint: 'Očekáván objekt s polem model a messages.' },
-          },
-        });
+        sendError(
+          400,
+          'Expected JSON object body',
+          'Očekáván objekt s polem model a messages.',
+          'OPENAI_CHAT_BODY_INVALID'
+        );
         return;
       }
       const modelCheck = validateChatRequestModel(parsedBody);
       if (!modelCheck.ok) {
-        sendJson(400, {
-          error: {
-            code: modelCheck.code,
-            message:
-              modelCheck.code === 'OPENAI_CHAT_MODEL_MISSING'
-                ? 'Chat request must include a non-empty string field "model"'
-                : `Model "${modelCheck.model}" is not allowed on this proxy`,
-            details: {
-              hint:
-                'Povolené modely: výchozí gpt-4o, gpt-4o-mini — viz OPENAI_CHAT_ALLOWED_MODELS v .env.example.',
-              allowedModels: modelCheck.allowed,
-            },
-          },
-        });
+        sendError(
+          400,
+          modelCheck.code === 'OPENAI_CHAT_MODEL_MISSING'
+            ? 'Chat request must include a non-empty string field "model"'
+            : `Model "${modelCheck.model}" is not allowed on this proxy`,
+          'Povolené modely: výchozí gpt-4o, gpt-4o-mini — viz OPENAI_CHAT_ALLOWED_MODELS v .env.example.',
+          modelCheck.code
+        );
         return;
       }
 
@@ -161,15 +155,12 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(404);
     res.end();
   } catch (e) {
-    sendJson(502, {
-      error: {
-        code: 'PROXY_UPSTREAM_ERROR',
-        message: e instanceof Error ? e.message : 'Proxy error',
-        details: {
-          hint: 'Chyba při volání OpenAI z lokálního proxy. Zkontrolujte síť a dostupnost api.openai.com.',
-        },
-      },
-    });
+    sendError(
+      502,
+      e instanceof Error ? e.message : 'Proxy error',
+      'Chyba při volání OpenAI z lokálního proxy. Zkontrolujte síť a dostupnost api.openai.com.',
+      'PROXY_UPSTREAM_ERROR'
+    );
   }
 });
 

@@ -69,6 +69,14 @@ const App = () => {
     () => navrhy.filter((n) => n.status === 'zpracován').length,
     [navrhy]
   );
+  const areSetsEqual = (a, b) => {
+    if (a === b) return true;
+    if (!a || !b || a.size !== b.size) return false;
+    for (const value of a) {
+      if (!b.has(value)) return false;
+    }
+    return true;
+  };
   const [vybraneNavrhy, setVybraneNavrhy] = useState(() => 
     loadFromStorage('urban-analysis-vybrane-navrhy', new Set())
   );
@@ -79,8 +87,7 @@ const App = () => {
       const zpracovaneNavrhy = navrhy.filter(navrh => navrh.status === 'zpracován');
       if (zpracovaneNavrhy.length > 0) {
         const zpracovaneIds = new Set(zpracovaneNavrhy.map(n => n.id));
-        setVybraneNavrhy(zpracovaneIds);
-        console.log('🔍 App.jsx - Automaticky nastavené vybraneNavrhy:', zpracovaneIds);
+        setVybraneNavrhy((prev) => (areSetsEqual(prev, zpracovaneIds) ? prev : zpracovaneIds));
       }
     }
   }, [navrhy]);
@@ -99,12 +106,6 @@ const App = () => {
     return filtered;
   });
   
-  // Debug - skontrolujme počet vybraných indikátorov
-  useEffect(() => {
-    console.log('🔍 App.jsx - Počet vybraných indikátorov:', vybraneIndikatory.size);
-    console.log('🔍 App.jsx - Vybrané indikátory:', Array.from(vybraneIndikatory));
-  }, [vybraneIndikatory]);
-
   // Automaticky odstráň "Toalety" z localStorage pri každom načítaní
   useEffect(() => {
     const customIndicators = JSON.parse(localStorage.getItem('urban-analysis-custom-indicators') || '[]');
@@ -112,9 +113,6 @@ const App = () => {
 
     if (filteredCustom.length !== customIndicators.length) {
       localStorage.setItem('urban-analysis-custom-indicators', JSON.stringify(filteredCustom));
-      if (import.meta.env.DEV) {
-        console.log('🧹 App.jsx - Automaticky odstránené legacy custom indikátory');
-      }
     }
   }, []);
   const [vahy, setVahy] = useState(() => 
