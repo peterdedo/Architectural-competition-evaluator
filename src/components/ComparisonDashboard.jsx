@@ -60,6 +60,7 @@ const ComparisonDashboard = ({
   const [showAiComment, setShowAiComment] = useState(false);
   const [showAiWeights, setShowAiWeights] = useState(false);
   const [demoNotice, setDemoNotice] = useState('');
+  const [errorNotice, setErrorNotice] = useState('');
 
   // AI Hook (volania cez /api/openai/chat)
   const { isAnalyzing, analysisProgress, analyzeComparison, suggestWeights } = useAIAssistant();
@@ -196,12 +197,13 @@ const ComparisonDashboard = ({
       if (result.success) {
         setAiComment(result.analysis);
         setShowAiComment(true);
+        setErrorNotice('');
       } else {
-        alert(`Chyba: ${result.error}`);
+        setErrorNotice(result.error || 'Nepodařilo se vygenerovat AI shrnutí.');
       }
     } catch (error) {
       console.error('AI Review Error:', error);
-      alert('Chyba při generování AI shrnutí');
+      setErrorNotice('Chyba při generování AI shrnutí.');
     }
   };
 
@@ -219,12 +221,13 @@ const ComparisonDashboard = ({
         // AI váhy sa teraz spravujú cez AIWeightManager
         console.log('AI váhy generované:', result.suggestions);
         setShowAiWeights(true);
+        setErrorNotice('');
       } else {
-        alert(`Chyba: ${result.error}`);
+        setErrorNotice(result.error || 'Nepodařilo se připravit AI návrh vah.');
       }
     } catch (error) {
       console.error('AI Suggest Error:', error);
-      alert('Chyba při návrhu vah');
+      setErrorNotice('Chyba při návrhu vah.');
     }
   };
 
@@ -416,6 +419,11 @@ const ComparisonDashboard = ({
           {demoNotice && (
             <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
               {demoNotice}
+            </div>
+          )}
+          {errorNotice && (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+              {errorNotice}
             </div>
           )}
         </div>

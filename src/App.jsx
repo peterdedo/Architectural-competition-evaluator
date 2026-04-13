@@ -222,7 +222,7 @@ const App = () => {
         );
       case KROKY.NAHRANI:
         return (
-          <LazyWrapper loadingMessage="Načítava sa nahrávanie PDF...">
+          <LazyWrapper loadingMessage="Načítá se nahrávání PDF...">
             <LazyStepUpload 
               navrhy={navrhy}
               setNavrhy={setNavrhy}
@@ -233,7 +233,7 @@ const App = () => {
         );
       case KROKY.VYSLEDKY:
         return (
-          <LazyWrapper loadingMessage="Načítavajú sa výsledky analýzy...">
+          <LazyWrapper loadingMessage="Načítají se výsledky analýzy...">
             <LazyStepResults 
               navrhy={navrhy}
               setNavrhy={setNavrhy}
@@ -249,7 +249,7 @@ const App = () => {
         );
       case KROKY.POROVNANI:
         return (
-          <LazyWrapper loadingMessage="Načítava sa porovnanie návrhov...">
+          <LazyWrapper loadingMessage="Načítá se porovnání návrhů...">
             <LazyComparisonDashboard 
               navrhy={navrhy}
               vybraneNavrhy={vybraneNavrhy}

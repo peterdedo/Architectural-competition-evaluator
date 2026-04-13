@@ -21,7 +21,6 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
   const globalWeights = wizardContext.weights || vahy;
   const globalCategoryWeights = wizardContext.categoryWeights || categoryWeights;
   const results = wizardContext.results || [];
-  const projects = wizardContext.projects || [];
   
   useEffect(() => {
     setLastUpdate(Date.now());
@@ -30,16 +29,6 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
   // Použij results z WizardContext (majú vážené normalizované skóre)
   const dataSource = results.length > 0 ? results : vybraneNavrhyData;
   
-  console.log('[WeightedHeatmap] Debug - dataSource (results/vybraneNavrhyData):', dataSource);
-  console.log('[WeightedHeatmap] Debug - results:', results);
-  console.log('[WeightedHeatmap] Debug - vybraneNavrhyData:', vybraneNavrhyData);
-  console.log('[WeightedHeatmap] Debug - projects:', projects);
-  
-  // Debug štruktúry results
-  if (results.length > 0) {
-    console.log('[WeightedHeatmap] Debug - results[0].scores:', results[0].scores);
-    console.log('[WeightedHeatmap] Debug - results[0].scores.indicators:', results[0].scores?.indicators);
-  }
 
   // Vyčistíme názvy návrhov
   const cleanedNavrhyData = useMemo(() => {
@@ -84,32 +73,9 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
 
   // Příprava dat pro heatmapu
   const heatmapData = useMemo(() => {
-    console.log('[WeightedHeatmap] Debug - dataSource (results/vybraneNavrhyData):', dataSource);
-    console.log('[WeightedHeatmap] Debug - vybraneIndikatoryList:', vybraneIndikatoryList);
-    console.log('[WeightedHeatmap] Debug - globalWeights:', globalWeights);
-    console.log('[WeightedHeatmap] Debug - globalCategoryWeights:', globalCategoryWeights);
-    
     if (!dataSource || dataSource.length === 0 || !vybraneIndikatoryList || vybraneIndikatoryList.length === 0) {
-      console.warn('[WeightedHeatmap] Žiadne dáta pre heatmapu');
+      console.warn('[WeightedHeatmap] Nejsou data pro heatmapu');
       return [];
-    }
-
-    // Debug - skontroluj štruktúru dát
-    console.log('[WeightedHeatmap] Debug - prvý návrh:', dataSource[0]);
-    console.log('[WeightedHeatmap] Debug - prvý indikátor:', vybraneIndikatoryList[0]);
-    console.log('[WeightedHeatmap] Debug - počet projektov:', dataSource.length);
-    console.log('[WeightedHeatmap] Debug - počet indikátorů:', vybraneIndikatoryList.length);
-    if (dataSource[0] && vybraneIndikatoryList[0]) {
-      const firstProject = dataSource[0];
-      const firstIndicator = vybraneIndikatoryList[0];
-      console.log('[WeightedHeatmap] Debug - hodnota pre prvý indikátor:', firstProject.data?.[firstIndicator.id]);
-      console.log('🧩 [WeightedHeatmap] Struktura návrhu:', firstProject);
-      console.log('🧩 [WeightedHeatmap] Možné cesty k dátam:', {
-        'project.data': firstProject.data,
-        'project.results': firstProject.results,
-        'project.indicators': firstProject.indicators,
-        'project.scores': firstProject.scores
-      });
     }
 
     const data = [];
@@ -131,29 +97,11 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
           // Použij vážené normalizované skóre z results len ak nemáme hodnotu v project.data
           actualValue = project.scores.indicators[indikator.id] || 0;
           useWeightedScore = true;
-          console.log(`[WeightedHeatmap] Používam vážené skóre pre ${indikator.nazev}:`, actualValue);
         }
-        
-        console.log(`[WeightedHeatmap] Debug - ${indikator.nazev} (${indikator.id}):`, {
-          actualValue,
-          rawValue: project.data?.[indikator.id],
-          project: project.nazev,
-          data: project.data,
-          hasData: !!project.data,
-          dataKeys: project.data ? Object.keys(project.data) : [],
-          scores: project.scores,
-          indicatorId: indikator.id,
-          hasResults: results.length > 0,
-          isWeightedScore: useWeightedScore,
-          category: indikator.kategorie,
-          projectName: project.nazev,
-          indicatorName: indikator.nazev
-        });
         
         // Ak nemáme hodnotu, použij 0 namiesto preskočenia bunky
         // Takto sa zobrazí každá bunka, aj keď nemá hodnotu
         if (actualValue === null || actualValue === undefined) {
-          console.log(`[WeightedHeatmap] Používam 0 pre ${indikator.nazev} - žiadna hodnota v dátach`);
           actualValue = 0;
         }
         
@@ -185,16 +133,6 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
           }
         }
         
-        console.log(`[WeightedHeatmap] Debug - ${indikator.nazev}:`, {
-          actualValue,
-          normalizedValue,
-          isWeightedScore: useWeightedScore,
-          hasResults: results.length > 0,
-          hasScores: !!project.scores,
-          projectName: project.nazev,
-          scoresStructure: project.scores
-        });
-        
         let weightedValue = 0;
         
         if (useWeightedScore) {
@@ -221,39 +159,14 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
       });
     });
 
-    console.log('[WeightedHeatmap] Debug - final data:', data);
-    
-    // Fallback - ak nie sú dáta, vytvor mock dáta pre testovanie
     if (data.length === 0) {
-      console.warn('[WeightedHeatmap] Žiadne dáta - vytváram mock dáta pre testovanie');
-      const mockData = [];
-        indicatorsForHeatmap.forEach((indikator, indicatorIndex) => {
-          dataSource.forEach((project, projectIndex) => {
-          // Vytvor náhodné hodnoty pre testovanie
-          const mockValue = Math.random() * 100;
-          mockData.push({
-            x: indicatorIndex,
-            y: projectIndex,
-            value: mockValue,
-            rawValue: mockValue,
-            weight: 10,
-            normalizedValue: mockValue,
-            indicatorName: indikator.nazev,
-            projectName: project.nazev
-          });
-        });
-      });
-      console.log('[WeightedHeatmap] Mock data:', mockData);
-      return mockData;
+      console.warn('[WeightedHeatmap] Heatmapa nemá dostatek dat k zobrazení');
     }
-    
     return data;
   }, [dataSource, indicatorsForHeatmap, globalWeights, globalCategoryWeights]);
 
   // Příprava možností pro echarts
   const option = useMemo(() => {
-    console.log('[WeightedHeatmap] Vytváram ECharts option s dátami:', heatmapData.length);
-    
     // Vypočítaj maximum hodnoty raz pre všetky použitia
     const maxValueForMap = Math.max(2000, ...heatmapData.map(d => Number(d.value) || 0));
     const finalMaxValue = isFinite(maxValueForMap) ? maxValueForMap : 2000;
@@ -392,7 +305,6 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
       ]
     };
     
-    console.log('[WeightedHeatmap] ECharts option:', chartOption);
     return chartOption;
   }, [heatmapData, dataSource, indicatorsForHeatmap]);
 
@@ -404,6 +316,18 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
         </div>
         <h3 className="text-lg font-semibold text-slate-800 mb-2">Nejsou k dispozici data</h3>
         <p className="text-slate-500">Vyberte návrhy k zobrazení heatmapy.</p>
+      </div>
+    );
+  }
+
+  if (heatmapData.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-2xl flex items-center justify-center">
+          <Zap size={32} className="text-slate-600" />
+        </div>
+        <h3 className="text-lg font-semibold text-slate-800 mb-2">Heatmapa nemá dostatek dat k zobrazení</h3>
+        <p className="text-slate-500">Pro heatmapu nejsou k dispozici data.</p>
       </div>
     );
   }
@@ -421,7 +345,6 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
       </div>
       
       <div style={{ minHeight: '600px', width: '100%' }} className="p-4 md:p-6">
-        {console.log('[WeightedHeatmap] Renderujem ReactEChartsCore s option:', option)}
         <ReactEChartsCore
           echarts={echarts}
           option={option}
@@ -429,9 +352,6 @@ const WeightedHeatmap = ({ vybraneNavrhyData, vybraneIndikatoryList, vahy = {}, 
           opts={{ renderer: 'canvas' }}
           notMerge={true}
           lazyUpdate={true}
-          onChartReady={(chart) => {
-            console.log('[WeightedHeatmap] Chart je pripravený:', chart);
-          }}
         />
       </div>
 

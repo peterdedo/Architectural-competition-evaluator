@@ -163,13 +163,15 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTest
                           <Clock size={16} />
                           Historie hodnocení
                         </button>
-                        <button 
-                          onClick={onTestHeatmap}
-                          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        >
-                          <Zap size={16} />
-                          Test Heatmapy
-                        </button>
+                        {typeof onTestHeatmap === 'function' && (
+                          <button 
+                            onClick={onTestHeatmap}
+                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          >
+                            <Zap size={16} />
+                            Test Heatmapy
+                          </button>
+                        )}
                         <button 
                           onClick={onReset}
                           className="w-full flex items-center gap-3 px-3 py-2 text-sm text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
