@@ -59,6 +59,7 @@ const ComparisonDashboard = ({
   const [aiComment, setAiComment] = useState(null);
   const [showAiComment, setShowAiComment] = useState(false);
   const [showAiWeights, setShowAiWeights] = useState(false);
+  const [demoNotice, setDemoNotice] = useState('');
 
   // AI Hook (volania cez /api/openai/chat)
   const { isAnalyzing, analysisProgress, analyzeComparison, suggestWeights } = useAIAssistant();
@@ -374,13 +375,14 @@ const ComparisonDashboard = ({
             
             <div className="flex flex-wrap gap-3">
               <motion.button
-                onClick={() => setShowAdvancedAI(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:shadow-lg transition-all"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                type="button"
+                onClick={() => setDemoNotice('AI asistent bude dostupný v další verzi (demo režim).')}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 rounded-lg font-medium cursor-not-allowed"
+                aria-label="AI asistent není v demo režimu dostupný"
+                title="AI asistent není v demo režimu dostupný"
               >
                 <Brain size={18} />
-                AI Asistent
+                AI asistent (demo)
               </motion.button>
 
 
@@ -400,16 +402,22 @@ const ComparisonDashboard = ({
               </motion.button>
 
               <motion.button
-                onClick={() => setShowExportPanel(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-lg font-medium hover:shadow-lg transition-all"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                type="button"
+                onClick={() => setDemoNotice('Export do PDF není v demo režimu dostupný.')}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 rounded-lg font-medium cursor-not-allowed"
+                aria-label="Export do PDF není v demo režimu dostupný"
+                title="Export do PDF není v demo režimu dostupný"
               >
                 <Download size={18} />
-                Export do PDF
+                Export do PDF (demo)
               </motion.button>
             </div>
           </div>
+          {demoNotice && (
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              {demoNotice}
+            </div>
+          )}
         </div>
       </div>
 
@@ -520,9 +528,9 @@ const ComparisonDashboard = ({
         <div className="flex flex-col lg:flex-row gap-4 mb-6">
           <div className="flex flex-wrap gap-2">
             {[
-              { id: 'tabulka', label: 'Tabulka', icon: BarChart3 },
+              { id: 'tabulka', label: 'Tabulkové porovnání', icon: BarChart3 },
               { id: 'radar', label: 'Radarový graf', icon: Target },
-              { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
+              { id: 'dashboard', label: 'Souhrnný přehled', icon: TrendingUp },
               { id: 'heatmapa', label: 'Heatmapa', icon: Zap }
             ].map(({ id, label, icon: Icon }) => (
               <motion.button
@@ -679,7 +687,7 @@ const ComparisonDashboard = ({
 
         {/* Vážená heatmapa */}
         <AnimatePresence mode="wait">
-          {zobrazeni === 'heatmapa' && vybraneNavrhyData.length > 0 && (
+          {zobrazeni === 'heatmapa' && vybraneNavrhyData.length > 1 && (
             <motion.div
               key="heatmap-view"
               initial={{ opacity: 0, y: 20 }}
@@ -697,6 +705,12 @@ const ComparisonDashboard = ({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {zobrazeni === 'heatmapa' && vybraneNavrhyData.length === 1 && (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center text-slate-700">
+            Heatmapa vyžaduje alespoň 2 vybrané návrhy.
+          </div>
+        )}
 
         {vybraneNavrhyData.length === 0 && (
           <motion.div

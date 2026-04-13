@@ -40,6 +40,7 @@ const StepResults = ({ navrhy, vybraneIndikatory, onNext, onBack, setNavrhy, vah
   
   // State pro zobrazení Winner Calculation Breakdown
   const [showWinnerBreakdown, setShowWinnerBreakdown] = useState(false);
+  const [showDemoNotice, setShowDemoNotice] = useState('');
 
   // Get all indicators and calculate scores
   const indicators = useMemo(() => {
@@ -395,11 +396,16 @@ const StepResults = ({ navrhy, vybraneIndikatory, onNext, onBack, setNavrhy, vah
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setShowCalculationModal(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                type="button"
+                onClick={() =>
+                  setShowDemoNotice('Transparentní výpočet bude dostupný v další verzi (demo režim).')
+                }
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-500 rounded-lg cursor-not-allowed text-sm font-medium"
+                aria-label="Transparentní výpočet není v demo režimu dostupný"
+                title="Transparentní výpočet není v demo režimu dostupný"
               >
                 <Calculator size={14} />
-                Zobrazit transparentný výpočet
+                Transparentní výpočet (demo)
               </button>
             </div>
           </div>
@@ -466,10 +472,10 @@ const StepResults = ({ navrhy, vybraneIndikatory, onNext, onBack, setNavrhy, vah
                           <button
                             onClick={() => openEditModal(indikator, navrh)}
                             className="inline-flex items-center gap-1 px-2 py-1 text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Editovať hodnotu"
+                            title="Upravit hodnotu"
                           >
                             <Edit3 size={12} />
-                            Upraviť
+                            Upravit
                           </button>
                         </div>
                       </td>
@@ -491,16 +497,14 @@ const StepResults = ({ navrhy, vybraneIndikatory, onNext, onBack, setNavrhy, vah
           </button>
           
           <div className="flex justify-end gap-3">
-            <button 
-              className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
-              onClick={() => {
-                const exportSection = document.getElementById('export-section');
-                if (exportSection) {
-                  exportSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
+            <button
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 rounded-lg cursor-not-allowed text-sm font-medium"
+              onClick={() => setShowDemoNotice('Export výsledků není v demo režimu dostupný.')}
+              aria-label="Export výsledků není v demo režimu dostupný"
+              title="Export výsledků není v demo režimu dostupný"
             >
-              <BarChart3 size={16} /> Exportovat výsledky
+              <BarChart3 size={16} /> Export výsledků (demo)
             </button>
             <button 
               className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
@@ -511,6 +515,11 @@ const StepResults = ({ navrhy, vybraneIndikatory, onNext, onBack, setNavrhy, vah
             </button>
           </div>
         </div>
+        {showDemoNotice && (
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            {showDemoNotice}
+          </div>
+        )}
       </div>
       
       {/* Edit Modal */}

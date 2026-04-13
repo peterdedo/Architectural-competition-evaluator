@@ -391,6 +391,11 @@ const StepCriteria = ({ vybraneIndikatory, setVybraneIndikatory, onNext, onBack,
         </div>
 
         {/* Accordion Categories */}
+        {filteredIndicators.length === 0 && (
+          <div className="mb-4 rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-700">
+            Žádné indikátory neodpovídají hledanému výrazu.
+          </div>
+        )}
         <div className="space-y-4">
           {kategorie.map((kategorie) => {
             const kategorieIndikatory = filteredIndicators.filter(indicator => 
