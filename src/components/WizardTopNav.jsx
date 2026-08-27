@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Settings, 
-  Upload, 
-  Target, 
-  BarChart3, 
-  GitCompare,
+import {
+  Upload,
+  BarChart3,
+  Layers,
+  LayoutGrid,
   CheckCircle2,
   Circle,
   ArrowRight,
@@ -23,52 +22,43 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
 
   const krokyConfig = [
     {
-      id: kroky.KONFIGURACE,
-      nazev: 'Konfigurace',
-      popis: 'Nastavení projektu',
-      ikona: Settings,
-      color: '#0066A4'
-    },
-    {
-      id: kroky.KRITERIA,
-      nazev: 'Výběr kritérií',
-      popis: 'Indikátory a váhy',
-      ikona: Target,
-      color: '#F59E0B'
-    },
-    {
       id: kroky.NAHRANI,
       nazev: 'Nahrání návrhů',
-      popis: 'PDF dokumenty',
+      popis: 'PDF / CSV / ručně',
       ikona: Upload,
       color: '#4BB349'
     },
     {
       id: kroky.VYSLEDKY,
-      nazev: 'Výsledky analýzy',
-      popis: 'Přehled dat',
+      nazev: 'Bilanční údaje',
+      popis: 'P03 tabulka + P06 cena',
       ikona: BarChart3,
-      color: '#8B5CF6'
+      color: '#0066A4'
     },
     {
       id: kroky.POROVNANI,
-      nazev: 'Porovnání návrhů',
-      popis: 'Komparativní analýza',
-      ikona: GitCompare,
-      color: '#EF4444'
+      nazev: 'Návrhy v porovnání',
+      popis: 'Výběr pro srovnání',
+      ikona: Layers,
+      color: '#4BB349'
+    },
+    {
+      id: kroky.DATOVE_POHLEDY,
+      nazev: 'Datové pohledy',
+      popis: 'Skladba, cena, podlaží',
+      ikona: LayoutGrid,
+      color: '#0066A4'
     }
   ];
 
   const aktualniIndex = krokyConfig.findIndex(krok => krok.id === aktualniKrok);
   const progress = ((aktualniIndex + 1) / krokyConfig.length) * 100;
 
-  /** Indexy: 0 konfigurace, 1 kritéria, 2 nahrání, 3 výsledky, 4 porovnání */
+  /** Indexy: 0 nahrání, 1 bilanční údaje, 2 návrhy v porovnání, 3 datové pohledy.
+   *  Na kterýkoliv krok se dá přejít i bez nahraného návrhu – lze ho vytvořit ručně. */
   const canNavigateToStepIndex = (index) => {
     if (index < 0 || index >= krokyConfig.length) return false;
-    if (index <= aktualniIndex) return true;
-    if (index === 3 || index === 4) return processedProposalCount >= 1;
-    if (index === 1 || index === 2) return true;
-    return false;
+    return true;
   };
 
   // Track scroll for sticky behavior
@@ -132,7 +122,7 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
       {/* Progress bar */}
       <div className="h-1 bg-gray-200">
         <motion.div
-          className="h-full bg-gradient-to-r from-blue-600 to-green-500"
+          className="h-full bg-gradient-to-r from-accent to-primary"
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -159,15 +149,15 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
                     aria-label={`${krok.nazev}${!isClickable ? ' (zatím nedostupné)' : ''}`}
                     className={`
                       group relative flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200
-                      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500
+                      focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent
                       ${isClickable 
                         ? 'cursor-pointer hover:scale-105' 
                         : 'cursor-not-allowed opacity-50'
                       }
                       ${status === 'current' 
-                        ? 'bg-gradient-to-r from-blue-600 to-green-500 text-white shadow-lg' 
+                        ? 'bg-gradient-to-r from-accent to-primary text-white shadow-lg' 
                         : status === 'completed'
-                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                        ? 'bg-primary/10 text-primary hover:bg-primary/20'
                         : 'bg-gray-100 text-gray-500'
                       }
                     `}
@@ -180,7 +170,7 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
                       ${status === 'current' 
                         ? 'bg-white/20' 
                         : status === 'completed'
-                        ? 'bg-green-500 text-white'
+                        ? 'bg-primary text-white'
                         : 'bg-gray-300'
                       }
                     `}>
@@ -200,7 +190,7 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
                         ${status === 'current' 
                           ? 'text-white/80' 
                           : status === 'completed'
-                          ? 'text-green-600'
+                          ? 'text-primary'
                           : 'text-gray-400'
                         }
                       `}>
@@ -212,9 +202,9 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
                     <div className={`
                       absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold
                       ${status === 'current' 
-                        ? 'bg-white text-blue-600' 
+                        ? 'bg-white text-accent'
                         : status === 'completed'
-                        ? 'bg-green-500 text-white'
+                        ? 'bg-primary text-white'
                         : 'bg-gray-300 text-gray-600'
                       }
                     `}>
@@ -227,8 +217,8 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
                         <ArrowRight 
                           size={16} 
                           className={`
-                            ${status === 'completed' 
-                              ? 'text-green-500' 
+                            ${status === 'completed'
+                              ? 'text-primary'
                               : 'text-gray-300'
                             }
                           `} 
@@ -281,7 +271,7 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
               onClick={handlePreviousStep}
               disabled={aktualniIndex === 0}
               aria-label="Předchozí krok"
-              className="p-2 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="p-2 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               <ChevronLeft size={20} />
             </button>
@@ -303,7 +293,7 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
                 !canNavigateToStepIndex(aktualniIndex + 1)
               }
               aria-label="Další krok"
-              className="p-2 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="p-2 rounded-lg bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               <ChevronRight size={20} />
             </button>
@@ -312,7 +302,7 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
           <button
             type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 rounded-lg bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="p-2 rounded-lg bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label={isMobileMenuOpen ? 'Zavřít menu kroků' : 'Otevřít menu kroků'}
           >
             {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -361,10 +351,10 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
                           ? 'cursor-pointer hover:bg-white' 
                           : 'cursor-not-allowed opacity-50'
                         }
-                        ${status === 'current' 
-                          ? 'bg-blue-100 text-blue-900' 
+                        ${status === 'current'
+                          ? 'bg-accent/10 text-text-dark'
                           : status === 'completed'
-                          ? 'bg-green-100 text-green-900'
+                          ? 'bg-primary/10 text-text-dark'
                           : 'bg-white text-gray-700'
                         }
                       `}
@@ -372,10 +362,10 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
                     >
                       <div className={`
                         w-8 h-8 rounded-full flex items-center justify-center
-                        ${status === 'current' 
-                          ? 'bg-blue-600 text-white' 
+                        ${status === 'current'
+                          ? 'bg-accent text-white'
                           : status === 'completed'
-                          ? 'bg-green-500 text-white'
+                          ? 'bg-primary text-white'
                           : 'bg-gray-300 text-gray-600'
                         }
                       `}>

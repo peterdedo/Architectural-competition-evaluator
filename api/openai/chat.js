@@ -58,7 +58,7 @@ export default async function handler(req, res) {
       modelCheck.code === 'OPENAI_CHAT_MODEL_MISSING'
         ? 'Chat request must include a non-empty string field "model"'
         : `Model "${modelCheck.model}" is not allowed on this proxy`,
-      'Výchozí povolené modely jsou gpt-4o a gpt-4o-mini. Rozšíření: OPENAI_CHAT_ALLOWED_MODELS na serveru (čárkou oddělené ID).',
+      'Výchozí povolené modely jsou gpt-5.6-luna, gpt-4o a gpt-4o-mini. Rozšíření: OPENAI_CHAT_ALLOWED_MODELS na serveru (čárkou oddělené ID).',
       modelCheck.code
     );
     return;

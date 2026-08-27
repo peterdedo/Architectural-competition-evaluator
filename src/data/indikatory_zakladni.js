@@ -1,63 +1,47 @@
- // Aktualizovaná sada urbanistických indikátorů podle požadavků
-export const indikatory = [
-  // 1. VYUŽITÍ ÚZEMÍ
-  { id: 'U01', nazev: 'Celková plocha řešeného území', jednotka: 'm²', kategorie: 'vyuziti-uzemi', description: 'Rozloha území, které je předmětem návrhu – základní měřítko pro všechny odvozené ukazatele.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 1, ikona: '📐', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'U02', nazev: 'Zastavěná plocha objektů', jednotka: 'm²', kategorie: 'vyuziti-uzemi', description: 'Součet půdorysně zastavěných ploch všech budov v návrhu. Určuje intenzitu využití.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'up', vaha: 4, ikona: '🏢', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'U03', nazev: 'Plochy zeleně (modrozelená infrastruktura)', jednotka: 'm²', kategorie: 'vyuziti-uzemi', description: 'Celková výměra všech vegetačních a vodních ploch – včetně zelených střech, parků a retenčních prvků.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 5, ikona: '🌿', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'U04', nazev: 'Plochy zpevněné (dopravní a pěší)', jednotka: 'm²', kategorie: 'vyuziti-uzemi', description: 'Plochy komunikací, chodníků, ploch pro shromažďování, které nejsou vegetační.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 3, ikona: '🛣️', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'U05', nazev: 'Vodní prvky a retenční plochy', jednotka: 'm²', kategorie: 'vyuziti-uzemi', description: 'Vodní toky, nádrže, retenční systémy a povrchové hospodaření s vodou.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 3, ikona: '💧', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'U06', nazev: 'Veřejný prostor a jeho kvalita', jednotka: '%', kategorie: 'vyuziti-uzemi', description: 'Podíl veřejně přístupných ploch v návrhu a jejich prostorová kvalita (dle AI analýzy nebo hodnotitele).', typ: 'kvalitativní', zdroj: 'AI analýza', trend: 'up', vaha: 5, ikona: '🏛️', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
+// Sada bilančních údajů návrhu (P03) – nahrazuje starou sadu urbanistických indikátorů.
+// =====================================================================
+// Jediným zdrojem pravdy je src/data/balanceSchema.js. Tento soubor z něj odvozuje:
+//   `indikatory` – ploché skalární VSTUPNÍ pole (A/B/C/D/H/I), aby stávající konfiguračně
+//                  řízené obrazovky (výběr kritérií, tabulky, detail) fungovaly beze změny;
+//   `kategorie`  – bilanční sekce jako kategorie pro seskupování.
+//
+// Odvozené součty (Celkem), dynamická patra (E/F), místnosti (G) a nabídková cena (P06)
+// nejsou ploché indikátory – řeší je strukturovaný formulář (BalanceForm) a
+// utils/balanceCalculations.js. Do skóre tato data nevstupují: direction = 'informative'
+// (jde o data návrhu, nikoli hodnoticí indikátory – viz zadání §8, žádné váhy se nevymýšlejí).
 
-  // 2. INTENZITA VYUŽITÍ
-  { id: 'I01', nazev: 'Hrubá podlažní plocha (HPP)', jednotka: 'm²', kategorie: 'intenzita-vyuziti', description: 'Součet všech podlažních ploch nadzemních objektů v území.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 2, ikona: '📊', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'I02', nazev: 'Koeficient intenzity využití území', jednotka: 'index', kategorie: 'intenzita-vyuziti', description: 'Poměr HPP ku celkové ploše území. Vyjadřuje hustotu zástavby.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'up', vaha: 3, ikona: '📈', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'I03', nazev: 'Koeficient zastavění', jednotka: '%', kategorie: 'intenzita-vyuziti', description: 'Poměr zastavěné plochy k ploše území. Důležitý pro míru nepropustnosti.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'up', vaha: 4, ikona: '🏗️', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
+import { BALANCE_SECTIONS, SCALAR_INPUT_FIELDS } from './balanceSchema.js';
 
-  // 3. FUNKČNÍ ROZVRŽENÍ
-  { id: 'F01', nazev: 'Podlažní plocha bydlení', jednotka: 'm²', kategorie: 'funkcni-rozvrzeni', description: 'Hrubá podlažní plocha (HPP) určená pro obytné funkce v návrhu.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 3, ikona: '🏠', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'F02', nazev: 'Podlažní plocha kanceláře a služby', jednotka: 'm²', kategorie: 'funkcni-rozvrzeni', description: 'Hrubá podlažní plocha (HPP) určená pro kanceláře a služby v návrhu.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 3, ikona: '🏢', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'F03', nazev: 'Podlažní plocha komerce', jednotka: 'm²', kategorie: 'funkcni-rozvrzeni', description: 'Hrubá podlažní plocha (HPP) určená pro obchodní a komerční funkce v návrhu.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 2, ikona: '🛍️', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'F04', nazev: 'Podlažní plocha veřejná vybavenost', jednotka: 'm²', kategorie: 'funkcni-rozvrzeni', description: 'Hrubá podlažní plocha (HPP) určená pro školy, zdraví, kulturu, sport a komunitní funkce v návrhu.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 5, ikona: '🏛️', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'F05', nazev: 'Plocha pro sport a rekreaci', jednotka: 'm²', kategorie: 'funkcni-rozvrzeni', description: 'Hrubá podlažní plocha (HPP) určená pro sportovní a rekreační využití v návrhu.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 3, ikona: '⚽', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'F06', nazev: 'Podlažní plocha technické zázemí', jednotka: 'm²', kategorie: 'funkcni-rozvrzeni', description: 'Hrubá podlažní plocha (HPP) určená pro technické prostory a zázemí v návrhu.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 1, ikona: '⚙️', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
+const SECTION_COLORS = {
+  'bilance-ploch': '#3B82F6',
+  demolice: '#EF4444',
+  'obestaveny-prostor': '#8B5CF6',
+  'nove-objemy': '#F59E0B',
+  obalka: '#10B981',
+  'prosklení': '#06B6D4',
+};
 
-  // 4. DOPRAVA A PARKOVÁNÍ
-  { id: 'D01', nazev: 'Počet krytých parkovacích stání', jednotka: 'ks', kategorie: 'doprava-parkovani', description: 'Celkový počet parkovacích stání v garážích nebo v budovách.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 3, ikona: '🚗', lower_better: false, comparison_method: 'numeric', data_type: 'int' },
-  { id: 'D02', nazev: 'Počet venkovních parkovacích stání', jednotka: 'ks', kategorie: 'doprava-parkovani', description: 'Parkovací stání umístěná na povrchu – přímý dopad na zpevněné plochy a mikroklima.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 4, ikona: '🅿️', lower_better: false, comparison_method: 'numeric', data_type: 'int' },
-  { id: 'D03', nazev: 'Počet podzemních parkovacích stání', jednotka: 'ks', kategorie: 'doprava-parkovani', description: 'Podzemní parkování snižuje zábory ploch a zvyšuje kvalitu veřejného prostoru.', typ: 'kvantitativní', zdroj: 'OCR', trend: 'up', vaha: 3, ikona: '🚇', lower_better: false, comparison_method: 'numeric', data_type: 'int' },
-  { id: 'D04', nazev: 'Poměr parkovacích míst k HPP', jednotka: 'ks/1000m²', kategorie: 'doprava-parkovani', description: 'Počet parkovacích míst vztažený k velikosti podlažních ploch. Vyjadřuje dopravní náročnost.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'up', vaha: 4, ikona: '📊', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
+export const indikatory = SCALAR_INPUT_FIELDS.map((f) => ({
+  id: f.id,
+  nazev: f.nazev,
+  jednotka: f.jednotka,
+  kategorie: f.sectionId,
+  description: f.popis || '',
+  popis: f.popis || '',
+  typ: 'kvantitativní',
+  zdroj: 'formulář',
+  direction: 'informative', // data návrhu, nescoruje se
+  vaha: 10,
+  ikona: (BALANCE_SECTIONS.find((s) => s.id === f.sectionId) || {}).ikona || '📊',
+  comparison_method: 'numeric',
+  data_type: 'float',
+  unitType: f.unitType,
+}));
 
-  // 5. HUSTOTA OSÍDLENÍ A ZAMĚSTNANOSTI
-  { id: 'H01', nazev: 'Odhadovaný počet obyvatel', jednotka: 'os', kategorie: 'hustota-osidleni', description: 'Počet obyvatel podle plochy bydlení a průměrné velikosti bytu.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'up', vaha: 2, ikona: '👥', lower_better: false, comparison_method: 'numeric', data_type: 'int' },
-  { id: 'H02', nazev: 'Odhadovaný počet pracovních míst', jednotka: 'os', kategorie: 'hustota-osidleni', description: 'Počet zaměstnanců podle HPP kanceláří a komerčních ploch.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'up', vaha: 2, ikona: '💼', lower_better: false, comparison_method: 'numeric', data_type: 'int' },
-  { id: 'H03', nazev: 'Hustota obyvatel', jednotka: 'os/ha', kategorie: 'hustota-osidleni', description: 'Počet obyvatel na hektar území – měřítko obytné hustoty.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'up', vaha: 3, ikona: '📊', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'H04', nazev: 'Hustota pracovních míst', jednotka: 'místa/ha', kategorie: 'hustota-osidleni', description: 'Počet pracovních míst na hektar – ukazatel ekonomické intenzity území.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'up', vaha: 3, ikona: '📈', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-
-  // 6. NÁKLADOVÁ EFEKTIVITA
-  { id: 'N01', nazev: 'Celkové investiční náklady', jednotka: 'Kč', kategorie: 'nakladova-efektivita', description: 'Souhrnný odhad investičních nákladů v návrhu.', typ: 'kvantitativní', zdroj: 'odhad', trend: 'down', vaha: 4, ikona: '💰', lower_better: true, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'N02', nazev: 'Investiční náklad na jednotku plochy', jednotka: 'Kč/m²', kategorie: 'nakladova-efektivita', description: 'Poměr nákladů k HPP. Vyjadřuje efektivitu návrhu z hlediska nákladů.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'down', vaha: 4, ikona: '📊', lower_better: true, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'N03', nazev: 'Odhadovaná hodnota území po realizaci', jednotka: 'Kč', kategorie: 'nakladova-efektivita', description: 'Tržní hodnota po dokončení – syntéza ekonomické a urbanistické kvality.', typ: 'kvantitativní', zdroj: 'AI analýza', trend: 'up', vaha: 5, ikona: '💎', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-
-  // 7. KVALITA VEŘEJNÉHO PROSTORU A KRAJINY
-  { id: 'K01', nazev: 'Podíl zeleně v území', jednotka: '%', kategorie: 'kvalita-verejneho-prostoru', description: 'Podíl vegetačních ploch na celkové rozloze území.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'up', vaha: 4, ikona: '🌳', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'K02', nazev: 'Podíl modré infrastruktury', jednotka: '%', kategorie: 'kvalita-verejneho-prostoru', description: 'Podíl vodních a retenčních ploch na území.', typ: 'kvantitativní', zdroj: 'výpočet', trend: 'up', vaha: 3, ikona: '💧', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'K03', nazev: 'Míra permeability a prostupnosti', jednotka: '%', kategorie: 'kvalita-verejneho-prostoru', description: 'Procento průchodných a přístupných ploch pro veřejnost.', typ: 'kvalitativní', zdroj: 'AI analýza', trend: 'up', vaha: 4, ikona: '🚶', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-
-  // 8. URBANISTICKÁ KVALITA
-  { id: 'Q01', nazev: 'Urbanistická čitelnost a orientace', jednotka: '%', kategorie: 'urbanisticka-kvalita', description: 'Míra přehlednosti struktury návrhu – logika uliční sítě, čitelnost prostorů.', typ: 'kvalitativní', zdroj: 'AI analýza', trend: 'up', vaha: 4, ikona: '🗺️', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'Q02', nazev: 'Funkční a sociální diverzita', jednotka: '%', kategorie: 'urbanisticka-kvalita', description: 'Vyváženost a rozmanitost funkcí, věkových skupin a využití prostoru.', typ: 'kvalitativní', zdroj: 'AI analýza', trend: 'up', vaha: 5, ikona: '🌈', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'Q03', nazev: 'Propojení na okolí a dopravní návaznost', jednotka: '%', kategorie: 'urbanisticka-kvalita', description: 'Míra integrace návrhu s okolní zástavbou a dostupností MHD.', typ: 'kvalitativní', zdroj: 'AI analýza', trend: 'up', vaha: 4, ikona: '🚌', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'Q04', nazev: 'Kvalita architektonického a prostorového řešení', jednotka: '%', kategorie: 'urbanisticka-kvalita', description: 'Estetická a kompoziční úroveň návrhu, harmonie objemů, materiálů a měřítka.', typ: 'kvalitativní', zdroj: 'hodnocení', trend: 'up', vaha: 5, ikona: '🏛️', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-  { id: 'Q05', nazev: 'Udržitelnost návrhu a environmentální integrace', jednotka: '%', kategorie: 'urbanisticka-kvalita', description: 'Zohlednění principů udržitelnosti – zelené střechy, fotovoltaika, hospodaření s vodou.', typ: 'kvalitativní', zdroj: 'AI analýza', trend: 'up', vaha: 5, ikona: '🌱', lower_better: false, comparison_method: 'numeric', data_type: 'float' },
-];
-
-export const kategorie = [
-  { id: 'vyuziti-uzemi', nazev: 'Využití území', popis: 'Základní bilance ploch a jejich využití v návrhu', barva: '#3B82F6', ikona: '🏗️' },
-  { id: 'intenzita-vyuziti', nazev: 'Intenzita využití', popis: 'Hustota zástavby a intenzita využití území', barva: '#10B981', ikona: '📊' },
-  { id: 'funkcni-rozvrzeni', nazev: 'Funkční rozvržení', popis: 'Rozložení funkcí a jejich vyváženost', barva: '#F59E0B', ikona: '🏢' },
-  { id: 'doprava-parkovani', nazev: 'Doprava a parkování', popis: 'Dopravní řešení a parkovací kapacity', barva: '#EF4444', ikona: '🚗' },
-  { id: 'hustota-osidleni', nazev: 'Hustota osídlení a zaměstnanosti', popis: 'Demografické a ekonomické ukazatele', barva: '#8B5CF6', ikona: '👥' },
-  { id: 'nakladova-efektivita', nazev: 'Nákladová efektivita', popis: 'Ekonomická efektivita návrhu', barva: '#06B6D4', ikona: '💰' },
-  { id: 'kvalita-verejneho-prostoru', nazev: 'Kvalita veřejného prostoru a krajiny', popis: 'Kvalita veřejných prostorů a krajiny', barva: '#84CC16', ikona: '🌳' },
-  { id: 'urbanisticka-kvalita', nazev: 'Urbanistická kvalita', popis: 'Celková urbanistická kvalita návrhu', barva: '#F97316', ikona: '🏛️' },
-];
+export const kategorie = BALANCE_SECTIONS.map((s) => ({
+  id: s.id,
+  nazev: s.nazev,
+  popis: s.popis,
+  barva: SECTION_COLORS[s.id] || '#64748B',
+  ikona: s.ikona,
+}));

@@ -12,20 +12,25 @@ export default {
         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace']
       },
         colors: {
-          primary: '#22C55E',
-          secondary: '#86EFAC',
-          accent: '#3B82F6',
+          // Ověřeno vzorkováním reálného loga 4ct.eu (ne odhad) — primary/accent jsou skutečné
+          // firemní barvy, ne generický Tailwind zelená/modrá.
+          primary: '#4BB349',
+          secondary: '#9CD99A',
+          accent: '#0066A4',
+          // text-light/text-muted posunuty o stupeň tmavší oproti Tailwind default slate –
+          // původní #94A3B8 mělo kontrast na bílém pozadí jen 2,6:1 (WCAG AA žádá 4,5:1 pro
+          // běžný text). Ověřeno výpočtem, ne odhadem – pro 60+ uživatele důležité.
           'text-dark': '#1E293B',
-          'text-light': '#64748B',
-          'text-muted': '#94A3B8',
+          'text-light': '#475569', // 7,6:1 na bílé (AAA)
+          'text-muted': '#64748B', // 4,8:1 na bílé (AA) – dřívější hodnota text-light
           'bg-light': '#F9FAFB',
           surface: '#FFFFFF',
-          'surface-hover': '#F0FDF4',
+          'surface-hover': '#F0FBF0',
           border: '#E2E8F0',
           'border-hover': '#CBD5E1',
           neutral: '#E2E8F0',
           error: '#EF4444',
-          success: '#22C55E',
+          success: '#4BB349',
           warning: '#F59E0B',
         },
       screens: { 

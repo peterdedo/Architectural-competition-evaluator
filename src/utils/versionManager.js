@@ -27,10 +27,6 @@ export const saveVersion = (projectData, versionName = null) => {
       timestamp: new Date().toISOString(),
       data: {
         config: projectData.config || {},
-        weights: projectData.weights || {},
-        categoryWeights: projectData.categoryWeights || {},
-        selectedIndicators: projectData.selectedIndicators || [],
-        results: projectData.results || [],
         navrhy: projectData.navrhy || []
       }
     };
@@ -156,15 +152,9 @@ export const clearAllVersions = () => {
 export const getCurrentProjectData = (wizardContext) => {
   return {
     config: {
-      nazev: wizardContext.nazev,
-      popis: wizardContext.popis,
-      selectedNavrhy: Array.from(wizardContext.vybraneNavrhy)
+      model: wizardContext?.config?.model,
     },
-    weights: wizardContext.weights || {},
-    categoryWeights: wizardContext.categoryWeights || {},
-    selectedIndicators: wizardContext.vybraneIndikatory ? Array.from(wizardContext.vybraneIndikatory) : [],
-    results: wizardContext.results || [],
-    navrhy: wizardContext.navrhy || []
+    navrhy: wizardContext?.projects || [],
   };
 };
 

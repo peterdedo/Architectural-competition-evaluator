@@ -18,7 +18,8 @@ import {
   RefreshCw,
   Download,
   Eye,
-  EyeOff
+  EyeOff,
+  X
 } from 'lucide-react';
 
 const PerformanceMonitor = ({ 

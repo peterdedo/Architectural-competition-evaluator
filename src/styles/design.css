@@ -1,22 +1,23 @@
-/* 4ct Visual System */
+/* 4ct Visual System — hodnoty ověřeny vzorkováním reálného loga 4ct.eu, sjednoceno
+   s tailwind.config.js (jediný zdroj pravdy pro barvy, dřív se lišily o pár odstínů). */
 :root {
-  --primary: #0066A4;      /* 4ct Blue */
-  --success: #4BB349;      /* 4ct Green */
-  --accent: #0066A4;       /* Use blue as accent */
-  --text-dark: #2C2C2C;    /* Dark text */
-  --text-light: #6B7280;   /* Secondary text */
-  --text-muted: #A6A8AB;   /* Neutral text */
-  --bg-light: #FFFFFF;     /* Main background */
-  --surface: rgba(255,255,255,0.85); /* Glass surface */
-  --surface-hover: rgba(255,255,255,0.92);
-  --border: #E5E7EB;       /* Dividers */
-  --border-hover: #D1D5DB; /* Border hover */
-  --neutral: #A6A8AB;      /* Neutral / disabled */
+  --primary: #4BB349;      /* 4ct Zelená */
+  --success: #4BB349;      /* 4ct Zelená */
+  --accent: #0066A4;       /* 4ct Modrá */
+  --text-dark: #1E293B;
+  --text-light: #475569;   /* 7,6:1 na bílé (AAA) */
+  --text-muted: #64748B;   /* 4,8:1 na bílé (AA) */
+  --bg-light: #F9FAFB;
+  --surface: #FFFFFF;
+  --surface-hover: #F0FBF0;
+  --border: #E2E8F0;
+  --border-hover: #CBD5E1;
+  --neutral: #E2E8F0;
   --error: #EF4444;        /* Error */
   --warning: #F59E0B;      /* Warning */
-  --gradient-primary: linear-gradient(90deg, #0066A4 0%, #4BB349 100%);
-  --gradient-light: linear-gradient(135deg, rgba(0,102,164,0.08) 0%, rgba(75,179,73,0.08) 100%);
-  
+  --gradient-primary: linear-gradient(90deg, #4BB349 0%, #0066A4 100%);
+  --gradient-light: linear-gradient(135deg, rgba(75,179,73,0.08) 0%, rgba(0,102,164,0.08) 100%);
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -194,7 +195,7 @@
 
 .data-table-row { @apply transition-all duration-150 border-b border-border/50 hover:bg-[rgba(0,102,164,0.04)]; }
 
-.data-table-row-selected { @apply border-l-4; border-left-color: var(--primary); background: rgba(0,102,164,0.06); }
+.data-table-row-selected { @apply border-l-4; border-left-color: var(--primary); background: rgba(75,179,73,0.06); }
 
 .best-value-badge { @apply inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full; background: rgba(75,179,73,0.15); color: #256D1F; }
 

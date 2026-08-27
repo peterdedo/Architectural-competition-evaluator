@@ -1,19 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Nastavení PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+// Bez interního isProcessing/progress stavu na úrovni hooku – při souběžném zpracování více
+// návrhů (viz StepUpload.jsx frontа) by sdílený stav jedné instance hooku přepisovaly
+// paralelní volání navzájem. Postup místo toho hlásí volající přes onProgress callback,
+// takže si ho každé volání sleduje samostatně.
 export const usePdfProcessor = () => {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [error, setError] = useState(null);
-
-  const processPdf = useCallback(async (file) => {
-      setIsProcessing(true);
-      setProgress(0);
-    setError(null);
-
+  const processPdf = useCallback(async (file, { onProgress } = {}) => {
     try {
       // Automatická oprava MIME typov
       if (!file.type.includes("pdf")) {
@@ -23,36 +19,36 @@ export const usePdfProcessor = () => {
 
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      
+
       // Validácia strán
       if (!pdf.numPages || pdf.numPages === 0) {
         throw new Error("PDF neobsahuje žiadne stránky");
       }
-      
+
       // Validácia veľkosti PDF
       if (pdf.numPages > 50) {
         throw new Error("PDF je príliš veľký (viac ako 50 strán). Prosím, použite kratší dokument.");
       }
-      
+
       const maxPages = Math.min(pdf.numPages, 10); // Limit na 10 strán
       const images = [];
-      
+
       for (let i = 1; i <= maxPages; i++) {
         const page = await pdf.getPage(i);
         const viewport = page.getViewport({ scale: 2.0 });
-        
+
         const canvas = document.createElement('canvas');
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        
+
         // Detekcia nečitateľných obrázkov
         if (canvas.width < 100 || canvas.height < 100) {
           console.warn(`Slabá kvalita renderu PDF na stránke ${i}`);
         }
-        
+
         const context = canvas.getContext('2d');
         await page.render({ canvasContext: context, viewport }).promise;
-        
+
         const imageData = canvas.toDataURL('image/png');
         images.push({
           pageNumber: i,
@@ -60,8 +56,8 @@ export const usePdfProcessor = () => {
           preview: i <= 3, // První 3 stránky jako preview
           quality: canvas.width >= 100 && canvas.height >= 100 ? 'good' : 'poor'
         });
-        
-        setProgress((i / maxPages) * 100);
+
+        if (onProgress) onProgress(i, maxPages);
       }
 
       return {
@@ -73,46 +69,12 @@ export const usePdfProcessor = () => {
 
     } catch (error) {
       console.error('PDF processing error:', error);
-      setError(error.message);
       return {
         success: false,
         error: error.message
       };
-    } finally {
-      setIsProcessing(false);
     }
   }, []);
 
-  const processMultiplePdfs = useCallback(async (files) => {
-    setIsProcessing(true);
-    setProgress(0);
-    setError(null);
-
-    const results = [];
-    const totalFiles = files.length;
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      setProgress((i / totalFiles) * 100);
-      
-      const result = await processPdf(file);
-      results.push({
-        file,
-        ...result
-      });
-    }
-
-    setProgress(100);
-    setIsProcessing(false);
-    
-    return results;
-  }, [processPdf]);
-
-  return {
-    processPdf,
-    processMultiplePdfs,
-    isProcessing,
-    progress,
-    error
-  };
+  return { processPdf };
 };

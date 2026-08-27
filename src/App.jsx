@@ -1,188 +1,67 @@
-import React, { useState, useEffect, Suspense, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ErrorRecoveryBoundary from './components/ErrorRecoveryBoundary';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import WizardTopNav from './components/WizardTopNav';
-import Sidebar from './components/Sidebar';
-import StepConfig from './components/StepConfig';
-import StepCriteria from './components/StepCriteria';
-import StepComparison from './components/StepComparison';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import LazyWrapper from './components/LazyWrapper';
 import PerformanceMonitor from './components/PerformanceMonitor';
 import DeveloperTools from './components/DeveloperTools';
-import AIWeightManager from './components/AIWeightManager';
 import { usePWA } from './hooks/usePWA';
 import { useWizard } from './contexts/WizardContext';
 import { WifiOff } from 'lucide-react';
-import { 
-  LazyStepUpload, 
-  LazyStepResults, 
-  LazyComparisonDashboard 
-} from './components/LazyComponents';
-import { indikatory } from './data/indikatory';
-import {
-  isLegacyExcludedIndicatorId,
-  shouldExcludeCustomIndicator,
-} from './config/legacyIndicatorFilters';
+import { LazyStepUpload, LazyStepResults, LazyStepProposalComparison, LazyStepDataViews } from './components/LazyComponents';
 
 const KROKY = {
-  KONFIGURACE: 'konfigurace',
-  KRITERIA: 'kriteria',
   NAHRANI: 'nahrani',
   VYSLEDKY: 'vysledky',
-  POROVNANI: 'porovnani'
+  POROVNANI: 'porovnani',
+  DATOVE_POHLEDY: 'datove-pohledy',
 };
 
 const App = () => {
-  // PWA functionality
   const { isOnline, isInstalled, updateAvailable } = usePWA();
-  
-  // Developer tools state
+
   const [showDevTools, setShowDevTools] = useState(false);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false);
 
-  // ✅ PERSISTENCE: Načítání z localStorage při startu
   const loadFromStorage = (key, defaultValue) => {
     try {
       const saved = localStorage.getItem(key);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Pro Set musíme rekonstruovat
-        if (key.includes('vybrane')) {
-          return new Set(parsed);
-        }
-        return parsed;
-      }
+      if (saved) return JSON.parse(saved);
     } catch (error) {
       console.error(`Chyba při načítání ${key}:`, error);
     }
     return defaultValue;
   };
 
-  const [aktualniKrok, setAktualniKrok] = useState(() => 
-    loadFromStorage('urban-analysis-krok', KROKY.KONFIGURACE)
-  );
-  // Používame WizardContext namiesto lokálneho stavu
+  const [aktualniKrok, setAktualniKrok] = useState(() => {
+    const saved = loadFromStorage('urban-analysis-krok', KROKY.NAHRANI);
+    // Migrace: starší verze appky měla i krok "konfigurace", který už neexistuje.
+    return Object.values(KROKY).includes(saved) ? saved : KROKY.NAHRANI;
+  });
+
+  // Projekty (návrhy) jsou vlastnictvím WizardContext (persistované do localStorage).
   const { projects: navrhy, setProjects: setNavrhy } = useWizard();
   const processedProposalCount = useMemo(
     () => navrhy.filter((n) => n.status === 'zpracován').length,
     [navrhy]
   );
-  const areSetsEqual = (a, b) => {
-    if (a === b) return true;
-    if (!a || !b || a.size !== b.size) return false;
-    for (const value of a) {
-      if (!b.has(value)) return false;
-    }
-    return true;
-  };
-  const [vybraneNavrhy, setVybraneNavrhy] = useState(() => 
-    loadFromStorage('urban-analysis-vybrane-navrhy', new Set())
-  );
 
-  // Automaticky nastav vybraneNavrhy na všetky spracované návrhy
-  useEffect(() => {
-    if (navrhy && navrhy.length > 0) {
-      const zpracovaneNavrhy = navrhy.filter(navrh => navrh.status === 'zpracován');
-      if (zpracovaneNavrhy.length > 0) {
-        const zpracovaneIds = new Set(zpracovaneNavrhy.map(n => n.id));
-        setVybraneNavrhy((prev) => (areSetsEqual(prev, zpracovaneIds) ? prev : zpracovaneIds));
-      }
-    }
-  }, [navrhy]);
-  
-  const [vybraneIndikatory, setVybraneIndikatory] = useState(() => {
-    const loaded = loadFromStorage('urban-analysis-vybrane-indikatory', new Set());
-    
-    // Automaticky odstráň "Toalety" z vybraných indikátorov
-    const filtered = new Set();
-    loaded.forEach((id) => {
-      if (!isLegacyExcludedIndicatorId(id)) {
-        filtered.add(id);
-      }
-    });
-    
-    return filtered;
-  });
-  
-  // Automaticky odstráň "Toalety" z localStorage pri každom načítaní
-  useEffect(() => {
-    const customIndicators = JSON.parse(localStorage.getItem('urban-analysis-custom-indicators') || '[]');
-    const filteredCustom = customIndicators.filter((indicator) => !shouldExcludeCustomIndicator(indicator));
-
-    if (filteredCustom.length !== customIndicators.length) {
-      localStorage.setItem('urban-analysis-custom-indicators', JSON.stringify(filteredCustom));
-    }
-  }, []);
-  const [vahy, setVahy] = useState(() => 
-    loadFromStorage('urban-analysis-vahy', {})
-  );
-  const [categoryWeights, setCategoryWeights] = useState(() => 
-    loadFromStorage('urban-analysis-category-weights', {
-      "Bilance ploch řešeného území": 40,
-      "Bilance HPP dle funkce": 40,
-      "Bilance parkovacích ploch": 20
-    })
-  );
-  const [analysisResults, setAnalysisResults] = useState(() => 
-    loadFromStorage('urban-analysis-results', {})
-  );
-  const [aiWeights, setAiWeights] = useState(() => 
-    loadFromStorage('urban-analysis-ai-weights', null)
-  );
-  const [aiCategoryWeights, setAiCategoryWeights] = useState(() => 
-    loadFromStorage('urban-analysis-ai-category-weights', null)
-  );
-  const [darkMode, setDarkMode] = useState(() => 
+  const [darkMode, setDarkMode] = useState(() =>
     loadFromStorage('urban-analysis-darkmode', false)
   );
 
-  // ✅ PERSISTENCE: Ukládání do localStorage při změnách
   useEffect(() => {
     localStorage.setItem('urban-analysis-krok', JSON.stringify(aktualniKrok));
   }, [aktualniKrok]);
-
-  // localStorage pre navrhy sa rieši v WizardContext
-
-  useEffect(() => {
-    localStorage.setItem('urban-analysis-vybrane-navrhy', JSON.stringify(Array.from(vybraneNavrhy)));
-  }, [vybraneNavrhy]);
-
-  useEffect(() => {
-    localStorage.setItem('urban-analysis-vybrane-indikatory', JSON.stringify(Array.from(vybraneIndikatory)));
-  }, [vybraneIndikatory]);
-
-  useEffect(() => {
-    localStorage.setItem('urban-analysis-vahy', JSON.stringify(vahy));
-  }, [vahy]);
-
-  useEffect(() => {
-    localStorage.setItem('urban-analysis-category-weights', JSON.stringify(categoryWeights));
-  }, [categoryWeights]);
-
-  useEffect(() => {
-    localStorage.setItem('urban-analysis-results', JSON.stringify(analysisResults));
-  }, [analysisResults]);
-
-  useEffect(() => {
-    localStorage.setItem('urban-analysis-ai-weights', JSON.stringify(aiWeights));
-  }, [aiWeights]);
-
-  useEffect(() => {
-    localStorage.setItem('urban-analysis-ai-category-weights', JSON.stringify(aiCategoryWeights));
-  }, [aiCategoryWeights]);
 
   useEffect(() => {
     localStorage.setItem('urban-analysis-darkmode', JSON.stringify(darkMode));
   }, [darkMode]);
 
-  // Dark mode toggle
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+  const toggleDarkMode = () => setDarkMode((d) => !d);
 
-  // Funkcia pre vyčistenie localStorage a reset aplikácie
   const resetApplication = () => {
     if (confirm('Opravdu chcete resetovat aplikaci? Všechna rozpracovaná data se smažou.')) {
       const keysToClear = Object.keys(localStorage).filter(
@@ -193,168 +72,129 @@ const App = () => {
     }
   };
 
-  // Apply dark mode class to document
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode]);
 
   const renderAktualniKrok = () => {
     switch (aktualniKrok) {
-      case KROKY.KONFIGURACE:
-        return <StepConfig onNext={() => setAktualniKrok(KROKY.KRITERIA)} />;
-      case KROKY.KRITERIA:
-        return (
-          <StepCriteria 
-            vybraneIndikatory={vybraneIndikatory}
-            setVybraneIndikatory={setVybraneIndikatory}
-            vahy={vahy}
-            setVahy={setVahy}
-            categoryWeights={categoryWeights}
-            setCategoryWeights={setCategoryWeights}
-            navrhy={navrhy}
-            setNavrhy={setNavrhy}
-            onNext={() => setAktualniKrok(KROKY.NAHRANI)} 
-            onBack={() => setAktualniKrok(KROKY.KONFIGURACE)} 
-          />
-        );
       case KROKY.NAHRANI:
         return (
-          <LazyWrapper loadingMessage="Načítá se nahrávání PDF...">
-            <LazyStepUpload 
+          <LazyWrapper loadingMessage="Načítá se nahrávání souborů...">
+            <LazyStepUpload
               navrhy={navrhy}
               setNavrhy={setNavrhy}
-              onNext={() => setAktualniKrok(KROKY.VYSLEDKY)} 
-              onBack={() => setAktualniKrok(KROKY.KRITERIA)} 
+              onNext={() => setAktualniKrok(KROKY.VYSLEDKY)}
             />
           </LazyWrapper>
         );
       case KROKY.VYSLEDKY:
         return (
-          <LazyWrapper loadingMessage="Načítají se výsledky analýzy...">
-            <LazyStepResults 
+          <LazyWrapper loadingMessage="Načítají se bilanční údaje...">
+            <LazyStepResults
               navrhy={navrhy}
               setNavrhy={setNavrhy}
-              vybraneIndikatory={vybraneIndikatory}
-              vahy={vahy}
-              categoryWeights={categoryWeights}
-              aiWeights={aiWeights}
-              aiCategoryWeights={aiCategoryWeights}
-              onNext={() => setAktualniKrok(KROKY.POROVNANI)} 
               onBack={() => setAktualniKrok(KROKY.NAHRANI)}
+              onNext={() => setAktualniKrok(KROKY.POROVNANI)}
             />
           </LazyWrapper>
         );
       case KROKY.POROVNANI:
         return (
-          <LazyWrapper loadingMessage="Načítá se porovnání návrhů...">
-            <LazyComparisonDashboard 
+          <LazyWrapper loadingMessage="Načítá se výběr návrhů...">
+            <LazyStepProposalComparison
               navrhy={navrhy}
-              vybraneNavrhy={vybraneNavrhy}
-              setVybraneNavrhy={setVybraneNavrhy}
-              vybraneIndikatory={vybraneIndikatory}
-              vahy={vahy}
-              setVahy={setVahy}
-              categoryWeights={categoryWeights}
-              setCategoryWeights={setCategoryWeights}
-              aiWeights={aiWeights}
-              aiCategoryWeights={aiCategoryWeights}
               onBack={() => setAktualniKrok(KROKY.VYSLEDKY)}
-              allIndicators={indikatory}
+              onNext={() => setAktualniKrok(KROKY.DATOVE_POHLEDY)}
             />
           </LazyWrapper>
         );
-      case 'test-heatmap':
+      case KROKY.DATOVE_POHLEDY:
         return (
-          <StepComparison
-            navrhy={navrhy}
-            vybraneNavrhy={vybraneNavrhy}
-            setVybraneNavrhy={setVybraneNavrhy}
-            vybraneIndikatory={vybraneIndikatory}
-            onBack={() => setAktualniKrok(KROKY.POROVNANI)}
-          />
+          <LazyWrapper loadingMessage="Načítají se datové pohledy...">
+            <LazyStepDataViews
+              navrhy={navrhy}
+              onBack={() => setAktualniKrok(KROKY.POROVNANI)}
+            />
+          </LazyWrapper>
         );
       default:
-        return <StepConfig onNext={() => setAktualniKrok(KROKY.KRITERIA)} />;
+        return (
+          <LazyWrapper loadingMessage="Načítá se nahrávání souborů...">
+            <LazyStepUpload
+              navrhy={navrhy}
+              setNavrhy={setNavrhy}
+              onNext={() => setAktualniKrok(KROKY.VYSLEDKY)}
+            />
+          </LazyWrapper>
+        );
     }
   };
 
   // Keyboard shortcuts for developer tools
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Ctrl+Shift+D for dev tools
       if (e.ctrlKey && e.shiftKey && e.key === 'D') {
         e.preventDefault();
-        setShowDevTools(!showDevTools);
+        setShowDevTools((v) => !v);
       }
-      // Ctrl+Shift+P for performance monitor
       if (e.ctrlKey && e.shiftKey && e.key === 'P') {
         e.preventDefault();
-        setShowPerformanceMonitor(!showPerformanceMonitor);
+        setShowPerformanceMonitor((v) => !v);
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showDevTools, showPerformanceMonitor]);
+  }, []);
 
   return (
     <ErrorRecoveryBoundary>
       <ErrorBoundary>
         <div className="min-h-screen bg-gray-50 transition-colors duration-200">
-        <Header 
-          aktualniKrok={aktualniKrok} 
-          kroky={KROKY} 
-          darkMode={darkMode} 
-          toggleDarkMode={toggleDarkMode} 
-          onReset={resetApplication}
-          isOnline={isOnline}
-          isInstalled={isInstalled}
-          updateAvailable={updateAvailable}
-        />
-        
-        {/* Moderný wizard top navigation */}
-        <WizardTopNav 
-          aktualniKrok={aktualniKrok} 
-          kroky={KROKY} 
-          onKrokChange={setAktualniKrok}
-          darkMode={darkMode}
-          processedProposalCount={processedProposalCount}
-        />
-        
-        {/* Hlavný obsah */}
-        <main className="min-h-[calc(100vh-140px)]">
-          {renderAktualniKrok()}
-        </main>
-        
-        {/* PWA Install Prompt */}
-        <PWAInstallPrompt />
-        
-        {import.meta.env.DEV && (
-          <>
-            <PerformanceMonitor
-              isVisible={showPerformanceMonitor}
-              onToggle={() => setShowPerformanceMonitor(!showPerformanceMonitor)}
-            />
-            <DeveloperTools
-              isVisible={showDevTools}
-              onToggle={() => setShowDevTools(!showDevTools)}
-            />
-          </>
-        )}
-        
-        {/* Offline Indicator */}
-        {!isOnline && (
-          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-40">
-            <div className="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
-              <WifiOff size={16} />
-              <span>Offline režim - některé funkce mohou být omezené</span>
+          <Header
+            aktualniKrok={aktualniKrok}
+            kroky={KROKY}
+            darkMode={darkMode}
+            toggleDarkMode={toggleDarkMode}
+            onReset={resetApplication}
+            isOnline={isOnline}
+            isInstalled={isInstalled}
+            updateAvailable={updateAvailable}
+          />
+
+          <WizardTopNav
+            aktualniKrok={aktualniKrok}
+            kroky={KROKY}
+            onKrokChange={setAktualniKrok}
+            darkMode={darkMode}
+            processedProposalCount={processedProposalCount}
+          />
+
+          <main className="min-h-[calc(100vh-140px)]">{renderAktualniKrok()}</main>
+
+          <PWAInstallPrompt />
+
+          {import.meta.env.DEV && (
+            <>
+              <PerformanceMonitor
+                isVisible={showPerformanceMonitor}
+                onToggle={() => setShowPerformanceMonitor((v) => !v)}
+              />
+              <DeveloperTools
+                isVisible={showDevTools}
+                onToggle={() => setShowDevTools((v) => !v)}
+              />
+            </>
+          )}
+
+          {!isOnline && (
+            <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-40">
+              <div className="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+                <WifiOff size={16} />
+                <span>Offline režim - některé funkce mohou být omezené</span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
         </div>
       </ErrorBoundary>
     </ErrorRecoveryBoundary>

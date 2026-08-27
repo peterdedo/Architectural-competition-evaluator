@@ -16,13 +16,24 @@ const normalizeHeader = (value) =>
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 
+// Aliasy českých hlaviček z bilanční tabulky (P03) na nová id skalárních vstupních polí.
+// Základní mapování stále probíhá i podle `nazev` indikátoru (viz buildHeaderToIndicatorMap),
+// tohle jen pokrývá běžné varianty zápisu. Dynamická patra/místnosti a nabídková cena se
+// z ploché CSV nemapují – zadávají se strukturovaným formulářem (BalanceForm).
 const indicatorAliases = {
-  f01: ['hpp bydleni', 'bydleni hpp', 'podlazni plocha bydleni'],
-  f02: ['hpp kancelare', 'hpp sluzby', 'administrativa hpp'],
-  f03: ['hpp komerce', 'hpp obchod', 'retail hpp'],
-  f04: ['hpp verejna vybavenost', 'vybavenost hpp', 'skoly hpp'],
-  f05: ['hpp sport', 'hpp rekreace', 'volny cas hpp'],
-  f06: ['hpp technicke', 'technicke hpp', 'zazemi hpp']
+  bilance_zastavena: ['zastavena plocha', 'zastavena'],
+  bilance_zpevnena: ['zpevnena plocha', 'zpevnena'],
+  bilance_nezpevnena: ['nezpevnena plocha', 'nezpevnena'],
+  demolice_nadzemni: ['demolice nadzemni', 'nadzemni demolice'],
+  obestaveny_podzemni: ['obestaveny prostor podzemni', 'celkovy obestaveny prostor podzemni'],
+  obestaveny_nadzemni: ['obestaveny prostor nadzemni', 'celkovy obestaveny prostor nadzemni'],
+  nove_podzemni: ['nove objemy podzemni', 'obestaveny prostor novych objemu podzemni'],
+  nove_nadzemni: ['nove objemy nadzemni', 'obestaveny prostor novych objemu nadzemni'],
+  obalka_fasady: ['fasady', 'obalka fasady'],
+  obalka_strechy: ['strechy', 'obalka strechy'],
+  obalka_konstrukce: ['konstrukce', 'obalka konstrukce'],
+  proskleni_aw: ['aw'],
+  proskleni_af: ['af'],
 };
 
 const buildHeaderToIndicatorMap = () => {

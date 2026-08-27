@@ -50,31 +50,13 @@ export default defineConfig(({ mode }) => {
           'react-vendor': ['react', 'react-dom'],
           'framer-motion': ['framer-motion'],
           'lucide-react': ['lucide-react'],
-          'recharts': ['recharts'],
-          'echarts': ['echarts', 'echarts-for-react'],
-          'pdf-utils': ['pdfjs-dist', 'html2canvas', 'jspdf'],
-          
-          // AI components
-          'ai-components': [
-            './src/components/AIWeightManager.jsx',
-            './src/components/AdvancedAIAssistant.jsx',
-            './src/components/ContextAwareAIWeightManager.jsx'
-          ],
-          
-          // Chart components
-          'chart-components': [
-            './src/components/RadarChartAdvanced.jsx',
-            './src/components/ExpandableRadarChart.jsx',
-            './src/components/WeightedHeatmap.jsx',
-            './src/components/AdvancedHeatmap.jsx'
-          ],
-          
-          // Heavy components
-          'heavy-components': [
-            './src/components/ComparisonDashboard.jsx',
-            './src/components/StepComparison.jsx',
+          'pdf-utils': ['pdfjs-dist'],
+
+          // Krokové komponenty
+          'step-components': [
             './src/components/StepUpload.jsx',
-            './src/components/StepResults.jsx'
+            './src/components/StepResults.jsx',
+            './src/components/BalanceForm.jsx'
           ]
         }
       }

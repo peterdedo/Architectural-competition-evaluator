@@ -29,7 +29,7 @@ const ProgressIndicator = ({
       case 'completed':
         return <Check size={16} className="text-white" />;
       case 'current':
-        return <Circle size={16} className="text-blue-600" fill="currentColor" />;
+        return <Circle size={16} className="text-accent" fill="currentColor" />;
       default:
         return <Circle size={16} className="text-gray-400" />;
     }
@@ -38,9 +38,9 @@ const ProgressIndicator = ({
   const getStepColor = (status) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-500 border-green-500 text-white';
+        return 'bg-primary border-primary text-white';
       case 'current':
-        return 'bg-blue-600 border-blue-600 text-white';
+        return 'bg-accent border-accent text-white';
       default:
         return 'bg-white border-gray-300 text-gray-500';
     }
@@ -48,7 +48,7 @@ const ProgressIndicator = ({
 
   const getConnectorColor = (stepIndex) => {
     if (stepIndex < currentStep || completedSteps.has(stepIndex)) {
-      return 'bg-green-500';
+      return 'bg-primary';
     }
     return 'bg-gray-300';
   };
@@ -102,8 +102,8 @@ const ProgressIndicator = ({
               transition={{ delay: index * 0.1 }}
               className={`
                 flex items-center space-x-4 p-4 rounded-xl border-2 transition-all duration-200
-                ${status === 'current' ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-white'}
-                ${isClickable ? 'cursor-pointer hover:shadow-md hover:border-blue-300' : 'cursor-not-allowed opacity-50'}
+                ${status === 'current' ? 'border-accent/30 bg-accent/10' : 'border-gray-200 bg-white'}
+                ${isClickable ? 'cursor-pointer hover:shadow-md hover:border-accent/50' : 'cursor-not-allowed opacity-50'}
               `}
               onClick={() => isClickable && onStepClick && onStepClick(index)}
               onKeyDown={(e) => {
@@ -124,20 +124,20 @@ const ProgressIndicator = ({
               <div className="flex-1 min-w-0">
                 <h3 className={`
                   font-semibold text-sm
-                  ${status === 'current' ? 'text-blue-900' : 'text-gray-900'}
+                  ${status === 'current' ? 'text-text-dark' : 'text-gray-900'}
                 `}>
                   {step.title}
                 </h3>
                 <p className={`
                   text-xs mt-1
-                  ${status === 'current' ? 'text-blue-700' : 'text-gray-600'}
+                  ${status === 'current' ? 'text-accent' : 'text-gray-600'}
                 `}>
                   {step.description}
                 </p>
               </div>
               
               {status === 'current' && (
-                <ArrowRight size={16} className="text-blue-600 flex-shrink-0" />
+                <ArrowRight size={16} className="text-accent flex-shrink-0" />
               )}
             </motion.div>
           );
@@ -154,7 +154,7 @@ const ProgressIndicator = ({
       
       {/* Progress bar fill */}
       <motion.div
-        className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-blue-500 to-green-500 rounded-full transform -translate-y-1/2"
+        className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-accent to-primary rounded-full transform -translate-y-1/2"
         initial={{ width: '0%' }}
         animate={{ 
           width: `${((currentStep + 1) / steps.length) * 100}%` 
@@ -192,7 +192,7 @@ const ProgressIndicator = ({
               <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
                 <span className={`
                   text-xs font-medium
-                  ${status === 'current' ? 'text-blue-600' : 'text-gray-600'}
+                  ${status === 'current' ? 'text-accent' : 'text-gray-600'}
                 `}>
                   {step.title}
                 </span>

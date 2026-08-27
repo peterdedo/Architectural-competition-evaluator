@@ -19,8 +19,8 @@ export function getOpenAiChatMaxBodyBytes() {
   return Math.floor(n);
 }
 
-/** Výchozí povolené modely — odpovídají použití v src/ (useAIAssistant, vision, PDF, …). */
-const DEFAULT_ALLOWED_CHAT_MODELS = Object.freeze(['gpt-4o', 'gpt-4o-mini']);
+/** Výchozí povolené modely — odpovídají použití v src/ (extrakce bilance z PDF, AI návrhy vah, komentář). */
+const DEFAULT_ALLOWED_CHAT_MODELS = Object.freeze(['gpt-5.6-luna', 'gpt-4o', 'gpt-4o-mini']);
 
 /**
  * Seznam povolených modelů pro POST /api/openai/chat (přesná shoda řetězce).

@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Building2, 
-  BarChart3, 
-  Zap, 
-  Moon, 
-  Sun, 
-  User, 
-  Settings, 
+import {
+  Moon,
+  Sun,
+  User,
+  Settings,
   LogOut,
   Award,
   Shield,
-  Clock
+  Clock,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
+import VersionManagerPanel from './VersionManagerPanel';
 
-const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTestHeatmap }) => {
+const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
-  
+  const [showVersions, setShowVersions] = useState(false);
+
   // Porotná identita
   const porotniIdentita = {
     jmeno: 'Tomáš Ctibor',
@@ -27,19 +28,17 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTest
   };
 
   const nazvyKroku = {
-    [kroky.KONFIGURACE]: 'Konfigurace',
     [kroky.NAHRANI]: 'Nahrání návrhů',
-    [kroky.KRITERIA]: 'Výběr kritérií',
-    [kroky.VYSLEDKY]: 'Výsledky analýzy',
-    [kroky.POROVNANI]: 'Porovnání návrhů'
+    [kroky.VYSLEDKY]: 'Bilanční údaje',
+    [kroky.POROVNANI]: 'Návrhy v porovnání',
+    [kroky.DATOVE_POHLEDY]: 'Datové pohledy',
   };
 
   const popisyKroku = {
-    [kroky.KONFIGURACE]: 'Nastavení projektu',
-    [kroky.NAHRANI]: 'PDF dokumenty',
-    [kroky.KRITERIA]: 'Indikátory a váhy',
-    [kroky.VYSLEDKY]: 'Přehled dat',
-    [kroky.POROVNANI]: 'Komparativní analýza'
+    [kroky.NAHRANI]: 'PDF / CSV / ručně',
+    [kroky.VYSLEDKY]: 'P03 tabulka + P06 cena',
+    [kroky.POROVNANI]: 'Výběr pro srovnání',
+    [kroky.DATOVE_POHLEDY]: 'Skladba, cena, podlaží',
   };
 
   return (
@@ -85,12 +84,12 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTest
           <div className="flex items-center gap-4">
             {/* Status indikátory */}
             <div className="hidden md:flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 text-green-700">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
                 <span className="text-sm font-medium">AI hodnocení zapnuto</span>
               </div>
-              
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 text-blue-700">
+
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 text-accent">
                 <Award size={16} />
                 <span className="text-sm font-medium">Porota</span>
               </div>
@@ -115,7 +114,7 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTest
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                <div className="w-10 h-10 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center text-white font-semibold text-sm">
                   {porotniIdentita.avatar}
                 </div>
                 <div className="hidden sm:block text-left">
@@ -137,7 +136,7 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTest
                   >
                     <div className="px-4 pb-4 border-b border-gray-100">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-green-500 rounded-full flex items-center justify-center text-white font-semibold">
+                        <div className="w-12 h-12 bg-gradient-to-r from-accent to-primary rounded-full flex items-center justify-center text-white font-semibold">
                           {porotniIdentita.avatar}
                         </div>
                         <div>
@@ -149,9 +148,9 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTest
                     </div>
 
                     <div className="px-4 py-2">
-                      <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg mb-3">
-                        <Shield size={16} className="text-blue-600" />
-                        <span className="text-sm font-medium text-blue-900">{porotniIdentita.hodnoceni}</span>
+                      <div className="flex items-center gap-2 px-3 py-2 bg-accent/10 rounded-lg mb-3">
+                        <Shield size={16} className="text-accent" />
+                        <span className="text-sm font-medium text-text-dark">{porotniIdentita.hodnoceni}</span>
                       </div>
 
                       <div className="space-y-1">
@@ -159,27 +158,25 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, onTest
                           <Settings size={16} />
                           Nastavení účtu
                         </button>
-                        <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-                          <Clock size={16} />
-                          Historie hodnocení
+                        <button
+                          onClick={() => setShowVersions((v) => !v)}
+                          className="w-full flex items-center justify-between gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          <span className="flex items-center gap-3">
+                            <Clock size={16} />
+                            Uložené verze
+                          </span>
+                          {showVersions ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>
-                        {typeof onTestHeatmap === 'function' && (
-                          <button 
-                            onClick={onTestHeatmap}
-                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          >
-                            <Zap size={16} />
-                            Test Heatmapy
-                          </button>
-                        )}
-                        <button 
+                        {showVersions && <VersionManagerPanel />}
+                        <button
                           onClick={onReset}
-                          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-warning hover:bg-warning/10 rounded-lg transition-colors"
                         >
                           <Settings size={16} />
                           Reset aplikace
                         </button>
-                        <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-error hover:bg-error/10 rounded-lg transition-colors">
                           <LogOut size={16} />
                           Odhlásit se
                         </button>
