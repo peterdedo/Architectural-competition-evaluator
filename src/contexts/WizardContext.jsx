@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useMemo, useCallback } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useNavrhy } from '../hooks/useNavrhy';
 
 const WizardContext = createContext();
 
@@ -44,7 +45,7 @@ const wizardReducer = (state, action) => {
 export const WizardProvider = ({ children }) => {
   const [state, dispatch] = useReducer(wizardReducer, initialState);
   const [storedModel, setStoredModel] = useLocalStorage('gpt_model', 'gpt-5.6-luna');
-  const [storedProjects, setStoredProjects] = useLocalStorage('urban-analysis-navrhy', []);
+  const [storedProjects, setStoredProjects] = useNavrhy();
 
   React.useEffect(() => {
     if (!Array.isArray(state.projects)) {
@@ -94,6 +95,9 @@ export const WizardProvider = ({ children }) => {
     [setStoredModel]
   );
 
+  // Pozor: setStoredProjects([]) teď smaže návrhy sdílené s CELOU porotou na serveru
+  // (viz useNavrhy), ne jen lokální localStorage jako dřív. Zatím na žádné tlačítko
+  // v UI napojené není – než se použije, promyslet potvrzovací dialog.
   const reset = useCallback(() => {
     dispatch({ type: 'RESET' });
     setStoredModel('gpt-5.6-luna');

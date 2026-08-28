@@ -12,6 +12,7 @@ import path from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import dotenv from 'dotenv';
 import { getOpenAiChatMaxBodyBytes, validateChatRequestModel } from './openai-chat-limits.mjs';
+import { getSessionFromRequest } from '../api/_lib/auth.mjs';
 
 const PROXY_DIAG_VERSION = 'openai-diag-v2';
 
@@ -74,6 +75,10 @@ const server = http.createServer(async (req, res) => {
 
   try {
     if (req.method === 'POST' && pathname === '/api/openai/chat') {
+      if (!getSessionFromRequest(req)) {
+        sendError(401, 'Not authenticated', 'Přihlaste se prosím znovu.', 'AUTH_REQUIRED');
+        return;
+      }
       const maxBytes = getOpenAiChatMaxBodyBytes();
       const chunks = [];
       let total = 0;

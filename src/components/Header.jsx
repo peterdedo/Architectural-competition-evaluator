@@ -14,17 +14,24 @@ import {
 } from 'lucide-react';
 import VersionManagerPanel from './VersionManagerPanel';
 
-const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset }) => {
+const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, user, onLogout }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showVersions, setShowVersions] = useState(false);
 
-  // Porotná identita
+  // Porotná identita – reálný přihlášený porotce (viz api/auth/me.js), ne pevně dané jméno.
+  const initials = (user?.jmeno || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((s) => s[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
   const porotniIdentita = {
-    jmeno: 'Tomáš Ctibor',
-    role: 'Expert',
-    instituce: '4ct',
+    jmeno: user?.jmeno || user?.email || 'Porotce',
+    role: user?.role === 'admin' ? 'Admin' : 'Porotce',
+    instituce: user?.email || '',
     hodnoceni: 'Režim hodnocení',
-    avatar: 'TC'
+    avatar: initials || 'P'
   };
 
   const nazvyKroku = {
@@ -32,6 +39,7 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset }) => {
     [kroky.VYSLEDKY]: 'Bilanční údaje',
     [kroky.POROVNANI]: 'Návrhy v porovnání',
     [kroky.DATOVE_POHLEDY]: 'Datové pohledy',
+    [kroky.SOUHRN_POROTY]: 'Souhrn poroty',
   };
 
   const popisyKroku = {
@@ -39,6 +47,7 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset }) => {
     [kroky.VYSLEDKY]: 'P03 tabulka + P06 cena',
     [kroky.POROVNANI]: 'Výběr pro srovnání',
     [kroky.DATOVE_POHLEDY]: 'Skladba, cena, podlaží',
+    [kroky.SOUHRN_POROTY]: 'Hodnocení všech porotců',
   };
 
   return (
@@ -176,7 +185,10 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset }) => {
                           <Settings size={16} />
                           Reset aplikace
                         </button>
-                        <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-error hover:bg-error/10 rounded-lg transition-colors">
+                        <button
+                          onClick={onLogout}
+                          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-error hover:bg-error/10 rounded-lg transition-colors"
+                        >
                           <LogOut size={16} />
                           Odhlásit se
                         </button>

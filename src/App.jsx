@@ -2,24 +2,59 @@ import React, { useState, useEffect, useMemo } from 'react';
 import ErrorRecoveryBoundary from './components/ErrorRecoveryBoundary';
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
+import Login from './components/Login';
 import WizardTopNav from './components/WizardTopNav';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import LazyWrapper from './components/LazyWrapper';
 import PerformanceMonitor from './components/PerformanceMonitor';
 import DeveloperTools from './components/DeveloperTools';
 import { usePWA } from './hooks/usePWA';
-import { useWizard } from './contexts/WizardContext';
-import { WifiOff } from 'lucide-react';
-import { LazyStepUpload, LazyStepResults, LazyStepProposalComparison, LazyStepDataViews } from './components/LazyComponents';
+import { useAuth } from './hooks/useAuth';
+import { useWizard, WizardProvider } from './contexts/WizardContext';
+import { WifiOff, Loader2 } from 'lucide-react';
+import {
+  LazyStepUpload,
+  LazyStepResults,
+  LazyStepProposalComparison,
+  LazyStepDataViews,
+  LazyStepJurySummary,
+} from './components/LazyComponents';
 
 const KROKY = {
   NAHRANI: 'nahrani',
   VYSLEDKY: 'vysledky',
   POROVNANI: 'porovnani',
   DATOVE_POHLEDY: 'datove-pohledy',
+  SOUHRN_POROTY: 'souhrn-poroty',
 };
 
+// Appka je celá za přihlášením – WizardProvider (a s ním useNavrhy/useScoringSettings)
+// se mountuje AŽ po úspěšném loginu, aby jejich fetch-on-mount neproběhl ještě před
+// nastavením session cookie (a taky aby se po odhlášení nedržela v paměti data
+// předchozího porotce).
 const App = () => {
+  const { user, status: authStatus, login, logout } = useAuth();
+
+  if (authStatus === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 size={32} className="animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (authStatus === 'anonymous') {
+    return <Login onLogin={login} />;
+  }
+
+  return (
+    <WizardProvider>
+      <AppShell user={user} onLogout={logout} />
+    </WizardProvider>
+  );
+};
+
+const AppShell = ({ user, onLogout }) => {
   const { isOnline, isInstalled, updateAvailable } = usePWA();
 
   const [showDevTools, setShowDevTools] = useState(false);
@@ -115,7 +150,14 @@ const App = () => {
             <LazyStepDataViews
               navrhy={navrhy}
               onBack={() => setAktualniKrok(KROKY.POROVNANI)}
+              onNext={() => setAktualniKrok(KROKY.SOUHRN_POROTY)}
             />
+          </LazyWrapper>
+        );
+      case KROKY.SOUHRN_POROTY:
+        return (
+          <LazyWrapper loadingMessage="Načítá se souhrn poroty...">
+            <LazyStepJurySummary onBack={() => setAktualniKrok(KROKY.DATOVE_POHLEDY)} />
           </LazyWrapper>
         );
       default:
@@ -160,6 +202,8 @@ const App = () => {
             isOnline={isOnline}
             isInstalled={isInstalled}
             updateAvailable={updateAvailable}
+            user={user}
+            onLogout={onLogout}
           />
 
           <WizardTopNav

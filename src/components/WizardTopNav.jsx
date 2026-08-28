@@ -5,6 +5,7 @@ import {
   BarChart3,
   Layers,
   LayoutGrid,
+  Users,
   CheckCircle2,
   Circle,
   ArrowRight,
@@ -48,6 +49,13 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
       popis: 'Skladba, cena, podlaží',
       ikona: LayoutGrid,
       color: '#0066A4'
+    },
+    {
+      id: kroky.SOUHRN_POROTY,
+      nazev: 'Souhrn poroty',
+      popis: 'Hodnocení všech porotců',
+      ikona: Users,
+      color: '#4BB349'
     }
   ];
 

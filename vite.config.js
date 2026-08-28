@@ -6,6 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const openAiProxyPort = env.OPENAI_PROXY_PORT || '8792'
+  const apiDevServerPort = env.API_DEV_SERVER_PORT || '8793'
 
   return {
   plugins: [
@@ -38,6 +39,18 @@ export default defineConfig(({ mode }) => {
     proxy: {
       '/api/openai': {
         target: `http://127.0.0.1:${openAiProxyPort}`,
+        changeOrigin: true,
+      },
+      '/api/auth': {
+        target: `http://127.0.0.1:${apiDevServerPort}`,
+        changeOrigin: true,
+      },
+      '/api/navrhy': {
+        target: `http://127.0.0.1:${apiDevServerPort}`,
+        changeOrigin: true,
+      },
+      '/api/scoring': {
+        target: `http://127.0.0.1:${apiDevServerPort}`,
         changeOrigin: true,
       },
     },

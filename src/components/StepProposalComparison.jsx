@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Layers, ArrowLeft, ArrowRight, Trophy, Sparkles } from 'lucide-react';
 import { useProposalSelection } from '../hooks/useProposalSelection.js';
-import { useLocalStorage } from '../hooks/useLocalStorage.js';
+import { useScoringSettings } from '../hooks/useScoringSettings.js';
 import { useAiFeaturesEnabled } from '../hooks/useAiFeaturesEnabled.js';
 import { SCORING_INDICATORS } from '../data/scoringIndicators.js';
 import { scoreProjects } from '../utils/balanceScore.js';
@@ -23,8 +23,8 @@ const StepProposalComparison = ({ navrhy, onBack, onNext }) => {
   const { isSelected, toggle, selectAll, selectNone, selected: comparedNavrhy, selectedCount } = useProposalSelection(zpracovaneNavrhy);
 
   // Volba směru/váhy je výhradně na porotě – appka nic nepředvyplňuje (viz ScoringSettingsPanel).
-  const [directions, setDirections] = useLocalStorage('archieval-scoring-directions', {});
-  const [weights, setWeights] = useLocalStorage('archieval-scoring-weights', {});
+  // Hodnocení je NEZÁVISLÉ pro každého přihlášeného porotce (server ukládá pod jeho účtem).
+  const { directions, setDirections, weights, setWeights } = useScoringSettings();
 
   // AI funkce (návrh vah, evaluační komentář) jsou vypnuté, dokud si je porota sama nezapne.
   // Extrakce dat z PDF je samostatná explicitní akce (tlačítko „Zpracovat" u souboru) a tímto

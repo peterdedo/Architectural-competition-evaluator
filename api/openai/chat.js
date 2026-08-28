@@ -7,6 +7,7 @@ import {
   getOpenAiChatMaxBodyBytes,
   validateChatRequestModel,
 } from '../../server/openai-chat-limits.mjs';
+import { requireSession } from '../_lib/auth.mjs';
 
 export default async function handler(req, res) {
   const sendError = (status, message, details = '', code = '') => {
@@ -25,6 +26,8 @@ export default async function handler(req, res) {
     sendError(405, 'Method not allowed');
     return;
   }
+
+  if (!requireSession(req, res)) return;
 
   const key = process.env.OPENAI_API_KEY;
   if (!key) {

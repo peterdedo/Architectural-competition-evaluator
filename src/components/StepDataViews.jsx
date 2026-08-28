@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import { LayoutGrid, ArrowLeft } from 'lucide-react';
+import { LayoutGrid, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useProposalSelection } from '../hooks/useProposalSelection.js';
-import { useLocalStorage } from '../hooks/useLocalStorage.js';
+import { useScoringSettings } from '../hooks/useScoringSettings.js';
 import { SCORING_INDICATORS } from '../data/scoringIndicators.js';
 import { scoreProjects } from '../utils/balanceScore.js';
 import BalanceCompositionChart from './BalanceCompositionChart';
@@ -15,7 +15,7 @@ import ScoreRadar from './ScoreRadar';
 // skladba bilance, cenová efektivita, podlažní profil (bez vážení) i heatmapa/radar (vážené
 // skóre – směr/váhu volí porota v kroku "Návrhy v porovnání", zde se jen zobrazuje výsledek).
 // Výběr návrhů je sdílený (stejný localStorage klíč) a dá se přepínat i přímo tady.
-const StepDataViews = ({ navrhy, onBack }) => {
+const StepDataViews = ({ navrhy, onBack, onNext }) => {
   const zpracovaneNavrhy = useMemo(
     () => navrhy.filter((n) => n.status === 'zpracován' && n.data && Object.keys(n.data).length > 0),
     [navrhy]
@@ -30,10 +30,9 @@ const StepDataViews = ({ navrhy, onBack }) => {
     selectedCount: comparedCount,
   } = useProposalSelection(zpracovaneNavrhy);
 
-  // Stejný localStorage klíč jako ScoringSettingsPanel v kroku "Návrhy v porovnání" – směr
-  // a váhu tam volí porota, appka je sama nevymýšlí (viz utils/balanceScore.js).
-  const [directions] = useLocalStorage('archieval-scoring-directions', {});
-  const [weights] = useLocalStorage('archieval-scoring-weights', {});
+  // Stejný server-backed hook jako ScoringSettingsPanel v kroku "Návrhy v porovnání" – směr
+  // a váhu tam volí porota (nezávisle za každého porotce), appka je sama nevymýšlí (viz utils/balanceScore.js).
+  const { directions, weights } = useScoringSettings();
 
   const scoredProposals = useMemo(
     () => scoreProjects(comparedNavrhy, SCORING_INDICATORS, directions, weights),
@@ -167,13 +166,21 @@ const StepDataViews = ({ navrhy, onBack }) => {
           </>
         )}
 
-        <div className="flex items-center pt-6 border-t border-gray-200">
+        <div className="flex items-center justify-between pt-6 border-t border-gray-200">
           <button
             className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg transition-colors text-sm font-medium"
             onClick={onBack}
           >
             <ArrowLeft size={16} /> Zpět na Bilanční údaje
           </button>
+          {!empty && onNext && (
+            <button
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+              onClick={onNext}
+            >
+              Souhrn poroty <ArrowRight size={16} />
+            </button>
+          )}
         </div>
       </div>
     </div>

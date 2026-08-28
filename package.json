@@ -5,18 +5,25 @@
   "type": "module",
   "scripts": {
     "dev:proxy": "node server/openai-proxy.mjs",
+    "dev:api": "node server/api-dev-server.mjs",
     "dev:vite": "vite",
-    "dev": "concurrently -k -n proxy,vite -c blue,green \"npm run dev:proxy\" \"vite\"",
+    "dev": "concurrently -k -n proxy,api,vite -c blue,magenta,green \"npm run dev:proxy\" \"npm run dev:api\" \"vite\"",
     "build": "vite build",
     "lint": "eslint src --ext js,jsx --report-unused-disable-directives",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:create-user": "node scripts/create-user.mjs"
   },
   "dependencies": {
+    "@vercel/postgres": "^0.10.0",
+    "bcryptjs": "^2.4.3",
+    "cookie": "^0.7.1",
     "framer-motion": "^12.23.24",
+    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.546.0",
     "pdfjs-dist": "^3.11.174",
     "react": "^18.2.0",
