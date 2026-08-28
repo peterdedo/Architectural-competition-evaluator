@@ -52,16 +52,12 @@ export default async function handler(req, res) {
     const data = body?.data && typeof body.data === 'object' ? body.data : {};
 
     try {
+      // Jen INSERT (bez upsertu): POST vytváří NOVÝ návrh. Úpravy existujícího jdou přes PATCH.
+      // Tím se zavře možnost nechtěně/škodlivě přepsat cizí návrh POSTem se stejným id.
       await sql`
         INSERT INTO navrhy (id, nazev, status, source, file_format, data, created_by)
         VALUES (${id}, ${nazev}, ${status}, ${source}, ${fileFormat}, ${JSON.stringify(data)}::jsonb, ${session.userId})
-        ON CONFLICT (id) DO UPDATE SET
-          nazev = EXCLUDED.nazev,
-          status = EXCLUDED.status,
-          source = EXCLUDED.source,
-          file_format = EXCLUDED.file_format,
-          data = EXCLUDED.data,
-          updated_at = now()
+        ON CONFLICT (id) DO NOTHING
       `;
       res.status(201).json({ ok: true });
     } catch (e) {

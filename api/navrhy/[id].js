@@ -3,10 +3,12 @@
  * DELETE /api/navrhy/:id  → smaže návrh
  */
 import { sql } from '../_lib/db.mjs';
-import { requireSession, sendAuthError } from '../_lib/auth.mjs';
+import { requireSession, requireAdmin, sendAuthError } from '../_lib/auth.mjs';
 
 export default async function handler(req, res) {
-  const session = requireSession(req, res);
+  // DELETE nad sdílenými návrhy smí jen admin – aby jeden porotce nesmazal data celé porotě.
+  // Ostatní metody (PATCH – doplnění bilance) stačí přihlášenému porotci.
+  const session = req.method === 'DELETE' ? requireAdmin(req, res) : requireSession(req, res);
   if (!session) return;
 
   const id = Number(req.query?.id);

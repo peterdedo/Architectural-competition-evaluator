@@ -11,7 +11,7 @@ import DeveloperTools from './components/DeveloperTools';
 import { usePWA } from './hooks/usePWA';
 import { useAuth } from './hooks/useAuth';
 import { useWizard, WizardProvider } from './contexts/WizardContext';
-import { WifiOff, Loader2 } from 'lucide-react';
+import { WifiOff, Loader2, AlertTriangle } from 'lucide-react';
 import {
   LazyStepUpload,
   LazyStepResults,
@@ -86,6 +86,18 @@ const AppShell = ({ user, onLogout }) => {
   const [darkMode, setDarkMode] = useState(() =>
     loadFromStorage('urban-analysis-darkmode', false)
   );
+
+  // Upozornění, když selže synchronizace návrhů se serverem (useNavrhy provede reconcile
+  // a vyšle tuto událost) – aby porotce nezůstal s tichým rozporem mezi obrazovkou a databází.
+  const [syncError, setSyncError] = useState(null);
+  useEffect(() => {
+    const onSyncError = (e) => {
+      setSyncError(e?.detail?.message || 'Synchronizace se serverem se nezdařila.');
+      setTimeout(() => setSyncError(null), 7000);
+    };
+    window.addEventListener('archieval:navrhy-sync-error', onSyncError);
+    return () => window.removeEventListener('archieval:navrhy-sync-error', onSyncError);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('urban-analysis-krok', JSON.stringify(aktualniKrok));
@@ -236,6 +248,23 @@ const AppShell = ({ user, onLogout }) => {
               <div className="bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
                 <WifiOff size={16} />
                 <span>Offline režim - některé funkce mohou být omezené</span>
+              </div>
+            </div>
+          )}
+
+          {syncError && (
+            <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md px-4">
+              <div className="bg-error text-white px-4 py-3 rounded-lg shadow-lg flex items-start gap-2 text-sm">
+                <AlertTriangle size={18} className="shrink-0 mt-0.5" />
+                <span>{syncError}</span>
+                <button
+                  type="button"
+                  onClick={() => setSyncError(null)}
+                  className="ml-2 shrink-0 text-white/80 hover:text-white font-semibold"
+                  aria-label="Zavřít upozornění"
+                >
+                  ✕
+                </button>
               </div>
             </div>
           )}

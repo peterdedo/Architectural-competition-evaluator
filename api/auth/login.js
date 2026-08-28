@@ -36,18 +36,45 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Ochrana proti hrubé síle: po MAX_ATTEMPTS neúspěšných pokusech se účet na LOCK_MINUTES zamkne.
+  const MAX_ATTEMPTS = 8;
+  const LOCK_MINUTES = 15;
+
   try {
-    const { rows } = await sql`SELECT id, jmeno, email, password_hash, role FROM users WHERE email = ${email}`;
+    const { rows } = await sql`SELECT id, jmeno, email, password_hash, role, failed_attempts, locked_until FROM users WHERE email = ${email}`;
     const user = rows[0];
     if (!user) {
+      // Stejná odpověď jako u špatného hesla (žádné vyzrazení, zda účet existuje).
       sendError(401, 'Nesprávný e-mail nebo heslo', '', 'AUTH_INVALID_CREDENTIALS');
+      return;
+    }
+
+    if (user.locked_until && new Date(user.locked_until) > new Date()) {
+      sendError(
+        429,
+        'Účet je dočasně uzamčen po příliš mnoha pokusech',
+        `Zkuste to prosím znovu za pár minut, nebo kontaktujte organizátora.`,
+        'AUTH_LOCKED'
+      );
       return;
     }
 
     const ok = await verifyPassword(password, user.password_hash);
     if (!ok) {
+      // Zvýšit počítadlo; při dosažení limitu účet zamknout.
+      const attempts = (user.failed_attempts || 0) + 1;
+      if (attempts >= MAX_ATTEMPTS) {
+        await sql`UPDATE users SET failed_attempts = ${attempts}, locked_until = now() + (${LOCK_MINUTES} * interval '1 minute') WHERE id = ${user.id}`;
+      } else {
+        await sql`UPDATE users SET failed_attempts = ${attempts} WHERE id = ${user.id}`;
+      }
       sendError(401, 'Nesprávný e-mail nebo heslo', '', 'AUTH_INVALID_CREDENTIALS');
       return;
+    }
+
+    // Úspěch → vynulovat počítadlo a odemknout.
+    if (user.failed_attempts || user.locked_until) {
+      await sql`UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ${user.id}`;
     }
 
     const token = signSessionToken({ userId: user.id, email: user.email, jmeno: user.jmeno, role: user.role });

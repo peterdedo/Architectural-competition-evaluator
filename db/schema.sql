@@ -33,3 +33,8 @@ CREATE TABLE IF NOT EXISTS scoring_settings (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (user_id, indicator_id)
 );
+
+-- Ochrana proti hádání hesla hrubou silou: počítadlo neúspěšných pokusů a dočasné uzamčení účtu.
+-- (idempotentní – lze spustit i nad existující databází)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TIMESTAMPTZ;

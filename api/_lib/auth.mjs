@@ -85,3 +85,24 @@ export function requireSession(req, res) {
   }
   return session;
 }
+
+/**
+ * Jako requireSession, ale navíc vyžaduje roli 'admin'. Pro destruktivní operace nad SDÍLENÝMI
+ * daty (mazání návrhů), aby je jeden porotce nemohl smazat celé porotě. Vrátí session, nebo
+ * pošle 401/403 a vrátí null.
+ */
+export function requireAdmin(req, res) {
+  const session = requireSession(req, res);
+  if (!session) return null;
+  if (session.role !== 'admin') {
+    sendAuthError(
+      res,
+      403,
+      'Vyžadováno oprávnění administrátora',
+      'Tuto akci může provést jen organizátor (role admin).',
+      'AUTH_FORBIDDEN'
+    );
+    return null;
+  }
+  return session;
+}

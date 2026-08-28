@@ -95,14 +95,14 @@ export const WizardProvider = ({ children }) => {
     [setStoredModel]
   );
 
-  // Pozor: setStoredProjects([]) teď smaže návrhy sdílené s CELOU porotou na serveru
-  // (viz useNavrhy), ne jen lokální localStorage jako dřív. Zatím na žádné tlačítko
-  // v UI napojené není – než se použije, promyslet potvrzovací dialog.
+  // reset() vrací jen LOKÁLNÍ stav (krok, model) do výchozího – NIKDY nemaže sdílené návrhy na
+  // serveru. Návrhy jsou společné celé porotě; jejich smazání je vyhrazená admin operace
+  // (viz api/navrhy/[id].js), ne vedlejší efekt „resetu aplikace". Kdyby reset volal
+  // setStoredProjects([]), přes useNavrhy by smazal data celé porotě – to je záměrně vyloučené.
   const reset = useCallback(() => {
     dispatch({ type: 'RESET' });
     setStoredModel('gpt-5.6-luna');
-    setStoredProjects([]);
-  }, [setStoredModel, setStoredProjects]);
+  }, [setStoredModel]);
 
   const validProjects = useMemo(
     () => (Array.isArray(state.projects) ? state.projects : []),
