@@ -24,8 +24,9 @@ if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-// Dynamický import AŽ po dotenv.config() – @vercel/postgres si connection string
-// vytváří hned při vytvoření klienta, ne až při dotazu.
+// Dynamický import db.mjs AŽ po dotenv.config(), aby pg Pool vznikl s connection
+// stringem, který je v tu chvíli už načtený z .env (pool se sice tvoří líně, import
+// necháváme až sem pro jistotu).
 const { sql } = await import('../api/_lib/db.mjs');
 
 try {
