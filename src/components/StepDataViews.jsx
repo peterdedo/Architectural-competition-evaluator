@@ -7,6 +7,7 @@ import { scoreProjects } from '../utils/balanceScore.js';
 import BalanceCompositionChart from './BalanceCompositionChart';
 import CostEfficiencyScatter from './CostEfficiencyScatter';
 import FloorProfileChart from './FloorProfileChart';
+import MetricComparisonTable from './MetricComparisonTable';
 import ProposalFilterBar from './ProposalFilterBar';
 import ScoreHeatmap from './ScoreHeatmap';
 import ScoreRadar from './ScoreRadar';
@@ -112,6 +113,15 @@ const StepDataViews = ({ navrhy, onBack, onNext }) => {
               </p>
             ) : (
               <>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-800 mb-1">Srovnání klíčových metrik</h4>
+                  <p className="text-xs text-slate-500 mb-3">
+                    Faktický přehled odvozených bilančních a ekonomických ukazatelů vedle sebe — neutrální,
+                    bez určení „vítěze“. Váhu a směr posuzuje porota ve váženém hodnocení.
+                  </p>
+                  <MetricComparisonTable proposals={comparedNavrhy} />
+                </div>
+
                 <div>
                   <h4 className="text-sm font-bold text-slate-800 mb-1">Skladba bilance ploch</h4>
                   <p className="text-xs text-slate-500 mb-3">
