@@ -27,7 +27,8 @@
     "pdfjs-dist": "^3.11.174",
     "pg": "^8.23.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

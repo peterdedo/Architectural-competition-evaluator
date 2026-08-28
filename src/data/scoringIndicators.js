@@ -12,9 +12,10 @@
 
 import { safeNum, computeDerivedField, floorsTotal, roomsGrandTotal } from '../utils/balanceCalculations.js';
 
-const scalar = (id, nazev, sectionCode, jednotka) => ({
+const scalar = (id, nazev, sectionCode, jednotka, shortLabel) => ({
   id,
   nazev,
+  shortLabel: shortLabel || nazev,
   sectionCode,
   jednotka,
   getValue: (data) => safeNum(data?.[id]),
@@ -22,25 +23,26 @@ const scalar = (id, nazev, sectionCode, jednotka) => ({
 
 export const SCORING_INDICATORS = [
   // A. Bilance ploch
-  scalar('bilance_zastavena', 'Zastavěná plocha', 'A', 'm²'),
-  scalar('bilance_zpevnena', 'Zpevněná plocha', 'A', 'm²'),
-  scalar('bilance_nezpevnena', 'Nezpevněná plocha', 'A', 'm²'),
+  scalar('bilance_zastavena', 'Zastavěná plocha', 'A', 'm²', 'Zastavěná'),
+  scalar('bilance_zpevnena', 'Zpevněná plocha', 'A', 'm²', 'Zpevněná'),
+  scalar('bilance_nezpevnena', 'Nezpevněná plocha', 'A', 'm²', 'Nezpevněná'),
 
   // B. Demolice stávající stavby
-  scalar('demolice_nadzemni', 'Demolice (nadzemní)', 'B', 'm³'),
+  scalar('demolice_nadzemni', 'Demolice (nadzemní)', 'B', 'm³', 'Demolice'),
 
   // C. Celkový obestavěný prostor
-  scalar('obestaveny_podzemni', 'Obestavěný prostor – podzemní', 'C', 'm³'),
-  scalar('obestaveny_nadzemni', 'Obestavěný prostor – nadzemní', 'C', 'm³'),
+  scalar('obestaveny_podzemni', 'Obestavěný prostor – podzemní', 'C', 'm³', 'Obest. podzemí'),
+  scalar('obestaveny_nadzemni', 'Obestavěný prostor – nadzemní', 'C', 'm³', 'Obest. nadzemí'),
 
   // D. Obestavěný prostor nových objemů
-  scalar('nove_podzemni', 'Nové objemy – podzemní', 'D', 'm³'),
-  scalar('nove_nadzemni', 'Nové objemy – nadzemní', 'D', 'm³'),
+  scalar('nove_podzemni', 'Nové objemy – podzemní', 'D', 'm³', 'Nové podzemí'),
+  scalar('nove_nadzemni', 'Nové objemy – nadzemní', 'D', 'm³', 'Nové nadzemí'),
 
   // E/F/G – dynamická patra/místnosti: skóruje se součet za návrh (jediná srovnatelná jednotka)
   {
     id: 'hpp_celkem',
     nazev: 'Hrubá podlažní plocha (celkem)',
+    shortLabel: 'HPP',
     sectionCode: 'E',
     jednotka: 'm²',
     getValue: (data) => floorsTotal(data?.hpp),
@@ -48,6 +50,7 @@ export const SCORING_INDICATORS = [
   {
     id: 'uzitna_celkem',
     nazev: 'Celková užitná plocha (celkem)',
+    shortLabel: 'Užitná',
     sectionCode: 'F',
     jednotka: 'm²',
     getValue: (data) => floorsTotal(data?.uzitna),
@@ -55,20 +58,22 @@ export const SCORING_INDICATORS = [
   {
     id: 'mistnosti_celkem',
     nazev: 'Bilance místností (celkem)',
+    shortLabel: 'Místnosti',
     sectionCode: 'G',
     jednotka: 'm²',
     getValue: (data) => roomsGrandTotal(data?.mistnosti),
   },
 
   // H. Plocha obálky
-  scalar('obalka_fasady', 'Obálka – fasády', 'H', 'm²'),
-  scalar('obalka_strechy', 'Obálka – střechy', 'H', 'm²'),
-  scalar('obalka_konstrukce', 'Obálka – konstrukce', 'H', 'm²'),
+  scalar('obalka_fasady', 'Obálka – fasády', 'H', 'm²', 'Fasády'),
+  scalar('obalka_strechy', 'Obálka – střechy', 'H', 'm²', 'Střechy'),
+  scalar('obalka_konstrukce', 'Obálka – konstrukce', 'H', 'm²', 'Konstrukce'),
 
   // I. Podíl prosklených ploch – skóruje se přímo poměr (AW/AF samotné nejsou směrově smysluplné)
   {
     id: 'proskleni_podil',
     nazev: 'Podíl prosklených ploch',
+    shortLabel: 'Prosklení',
     sectionCode: 'I',
     jednotka: '%',
     getValue: (data) => {

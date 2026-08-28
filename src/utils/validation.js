@@ -1,26 +1,21 @@
 /**
- * Validation Utility
- *
- * Validace nahrávaných souborů (PDF/CSV/JSON). Používá StepUpload.
- * Stará validace indikátorů a vah byla odstraněna spolu se scoring systémem
- * (bilanční údaje nemají váhy – viz balanceSchema.js / balanceCalculations.js).
+ * Validace nahrávaných souborů (PDF / CSV / JSON / XLSX). Používá StepUpload.
+ * Typ MIME z prohlížeče je nespolehlivý (Excel často posílá prázdný type nebo octet-stream),
+ * proto se rozhoduje podle přípony.
  */
 
-/**
- * Validate file upload
- * @param {File} file - File to validate
- * @returns {Object} Validation result with isValid and message
- */
+const ALLOWED_EXT = new Set(['pdf', 'json', 'csv', 'xlsx', 'xls']);
+
 export const validateFileUpload = (file) => {
   try {
-    const allowedTypes = ['application/pdf', 'text/csv', 'application/json'];
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
 
-    if (!allowedTypes.includes(file.type)) {
+    if (!ALLOWED_EXT.has(ext)) {
       return {
         isValid: false,
-        message: `Nepodporovaný formát souboru: ${file.type}`,
+        message: `Nepodporovaný formát souboru: ${file.name}`,
         error: 'INVALID_FILE_TYPE',
-        allowedTypes: ['PDF', 'CSV', 'JSON'],
+        allowedTypes: ['PDF', 'CSV', 'JSON', 'XLSX'],
       };
     }
 

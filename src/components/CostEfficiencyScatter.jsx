@@ -75,8 +75,8 @@ const CostEfficiencyScatter = ({ proposals }) => {
           const cx = xPix(p.hpp), cy = yPix(p.cena);
           return (
             <g key={p.id}>
+              <title>{p.nazev}</title>
               <circle cx={cx} cy={cy} r={6} fill={p.color} className="stroke-surface" strokeWidth={2} />
-              <text x={cx + 9} y={cy - 8} className="fill-text-light font-mono" fontSize="10.5" fontWeight={500}>{p.nazev}</text>
             </g>
           );
         })}

@@ -25,7 +25,7 @@ const WizardTopNav = ({ aktualniKrok, kroky, onKrokChange, darkMode, processedPr
     {
       id: kroky.NAHRANI,
       nazev: 'Nahrání návrhů',
-      popis: 'PDF / CSV / ručně',
+      popis: 'PDF / Excel / CSV',
       ikona: Upload,
       color: '#4BB349'
     },

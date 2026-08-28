@@ -139,7 +139,8 @@ const StepDataViews = ({ navrhy, onBack, onNext }) => {
                     <div>
                       <h4 className="text-sm font-bold text-slate-800 mb-1">Heatmapa</h4>
                       <p className="text-xs text-slate-500 mb-3">
-                        Vážené skóre dle ukazatelů zvolených porotou v kroku „Návrhy v porovnání&rdquo;.
+                        Na první pohled: pořadí vlevo, díry červeně, vítěz sloupce zeleně. Cena (Kč/m²) sem nepatří —
+                        ta je v grafu „Cenová efektivita“ výše.
                       </p>
                       <ScoreHeatmap scoredProposals={scoredProposals} includedIndicators={includedIndicators} />
                     </div>

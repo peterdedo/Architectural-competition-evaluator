@@ -14,8 +14,11 @@ import { colorForIndex } from '../utils/chartPalette.js';
 // nevypadalo jako "nejhorší v soutěži".
 const SIZE = 420;
 const CENTER = SIZE / 2;
-const RADIUS = 150;
+const RADIUS = 138;
+const VIEW_PAD = 78; // místo pro popisky os — bez overflow:visible do legendy
 const RINGS = [25, 50, 75, 100];
+
+const axisLabel = (ind) => ind.shortLabel || ind.nazev;
 
 const pointOnAxis = (index, count, fraction) => {
   const angle = -Math.PI / 2 + (index * 2 * Math.PI) / count;
@@ -114,11 +117,11 @@ const ScoreRadar = ({ scoredProposals, includedIndicators, weights = {} }) => {
         středu, ne že by tam měl nejhorší možnou hodnotu).
       </p>
 
-      <div className="flex flex-col lg:flex-row items-center justify-center gap-10">
+      <div className="flex flex-col lg:flex-row items-start justify-center gap-8">
+        <div className="w-full max-w-lg mx-auto lg:mx-0 overflow-hidden shrink min-w-0">
         <svg
-          viewBox={`0 0 ${SIZE} ${SIZE}`}
-          overflow="visible"
-          className="w-full max-w-2xl"
+          viewBox={`${-VIEW_PAD} ${-VIEW_PAD} ${SIZE + VIEW_PAD * 2} ${SIZE + VIEW_PAD * 2}`}
+          className="w-full h-auto overflow-hidden"
           role="img"
           aria-label="Radarový graf hodnocení návrhů"
         >
@@ -140,17 +143,19 @@ const ScoreRadar = ({ scoredProposals, includedIndicators, weights = {} }) => {
           {/* osy + popisky (s váhou – jinak tvar zavádějícně vypadá jako by byly osy rovnocenné) */}
           {includedIndicators.map((ind, i) => {
             const outer = pointOnAxis(i, count, 1);
-            const label = pointOnAxis(i, count, 1.16);
+            const label = pointOnAxis(i, count, 1.22);
             const weight = weightOf(ind.id);
             const anchor = label.x > CENTER + 5 ? 'start' : label.x < CENTER - 5 ? 'end' : 'middle';
+            const name = axisLabel(ind);
             return (
               <g key={ind.id}>
                 <line x1={CENTER} y1={CENTER} x2={outer.x} y2={outer.y} stroke="#E2E8F0" strokeWidth={1} />
                 <text x={label.x} y={label.y - 5} fontSize={10} fill="#475569" textAnchor={anchor} dominantBaseline="middle">
-                  {ind.nazev.length > 14 ? `${ind.nazev.slice(0, 14)}…` : ind.nazev}
+                  <title>{ind.nazev}</title>
+                  {name}
                 </text>
                 {Number.isFinite(weight) && (
-                  <text x={label.x} y={label.y + 8} fontSize={9} fill="#64748B" textAnchor={anchor} dominantBaseline="middle">
+                  <text x={label.x} y={label.y + 9} fontSize={9} fill="#64748B" textAnchor={anchor} dominantBaseline="middle">
                     v={weight}
                   </text>
                 )}
@@ -240,8 +245,9 @@ const ScoreRadar = ({ scoredProposals, includedIndicators, weights = {} }) => {
             });
           })}
         </svg>
+        </div>
 
-        <div className="flex flex-col gap-1 text-sm">
+        <div className="flex flex-col gap-1 text-sm w-full lg:w-72 shrink-0 relative z-10 bg-white min-w-0">
           {scoredProposals.map((proposal, idx) => {
             const isHidden = hiddenIds.has(proposal.id);
             const isIncomplete = proposal.scoredIndicatorCount < count;
@@ -262,7 +268,7 @@ const ScoreRadar = ({ scoredProposals, includedIndicators, weights = {} }) => {
                   style={{ background: colorForIndex(idx) }}
                   aria-hidden
                 />
-                <span className="text-slate-700 flex-1">{proposal.nazev}</span>
+                <span className="text-slate-700 flex-1 min-w-0 truncate" title={proposal.nazev}>{proposal.nazev}</span>
                 {isIncomplete && (
                   <span
                     className="inline-flex items-center gap-0.5 text-amber-600"
@@ -275,7 +281,7 @@ const ScoreRadar = ({ scoredProposals, includedIndicators, weights = {} }) => {
                 <span className="text-slate-400 tabular-nums text-xs">
                   {proposal.weightedScore === null ? '—' : `${proposal.weightedScore.toFixed(0)} b.`}
                 </span>
-                {isHidden ? <EyeOff size={13} className="text-slate-400" /> : <Eye size={13} className="text-slate-400" />}
+                {isHidden ? <EyeOff size={13} className="text-slate-400 shrink-0" /> : <Eye size={13} className="text-slate-400 shrink-0" />}
               </button>
             );
           })}

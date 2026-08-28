@@ -43,7 +43,7 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, user, 
   };
 
   const popisyKroku = {
-    [kroky.NAHRANI]: 'PDF / CSV / ručně',
+    [kroky.NAHRANI]: 'PDF / Excel / CSV',
     [kroky.VYSLEDKY]: 'P03 tabulka + P06 cena',
     [kroky.POROVNANI]: 'Výběr pro srovnání',
     [kroky.DATOVE_POHLEDY]: 'Skladba, cena, podlaží',

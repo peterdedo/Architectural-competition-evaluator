@@ -100,34 +100,37 @@ const StepUpload = ({ navrhy, setNavrhy, onNext }) => {
           vybrany: false,
           fileFormat: 'pdf'
         });
-      } else if (format === 'json' || format === 'csv') {
+      } else if (format === 'json' || format === 'csv' || format === 'xlsx') {
         try {
           const parsedData = await parseFile(file);
-          if (parsedData) {
-            const hasUnmapped = Array.isArray(parsedData.mappingInfo?.unmappedColumns) && parsedData.mappingInfo.unmappedColumns.length > 0;
+          const items = parsedData?.items ? parsedData.items : parsedData ? [parsedData] : [];
+          const formatLabel = format === 'xlsx' ? 'Excel' : format.toUpperCase();
+          items.forEach((item) => {
+            const hasUnmapped =
+              Array.isArray(item.mappingInfo?.unmappedColumns) && item.mappingInfo.unmappedColumns.length > 0;
             noveNavrhy.push({
               id: Date.now() + Math.random(),
-              nazev: parsedData.nazev,
+              nazev: item.nazev,
               pdfSoubor: file,
               obrazek: null,
               status: 'zpracován',
-              data: parsedData.data || {},
+              data: item.data || {},
               vybrany: false,
               fileFormat: format,
-              source: parsedData.source,
-              mappingInfo: parsedData.mappingInfo || null,
+              source: item.source,
+              mappingInfo: item.mappingInfo || null,
               warningMessage: hasUnmapped
-                ? `Některé CSV sloupce nebyly rozpoznány: ${parsedData.mappingInfo.unmappedColumns.join(', ')}`
-                : null
+                ? `Některé sloupce v ${formatLabel} nebyly rozpoznány: ${item.mappingInfo.unmappedColumns.join(', ')}`
+                : null,
             });
             if (hasUnmapped) {
               showToast(
-                `CSV „${parsedData.nazev}“ bylo načteno jen částečně. Nerozpoznané sloupce: ${parsedData.mappingInfo.unmappedColumns.join(', ')}`,
+                `${formatLabel} „${item.nazev}“ bylo načteno jen částečně. Nerozpoznané: ${item.mappingInfo.unmappedColumns.join(', ')}`,
                 'error',
                 0
               );
             }
-          }
+          });
         } catch (error) {
           console.error('Error parsing file:', error);
           const em = `Chyba při zpracování ${file.name}: ${error.message}`;
@@ -146,10 +149,12 @@ const StepUpload = ({ navrhy, setNavrhy, onNext }) => {
       const pdfCount = noveNavrhy.filter(n => n.fileFormat === 'pdf').length;
       const jsonCount = noveNavrhy.filter(n => n.fileFormat === 'json').length;
       const csvCount = noveNavrhy.filter(n => n.fileFormat === 'csv').length;
+      const xlsxCount = noveNavrhy.filter(n => n.fileFormat === 'xlsx').length;
       let message = `Nahrané ${noveNavrhy.length} návrhů:`;
       if (pdfCount > 0) message += ` ${pdfCount} PDF`;
       if (jsonCount > 0) message += ` ${jsonCount} JSON`;
       if (csvCount > 0) message += ` ${csvCount} CSV`;
+      if (xlsxCount > 0) message += ` ${xlsxCount} Excel`;
       showToast(message, 'success');
     }
   }, [setNavrhy, showToast]);
@@ -452,20 +457,20 @@ const StepUpload = ({ navrhy, setNavrhy, onNext }) => {
               <input
                 type="file"
                 id="navrhyFiles"
-                accept=".pdf,.json,.csv"
+                accept=".pdf,.json,.csv,.xlsx,.xls"
                 multiple
                 onChange={(e) => handleFileUpload(e.target.files)}
                 className="sr-only"
-                aria-label="Nahrát návrhy (PDF, JSON, CSV)"
+                aria-label="Nahrát návrhy (PDF, JSON, CSV, Excel)"
               />
               <label htmlFor="navrhyFiles" className="cursor-pointer block">
                 <div className="text-center">
                   <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-2xl flex items-center justify-center">
                     <span className="text-3xl">📄</span>
                   </div>
-                  <h3 className="text-lg font-semibold text-text-dark mb-2">Klikněte pro nahrání PDF, JSON nebo CSV souborů</h3>
+                  <h3 className="text-lg font-semibold text-text-dark mb-2">Klikněte pro nahrání PDF, JSON, CSV nebo Excel souborů</h3>
                   <p className="text-text-light mb-4">nebo přetáhněte soubory sem</p>
-                  <p className="text-xs text-text-muted">Podporované formáty: PDF (AI analýza), JSON, CSV</p>
+                  <p className="text-xs text-text-muted">Podporované formáty: PDF (AI analýza), JSON, CSV, XLSX</p>
                   <div className="btn-secondary inline-flex mt-4">
                     <span className="text-lg">📁</span> Vybrat soubory
                   </div>
