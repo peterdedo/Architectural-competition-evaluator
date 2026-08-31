@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { BarChart3, File, Edit3, Plus, Trash2, ArrowRight } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
-import { FLOOR_COLLECTIONS, OFFER_PRICE, BALANCE_SECTIONS, SCALAR_INPUT_FIELDS } from '../data/balanceSchema.js';
+import { OFFER_PRICE, BALANCE_SECTIONS, SCALAR_INPUT_FIELDS } from '../data/balanceSchema.js';
 import {
   computeDerivedField,
   floorsTotal,
@@ -9,6 +9,9 @@ import {
   offerPriceTotal,
   safeNum,
   setScalarValue,
+  setFloorValueByLabel,
+  setOfferItemPrice,
+  roomsFloorTotal,
 } from '../utils/balanceCalculations.js';
 import { useProposalSelection } from '../hooks/useProposalSelection.js';
 import { generateNavrhId } from '../utils/generateId';
@@ -53,6 +56,51 @@ const ScalarEditCell = ({ data, fieldId, unit, onCommit }) => {
       />
     </div>
   );
+};
+
+const NumberEditCell = ({ raw, onCommit, ariaLabel }) => {
+  const shown = raw === null || raw === undefined || raw === '' ? '' : String(raw);
+  const [draft, setDraft] = useState(shown);
+  useEffect(() => {
+    setDraft(shown);
+  }, [shown]);
+  return (
+    <input
+      type="number"
+      min={0}
+      step="any"
+      inputMode="decimal"
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => {
+        if (draft !== shown) onCommit(draft);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.currentTarget.blur();
+      }}
+      className="w-24 px-2 py-1 border border-slate-200 rounded-md text-sm text-right tabular-nums focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+      placeholder="—"
+      aria-label={ariaLabel || 'Hodnota'}
+    />
+  );
+};
+
+const collectFloorLabels = (proposals, key) => {
+  const seen = [];
+  proposals.forEach((p) => {
+    (p.data?.[key]?.floors || []).forEach((f) => {
+      const label = f?.label ? String(f.label) : '';
+      if (label && !seen.includes(label)) seen.push(label);
+    });
+  });
+  return seen;
+};
+
+const floorRaw = (data, key, label) => {
+  const f = (data?.[key]?.floors || []).find((x) => x.label === label);
+  if (!f) return '';
+  const n = safeNum(f.value);
+  return n === null ? '' : String(n);
 };
 
 // Kolik ze skalárních vstupů je vyplněno (hrubá míra kompletnosti bilance).
@@ -102,6 +150,28 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
       prev.map((n) => (n.id === navrhId ? { ...n, data: setScalarValue(n.data, fieldId, raw) } : n))
     );
   };
+
+  const patchFloor = (navrhId, key, label, raw) => {
+    setNavrhy((prev) =>
+      prev.map((n) =>
+        n.id === navrhId ? { ...n, data: { ...n.data, [key]: setFloorValueByLabel(n.data?.[key], label, raw) } } : n
+      )
+    );
+  };
+
+  const patchOffer = (navrhId, itemId, raw) => {
+    setNavrhy((prev) =>
+      prev.map((n) =>
+        n.id === navrhId
+          ? { ...n, data: { ...n.data, nabidkovaCena: setOfferItemPrice(n.data?.nabidkovaCena, itemId, raw) } }
+          : n
+      )
+    );
+  };
+
+  const hppLabels = useMemo(() => collectFloorLabels(comparedNavrhy, 'hpp'), [comparedNavrhy]);
+  const uzitnaLabels = useMemo(() => collectFloorLabels(comparedNavrhy, 'uzitna'), [comparedNavrhy]);
+  const roomFloorLabels = useMemo(() => collectFloorLabels(comparedNavrhy, 'mistnosti'), [comparedNavrhy]);
 
   const createManualNavrh = () => {
     const id = generateNavrhId();
@@ -273,8 +343,8 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
             ) : (
             <>
             <p className="text-xs text-slate-500 mb-2">
-              Čísla v tabulce jdou upravit přímo (oprava špatného načtení). Patra, místnosti a položky
-              nabídkové ceny otevřete tlačítkem Upravit u návrhu — tam je celá P03/P06.
+              Kompletní P03: A–D, H–I jako skaláry, E/F po podlažích, G po podlažích (součet místností),
+              P06 po položkách FS. Jednotlivé místnosti upravíte v „Celá tabulka“.
             </p>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse bg-surface rounded-xl overflow-hidden shadow-card text-sm">
@@ -345,32 +415,118 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
                   ))}
                   <tr className="bg-slate-50">
                     <td colSpan={comparedNavrhy.length + 1} className="px-4 py-2 text-xs font-bold text-slate-700 border-b border-border">
-                      E–G, P06 — součty (úprava po podlažích / položkách v celé tabulce)
+                      E. Hrubá podlažní plocha (m²)
                     </td>
                   </tr>
-                  {[
-                    ...FLOOR_COLLECTIONS.map((c) => ({
-                      id: c.key,
-                      nazev: `${c.code}. ${c.nazev}`,
-                      unit: c.jednotka,
-                      get: (d) => (c.kind === 'rooms' ? roomsGrandTotal(d[c.key]) : floorsTotal(d[c.key])),
-                    })),
-                    {
-                      id: 'nabidkovaCena',
-                      nazev: `${OFFER_PRICE.code}. ${OFFER_PRICE.nazev}`,
-                      unit: OFFER_PRICE.jednotka,
-                      get: (d) => offerPriceTotal(d.nabidkovaCena),
-                    },
-                  ].map((row) => (
-                    <tr key={row.id} className="table-row">
-                      <td className="px-4 py-2 text-slate-700 border-b border-border sticky left-0 bg-surface">{row.nazev}</td>
+                  {hppLabels.map((label) => (
+                    <tr key={`hpp-${label}`} className="table-row">
+                      <td className="px-4 py-2 text-slate-700 border-b border-border sticky left-0 bg-surface">{label}</td>
                       {comparedNavrhy.map((n) => (
-                        <td key={n.id} className="px-4 py-2 text-center border-b border-border tabular-nums">
-                          {fmt(row.get(n.data || {}), row.unit)}
+                        <td key={n.id} className="px-2 py-1.5 text-center border-b border-border">
+                          <NumberEditCell
+                            raw={floorRaw(n.data, 'hpp', label)}
+                            onCommit={(raw) => patchFloor(n.id, 'hpp', label, raw)}
+                            ariaLabel={`HPP ${label}`}
+                          />
                         </td>
                       ))}
                     </tr>
                   ))}
+                  <tr className="bg-primary/5">
+                    <td className="px-4 py-2 font-semibold text-slate-800 border-b border-border sticky left-0 bg-primary/5">Celkem (auto)</td>
+                    {comparedNavrhy.map((n) => (
+                      <td key={n.id} className="px-4 py-2 text-center font-semibold border-b border-border tabular-nums">
+                        {fmt(floorsTotal(n.data?.hpp), 'm²')}
+                      </td>
+                    ))}
+                  </tr>
+
+                  <tr className="bg-slate-50">
+                    <td colSpan={comparedNavrhy.length + 1} className="px-4 py-2 text-xs font-bold text-slate-700 border-b border-border">
+                      F. Celková užitná plocha (m²)
+                    </td>
+                  </tr>
+                  {uzitnaLabels.map((label) => (
+                    <tr key={`uzitna-${label}`} className="table-row">
+                      <td className="px-4 py-2 text-slate-700 border-b border-border sticky left-0 bg-surface">{label}</td>
+                      {comparedNavrhy.map((n) => (
+                        <td key={n.id} className="px-2 py-1.5 text-center border-b border-border">
+                          <NumberEditCell
+                            raw={floorRaw(n.data, 'uzitna', label)}
+                            onCommit={(raw) => patchFloor(n.id, 'uzitna', label, raw)}
+                            ariaLabel={`Užitná ${label}`}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                  <tr className="bg-primary/5">
+                    <td className="px-4 py-2 font-semibold text-slate-800 border-b border-border sticky left-0 bg-primary/5">Celkem (auto)</td>
+                    {comparedNavrhy.map((n) => (
+                      <td key={n.id} className="px-4 py-2 text-center font-semibold border-b border-border tabular-nums">
+                        {fmt(floorsTotal(n.data?.uzitna), 'm²')}
+                      </td>
+                    ))}
+                  </tr>
+
+                  <tr className="bg-slate-50">
+                    <td colSpan={comparedNavrhy.length + 1} className="px-4 py-2 text-xs font-bold text-slate-700 border-b border-border">
+                      G. Bilance místností (m²) — součet za podlaží; jednotlivé místnosti v „Celá tabulka“
+                    </td>
+                  </tr>
+                  {roomFloorLabels.map((label) => (
+                    <tr key={`rooms-${label}`} className="table-row">
+                      <td className="px-4 py-2 text-slate-700 border-b border-border sticky left-0 bg-surface">{label}</td>
+                      {comparedNavrhy.map((n) => {
+                        const floor = (n.data?.mistnosti?.floors || []).find((f) => f.label === label);
+                        return (
+                          <td key={n.id} className="px-4 py-2 text-center border-b border-border tabular-nums">
+                            {fmt(roomsFloorTotal(floor), 'm²')}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                  <tr className="bg-primary/5">
+                    <td className="px-4 py-2 font-semibold text-slate-800 border-b border-border sticky left-0 bg-primary/5">Celkem (auto)</td>
+                    {comparedNavrhy.map((n) => (
+                      <td key={n.id} className="px-4 py-2 text-center font-semibold border-b border-border tabular-nums">
+                        {fmt(roomsGrandTotal(n.data?.mistnosti), 'm²')}
+                      </td>
+                    ))}
+                  </tr>
+
+                  <tr className="bg-slate-50">
+                    <td colSpan={comparedNavrhy.length + 1} className="px-4 py-2 text-xs font-bold text-slate-700 border-b border-border">
+                      P06. Nabídková cena (Kč, bez DPH)
+                    </td>
+                  </tr>
+                  {OFFER_PRICE.items.map((item) => (
+                    <tr key={item.id} className="table-row">
+                      <td className="px-4 py-2 text-slate-700 border-b border-border sticky left-0 bg-surface">{item.nazev}</td>
+                      {comparedNavrhy.map((n) => {
+                        const found = (n.data?.nabidkovaCena?.items || []).find((it) => it.id === item.id);
+                        const nVal = safeNum(found?.price);
+                        return (
+                          <td key={n.id} className="px-2 py-1.5 text-center border-b border-border">
+                            <NumberEditCell
+                              raw={nVal === null ? '' : String(nVal)}
+                              onCommit={(raw) => patchOffer(n.id, item.id, raw)}
+                              ariaLabel={item.nazev}
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                  <tr className="bg-primary/5">
+                    <td className="px-4 py-2 font-semibold text-slate-800 border-b border-border sticky left-0 bg-primary/5">Celkem (auto)</td>
+                    {comparedNavrhy.map((n) => (
+                      <td key={n.id} className="px-4 py-2 text-center font-semibold border-b border-border tabular-nums">
+                        {fmt(offerPriceTotal(n.data?.nabidkovaCena), 'Kč')}
+                      </td>
+                    ))}
+                  </tr>
                 </tbody>
               </table>
             </div>

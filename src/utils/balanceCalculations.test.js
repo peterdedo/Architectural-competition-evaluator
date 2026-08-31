@@ -16,6 +16,8 @@ import {
   roomsGrandTotal,
   offerPriceTotal,
   setScalarValue,
+  setFloorValueByLabel,
+  setOfferItemPrice,
   ensureFloorsCollection,
   ensureRoomsCollection,
   ensureOfferPrice,
@@ -188,5 +190,26 @@ describe('setScalarValue / ensure collections (oprava načtení)', () => {
     const ensured = ensureRoomsCollection({ floors: [{ label: '1. NP' }] });
     expect(ensured.floors[0].rooms).toEqual([]);
     expect(ensured.floors[0].id).toBeTruthy();
+  });
+});
+
+describe('setFloorValueByLabel / setOfferItemPrice', () => {
+  it('updates an existing floor by label', () => {
+    const next = setFloorValueByLabel({ floors: [{ label: '1. NP', value: 10 }] }, '1. NP', '250');
+    expect(next.floors.find((f) => f.label === '1. NP').value).toBe('250');
+  });
+  it('appends a floor when the label is new', () => {
+    const next = setFloorValueByLabel({ floors: [{ label: '1. NP', value: 10 }] }, '3. NP', '80');
+    expect(next.floors.map((f) => f.label)).toEqual(['1. NP', '3. NP']);
+    expect(next.floors[1].value).toBe('80');
+  });
+  it('clears a floor value without dropping the row', () => {
+    const next = setFloorValueByLabel({ floors: [{ label: '1. NP', value: 10 }] }, '1. NP', '');
+    expect(next.floors[0].value).toBe('');
+  });
+  it('updates a P06 line item price', () => {
+    const next = setOfferItemPrice({ items: [{ id: 'fs1', price: 1 }] }, 'fs1', '99000');
+    expect(next.items.find((it) => it.id === 'fs1').price).toBe('99000');
+    expect(next.items).toHaveLength(9);
   });
 });

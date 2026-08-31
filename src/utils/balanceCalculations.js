@@ -181,6 +181,30 @@ export function setScalarValue(data, id, raw) {
   return next;
 }
 
+/** Nastaví plochu podlaží podle popisku (HPP / užitná) – pro úpravy přímo ve srovnávací tabulce. */
+export function setFloorValueByLabel(collection, label, raw) {
+  const ensured = ensureFloorsCollection(collection);
+  const trimmed = String(raw ?? '').trim().replace(/\s/g, '').replace(',', '.');
+  const empty = trimmed === '' || trimmed === '-' || trimmed === '.';
+  let found = false;
+  const floors = ensured.floors.map((f) => {
+    if (f.label !== label) return f;
+    found = true;
+    return { ...f, value: empty ? '' : trimmed };
+  });
+  if (!found && !empty) floors.push(makeFloor(label, trimmed));
+  return { floors };
+}
+
+export function setOfferItemPrice(offer, itemId, raw) {
+  const ensured = ensureOfferPrice(offer);
+  const trimmed = String(raw ?? '').trim().replace(/\s/g, '').replace(',', '.');
+  const empty = trimmed === '' || trimmed === '-' || trimmed === '.';
+  return {
+    items: ensured.items.map((it) => (it.id === itemId ? { ...it, price: empty ? '' : trimmed } : it)),
+  };
+}
+
 /** Součet ploch pater kolekce E/F; null pokud nic vyplněno. */
 export function floorsTotal(collection) {
   if (!collection || !Array.isArray(collection.floors)) return null;

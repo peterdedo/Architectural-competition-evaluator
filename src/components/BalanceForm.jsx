@@ -45,20 +45,19 @@ const inputClass =
 const derivedClass =
   'w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-sm text-right font-semibold text-slate-800';
 
-// Rozdělení dlouhého formuláře do tabů, aby se nescrollovalo přes celou obrazovku.
+// Kotvy v jednom scrollu — všechny sekce P03/P06 jsou vidět, tlačítka jen posunou pohled.
 const TABS = [
-  { id: 'plochy', label: 'Plochy a objemy', hint: 'A–D' },
-  { id: 'podlazi', label: 'Podlažní plochy', hint: 'E–F' },
-  { id: 'mistnosti', label: 'Místnosti', hint: 'G' },
-  { id: 'obalka', label: 'Obálka a prosklení', hint: 'H–I' },
-  { id: 'cena', label: 'Nabídková cena', hint: 'P06' },
+  { id: 'plochy', label: 'A–D Plochy a objemy' },
+  { id: 'podlazi', label: 'E–F Podlaží (HPP, užitná)' },
+  { id: 'mistnosti', label: 'G Místnosti' },
+  { id: 'obalka', label: 'H–I Obálka a prosklení' },
+  { id: 'cena', label: 'P06 Nabídková cena' },
 ];
 const PLOCHY_CODES = new Set(['A', 'B', 'C', 'D']);
 const OBALKA_CODES = new Set(['H', 'I']);
 
 const BalanceForm = ({ navrh, onSave, onClose }) => {
   const initialData = navrh?.data || {};
-  const [activeTab, setActiveTab] = useState('plochy');
   const [nazev, setNazev] = useState(() => navrh?.nazev || '');
 
   // Skalární vstupy (A/B/C/D/H/I)
@@ -275,7 +274,7 @@ const BalanceForm = ({ navrh, onSave, onClose }) => {
           </button>
         </div>
 
-        {/* Souhrnný pruh – klíčové součty vidět bez ohledu na aktivní tab */}
+        {/* Souhrnný pruh – klíčové součty vidět i bez scrollu */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-slate-200 text-xs">
           {[
             ['Bilance ploch', derived.bilanceCelkem, 'm²'],
@@ -290,29 +289,26 @@ const BalanceForm = ({ navrh, onSave, onClose }) => {
           ))}
         </div>
 
-        {/* Taby */}
-        <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50 px-2">
+        <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50 px-2 gap-1">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`shrink-0 px-5 py-3.5 text-sm font-semibold border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-slate-600 hover:text-slate-800'
-              }`}
+              onClick={() => document.getElementById(`bf-${tab.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="shrink-0 px-3 py-2.5 text-xs font-semibold text-slate-700 hover:text-primary hover:bg-white rounded-t-lg"
             >
-              {tab.label} <span className="text-slate-400 font-normal">({tab.hint})</span>
+              {tab.label}
             </button>
           ))}
         </div>
 
-        <div className="p-6 overflow-y-auto space-y-8 flex-1">
-          {activeTab === 'plochy' && plochySections.map(renderStaticSection)}
+        <div className="p-6 overflow-y-auto space-y-10 flex-1">
+          <div id="bf-plochy" className="space-y-8 scroll-mt-2">
+            {plochySections.map(renderStaticSection)}
+          </div>
 
-          {activeTab === 'podlazi' &&
-            floorCollectionMeta.map((meta) => {
+          <div id="bf-podlazi" className="space-y-8 scroll-mt-2">
+            {floorCollectionMeta.map((meta) => {
               const state = collectionState[meta.key];
               const total = meta.key === 'hpp' ? derived.hppTotal : derived.uzitnaTotal;
               return (
@@ -372,9 +368,10 @@ const BalanceForm = ({ navrh, onSave, onClose }) => {
                 </section>
               );
             })}
+          </div>
 
-          {activeTab === 'mistnosti' && roomsMeta && (
-            <section>
+          {roomsMeta && (
+            <section id="bf-mistnosti" className="scroll-mt-2">
               <div className="flex items-baseline gap-2 mb-1">
                 <span className="text-lg">{roomsMeta.ikona}</span>
                 <h3 className="text-base font-bold text-slate-900">
@@ -470,10 +467,11 @@ const BalanceForm = ({ navrh, onSave, onClose }) => {
             </section>
           )}
 
-          {activeTab === 'obalka' && obalkaSections.map(renderStaticSection)}
+          <div id="bf-obalka" className="space-y-8 scroll-mt-2">
+            {obalkaSections.map(renderStaticSection)}
+          </div>
 
-          {activeTab === 'cena' && (
-            <section>
+          <section id="bf-cena" className="scroll-mt-2">
               <div className="flex items-baseline gap-2 mb-1">
                 <span className="text-lg">{OFFER_PRICE.ikona}</span>
                 <h3 className="text-base font-bold text-slate-900">
@@ -515,7 +513,6 @@ const BalanceForm = ({ navrh, onSave, onClose }) => {
                 <span className="font-bold text-lg text-slate-900">{fmt(derived.offerTotal, 'Kč')}</span>
               </div>
             </section>
-          )}
         </div>
 
         {/* Footer */}
