@@ -3,6 +3,7 @@ import { Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { colorForIndex } from '../utils/chartPalette.js';
 import { useLocalStorage } from '../hooks/useLocalStorage.js';
 import { sectionNazev } from '../data/balanceSchema.js';
+import { explicitWeight } from '../utils/balanceScore.js';
 
 // Radar: osy = ukazatele se směrem. Výchozí sada je 8 s největším rozptylem mezi návrhy
 // (čitelný tvar); porota si osy přidá/odebere. Při > 6 osách jsou na paprsku jen čísla,
@@ -30,8 +31,6 @@ const fmtValue = (value, unit) => {
   if (value === null || value === undefined || !Number.isFinite(value)) return '—';
   return `${value.toLocaleString('cs-CZ', { maximumFractionDigits: 1 })} ${unit}`;
 };
-
-const DEFAULT_WEIGHT = 10;
 
 const spreadOf = (ind, scoredProposals) => {
   const values = scoredProposals
@@ -118,7 +117,7 @@ const ScoreRadar = ({ scoredProposals, includedIndicators, weights = {} }) => {
   };
 
   const visibleProposals = scoredProposals.filter((p) => !hiddenIds.has(p.id));
-  const weightOf = (indId) => (Number.isFinite(weights[indId]) ? weights[indId] : DEFAULT_WEIGHT);
+  const weightOf = (indId) => explicitWeight(weights, indId);
 
   const vertexOf = (proposal, ind, i) => {
     const score = proposal.indicatorScores.find((s) => s.id === ind.id);
@@ -191,7 +190,9 @@ const ScoreRadar = ({ scoredProposals, includedIndicators, weights = {} }) => {
                   >
                     {on && <span className="tabular-nums text-[10px] font-bold">{n}</span>}
                     {axisLabel(ind)}
-                    <span className="text-[10px] text-slate-400 font-normal">v={weightOf(ind.id)}</span>
+                    <span className="text-[10px] text-slate-400 font-normal">
+                      {weightOf(ind.id) !== null ? `v=${weightOf(ind.id)}` : 'váha —'}
+                    </span>
                   </button>
                 );
               })}

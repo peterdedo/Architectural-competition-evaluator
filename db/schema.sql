@@ -29,10 +29,14 @@ CREATE TABLE IF NOT EXISTS scoring_settings (
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   indicator_id TEXT NOT NULL,
   direction TEXT NOT NULL,
-  weight INTEGER NOT NULL DEFAULT 10,
+  weight INTEGER,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (user_id, indicator_id)
 );
+
+-- Váha nesmí být předvyplněná: NULL = porota ji ještě nezadala (žádný default 10).
+ALTER TABLE scoring_settings ALTER COLUMN weight DROP DEFAULT;
+ALTER TABLE scoring_settings ALTER COLUMN weight DROP NOT NULL;
 
 -- Ochrana proti hádání hesla hrubou silou: počítadlo neúspěšných pokusů a dočasné uzamčení účtu.
 -- (idempotentní – lze spustit i nad existující databází)

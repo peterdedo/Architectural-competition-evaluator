@@ -13,7 +13,7 @@ import {
 import { useProposalSelection } from '../hooks/useProposalSelection.js';
 import { useScoringSettings } from '../hooks/useScoringSettings.js';
 import { SCORING_INDICATORS } from '../data/scoringIndicators.js';
-import { scoreProjects } from '../utils/balanceScore.js';
+import { scoreProjects, isIndicatorIncluded } from '../utils/balanceScore.js';
 import BalanceCompositionChart from './BalanceCompositionChart';
 import CostEfficiencyScatter from './CostEfficiencyScatter';
 import FloorProfileChart from './FloorProfileChart';
@@ -80,8 +80,8 @@ const StepDataViews = ({ navrhy, onBack, onNext }) => {
     [comparedNavrhy, directions, weights]
   );
   const includedIndicators = useMemo(
-    () => SCORING_INDICATORS.filter((ind) => directions[ind.id]),
-    [directions]
+    () => SCORING_INDICATORS.filter((ind) => isIndicatorIncluded(directions, weights, ind.id)),
+    [directions, weights]
   );
 
   const empty = zpracovaneNavrhy.length === 0;

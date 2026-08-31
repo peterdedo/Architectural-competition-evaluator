@@ -4,7 +4,7 @@ import { useProposalSelection } from '../hooks/useProposalSelection.js';
 import { useScoringSettings } from '../hooks/useScoringSettings.js';
 import { useAiFeaturesEnabled } from '../hooks/useAiFeaturesEnabled.js';
 import { SCORING_INDICATORS } from '../data/scoringIndicators.js';
-import { scoreProjects } from '../utils/balanceScore.js';
+import { scoreProjects, isIndicatorIncluded } from '../utils/balanceScore.js';
 import { floorsTotal, offerPriceTotal } from '../utils/balanceCalculations.js';
 import ProposalFilterBar from './ProposalFilterBar';
 import ScoringSettingsPanel from './ScoringSettingsPanel';
@@ -38,8 +38,8 @@ const StepProposalComparison = ({ navrhy, onBack, onNext }) => {
     [comparedNavrhy, directions, weights]
   );
   const includedIndicators = useMemo(
-    () => SCORING_INDICATORS.filter((ind) => directions[ind.id]),
-    [directions]
+    () => SCORING_INDICATORS.filter((ind) => isIndicatorIncluded(directions, weights, ind.id)),
+    [directions, weights]
   );
 
   // Kč/m² HPP – jen k zobrazení vedle skóre, aby porota viděla ekonomickou efektivitu (kritérium

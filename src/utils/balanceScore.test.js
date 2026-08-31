@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { scoreProject, scoreProjects, computeIndicatorRanges, DIRECTIONS } from './balanceScore.js';
+import { scoreProject, scoreProjects, computeIndicatorRanges, DIRECTIONS, explicitWeight, isIndicatorIncluded } from './balanceScore.js';
 
 const ind = (id, getValue) => ({ id, nazev: id, sectionCode: 'X', jednotka: 'm²', getValue });
 
@@ -23,6 +23,21 @@ describe('scoreProject', () => {
     const result = scoreProject({ data: { a: 999999 } }, indicators, {}, {}); // no direction set
     expect(result.indicatorScores).toHaveLength(0);
     expect(result.weightedScore).toBeNull(); // nothing scored → null, not 0
+  });
+
+  it('a chosen direction without an explicit weight is excluded (no default 10)', () => {
+    const indicators = [{ ...ind('a', (d) => d.a), observedMin: 0, observedMax: 100 }];
+    const result = scoreProject({ data: { a: 100 } }, indicators, { a: DIRECTIONS.HIGHER }, {});
+    expect(result.indicatorScores).toHaveLength(0);
+    expect(result.weightedScore).toBeNull();
+  });
+
+  it('explicitWeight treats missing, zero and NaN as unset', () => {
+    expect(explicitWeight({}, 'a')).toBeNull();
+    expect(explicitWeight({ a: 0 }, 'a')).toBeNull();
+    expect(explicitWeight({ a: 10 }, 'a')).toBe(10);
+    expect(isIndicatorIncluded({ a: DIRECTIONS.HIGHER }, {}, 'a')).toBe(false);
+    expect(isIndicatorIncluded({ a: DIRECTIONS.HIGHER }, { a: 10 }, 'a')).toBe(true);
   });
 
   it('direction "higher" ranks the max value at 100', () => {

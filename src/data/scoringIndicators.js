@@ -7,8 +7,8 @@
 // právě jejich součet za návrh, protože počet pater/místností se liší návrh od návrhu.
 //
 // Směr (higher/lower) a váhu NEPŘEDEPISUJE tento soubor – nastavuje si je porota
-// v UI (viz utils/scoringSettings.js). Bez explicitní volby poroty se ukazatel
-// do skóre nezapočítává (viz utils/balanceScore.js).
+// v UI. Bez explicitní volby směru i váhy se ukazatel do skóre nezapočítává
+// (viz utils/balanceScore.js). Appka nedoplňuje výchozí váhu 10.
 
 import { safeNum, computeDerivedField, floorsTotal, roomsGrandTotal } from '../utils/balanceCalculations.js';
 

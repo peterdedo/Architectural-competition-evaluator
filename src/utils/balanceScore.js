@@ -1,6 +1,6 @@
 // Vážené hodnocení bilančních ukazatelů (P03) – nastavuje si ho porota v UI, appka nic
-// nevymýšlí: bez explicitně zvoleného směru (viz utils/scoringSettings.js) se ukazatel
-// do skóre nezapočítává. Cena (P06) do tohoto skóre nevstupuje (samostatné kritérium
+// nevymýšlí: bez explicitně zvoleného směru A zadané váhy se ukazatel do skóre
+// nezapočítává (žádný default 10). Cena (P06) do tohoto skóre nevstupuje (samostatné kritérium
 // „ekonomická efektivita" dle soutěžních podmínek – viz StepResults.jsx).
 //
 // Normalizace: poměr k nejlepšímu návrhu napříč porovnávanými návrhy (ne min-max) – nejlepší
@@ -11,7 +11,18 @@
 
 export const DIRECTIONS = { HIGHER: 'higher', LOWER: 'lower' };
 
-const DEFAULT_WEIGHT = 10;
+/** Váha, kterou porota opravdu zadala. Chybějící / 0 / NaN = nezadáno (appka nic nedoplňuje). */
+export function explicitWeight(weights, id) {
+  const w = Number(weights?.[id]);
+  return Number.isFinite(w) && w > 0 ? w : null;
+}
+
+/** Ukazatel jde do skóre jen se zvoleným směrem a zadanou vahou. */
+export function isIndicatorIncluded(directions, weights, id) {
+  const direction = directions?.[id];
+  if (direction !== DIRECTIONS.HIGHER && direction !== DIRECTIONS.LOWER) return false;
+  return explicitWeight(weights, id) !== null;
+}
 
 /** Pro každý ukazatel spočítá pozorovaný rozsah (min/max) napříč zadanými návrhy. */
 export function computeIndicatorRanges(proposals, indicators) {
@@ -30,7 +41,7 @@ export function computeIndicatorRanges(proposals, indicators) {
  * @param {Object} project - návrh (project.data = bilanční data)
  * @param {Array} indicators - SCORING_INDICATORS (případně obohacené o observedMin/observedMax)
  * @param {Object} directions - { [indicatorId]: 'higher' | 'lower' } – chybí-li klíč, ukazatel se nezapočítá
- * @param {Object} weights - { [indicatorId]: number } – výchozí váha DEFAULT_WEIGHT
+ * @param {Object} weights - { [indicatorId]: number } – jen explicitní váha; nic se nedoplňuje
  */
 export function scoreProject(project, indicators, directions = {}, weights = {}) {
   const safeIndicators = Array.isArray(indicators) ? indicators : [];
@@ -40,7 +51,9 @@ export function scoreProject(project, indicators, directions = {}, weights = {})
 
   safeIndicators.forEach((ind) => {
     const direction = directions[ind.id];
-    if (direction !== DIRECTIONS.HIGHER && direction !== DIRECTIONS.LOWER) return; // porota nevybrala → mimo skóre
+    if (direction !== DIRECTIONS.HIGHER && direction !== DIRECTIONS.LOWER) return; // porota nevybrala směr → mimo skóre
+    const weight = explicitWeight(weights, ind.id);
+    if (weight === null) return; // směr bez váhy appka nedoplňuje – ukazatel zůstane mimo skóre
 
     const value = ind.getValue(project?.data || {});
     if (value === null || !Number.isFinite(value)) return; // chybějící hodnota → vynech, neboduj nulou
@@ -68,7 +81,6 @@ export function scoreProject(project, indicators, directions = {}, weights = {})
     }
     normalized = Math.min(Math.max(normalized, 0), 100);
 
-    const weight = Number.isFinite(weights[ind.id]) ? weights[ind.id] : DEFAULT_WEIGHT;
     totalWeighted += normalized * weight;
     totalWeight += weight;
 

@@ -37,8 +37,11 @@ export default async function handler(req, res) {
     settingsRows.forEach((r) => {
       if (!settingsByUser.has(r.user_id)) settingsByUser.set(r.user_id, { directions: {}, weights: {} });
       const entry = settingsByUser.get(r.user_id);
-      entry.directions[r.indicator_id] = r.direction;
-      entry.weights[r.indicator_id] = r.weight;
+      if (r.direction === 'higher' || r.direction === 'lower') {
+        entry.directions[r.indicator_id] = r.direction;
+      }
+      const w = Number(r.weight);
+      if (Number.isFinite(w) && w > 0) entry.weights[r.indicator_id] = w;
     });
 
     const porotci = userRows

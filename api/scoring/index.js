@@ -18,8 +18,11 @@ export default async function handler(req, res) {
       const directions = {};
       const weights = {};
       rows.forEach((r) => {
-        directions[r.indicator_id] = r.direction;
-        weights[r.indicator_id] = r.weight;
+        if (r.direction === 'higher' || r.direction === 'lower') {
+          directions[r.indicator_id] = r.direction;
+        }
+        const w = Number(r.weight);
+        if (Number.isFinite(w) && w > 0) weights[r.indicator_id] = w;
       });
       res.status(200).json({ directions, weights });
     } catch (e) {
@@ -50,7 +53,8 @@ export default async function handler(req, res) {
         for (const indicatorId of indicatorIds) {
           const direction = directions[indicatorId];
           if (direction !== 'higher' && direction !== 'lower') continue; // bez směru se ukazatel do skóre nepočítá
-          const weight = Number.isFinite(weights[indicatorId]) ? weights[indicatorId] : 10;
+          const raw = Number(weights[indicatorId]);
+          const weight = Number.isFinite(raw) && raw > 0 ? raw : null; // žádný default – váhu zadává porota
           await sql`
             INSERT INTO scoring_settings (user_id, indicator_id, direction, weight)
             VALUES (${session.userId}, ${indicatorId}, ${direction}, ${weight})

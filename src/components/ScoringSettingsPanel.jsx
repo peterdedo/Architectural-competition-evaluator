@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, Loader2, Check, X as XIcon, ArrowUp, ArrowDown, Ban, Target } from 'lucide-react';
 import { SCORING_INDICATORS } from '../data/scoringIndicators.js';
 import { sectionNazev } from '../data/balanceSchema.js';
-import { DIRECTIONS } from '../utils/balanceScore.js';
+import { DIRECTIONS, isIndicatorIncluded, explicitWeight } from '../utils/balanceScore.js';
 import { useWeightSuggestions } from '../hooks/useWeightSuggestions.js';
 import { colorForIndex } from '../utils/chartPalette.js';
 
@@ -41,8 +41,8 @@ const DirectionToggle = ({ value, onChange, color }) => {
 
 /**
  * Panel pro porotu: pro každý bilanční ukazatel volí směr (vyšší/nižší lepší, nebo mimo
- * skóre) a váhu. Appka žádný směr ani váhu sama nevymýšlí – dokud porota nezvolí, ukazatel
- * se do vypočteného skóre vůbec nepromítá (viz utils/balanceScore.js).
+ * skóre) a váhu. Appka žádný směr ani váhu sama nevymýšlí – dokud porota nezadá obojí,
+ * ukazatel se do skóre nepromítá (žádný default 10, viz utils/balanceScore.js).
  *
  * Volitelně (jen když aiEnabled) nabízí AI NÁVRH směru/váhy – ten se nikdy nezapíše přímo,
  * porota si v review kroku vybere, které návrhy přijme, a teprve pak se propíšou.
@@ -60,10 +60,26 @@ const ScoringSettingsPanel = ({ directions, setDirections, weights, setWeights, 
       else delete next[id];
       return next;
     });
+    if (!dir) {
+      setWeights((prev) => {
+        if (!Object.prototype.hasOwnProperty.call(prev, id)) return prev;
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    }
   };
 
   const setWeight = (id, weight) => {
-    setWeights((prev) => ({ ...prev, [id]: weight }));
+    setWeights((prev) => {
+      if (weight === null) {
+        if (!Object.prototype.hasOwnProperty.call(prev, id)) return prev;
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      }
+      return { ...prev, [id]: weight };
+    });
   };
 
   const bySection = SCORING_INDICATORS.reduce((acc, ind) => {
@@ -72,7 +88,7 @@ const ScoringSettingsPanel = ({ directions, setDirections, weights, setWeights, 
   }, {});
   const sectionEntries = Object.entries(bySection);
 
-  const includedCount = SCORING_INDICATORS.filter((i) => directions[i.id]).length;
+  const includedCount = SCORING_INDICATORS.filter((i) => isIndicatorIncluded(directions, weights, i.id)).length;
   const includedPct = SCORING_INDICATORS.length > 0 ? Math.round((includedCount / SCORING_INDICATORS.length) * 100) : 0;
 
   const handleSuggest = async () => {
@@ -144,8 +160,9 @@ const ScoringSettingsPanel = ({ directions, setDirections, weights, setWeights, 
         </div>
       </div>
       <p className="text-xs text-slate-500 mb-4">
-        U žádného ukazatele není směr předvyplněn – vyberte jej sami. Nabídková cena je samostatné
-        kritérium a do tohoto skóre nevstupuje.
+        U žádného ukazatele není směr ani váha předvyplněna – obojí zadáte sami. Bez váhy se
+        ukazatel do skóre nepočítá. Nabídková cena je samostatné kritérium a do tohoto skóre
+        nevstupuje.
       </p>
 
       {suggestError && (
@@ -224,7 +241,7 @@ const ScoringSettingsPanel = ({ directions, setDirections, weights, setWeights, 
       <div className="space-y-3">
         {sectionEntries.map(([code, inds], sectionIdx) => {
           const color = colorForIndex(sectionIdx);
-          const sectionIncluded = inds.filter((ind) => directions[ind.id]).length;
+          const sectionIncluded = inds.filter((ind) => isIndicatorIncluded(directions, weights, ind.id)).length;
           return (
             <div key={code} className="rounded-xl border border-slate-200 overflow-hidden">
               <div
@@ -245,14 +262,14 @@ const ScoringSettingsPanel = ({ directions, setDirections, weights, setWeights, 
               <div className="divide-y divide-slate-100 bg-white">
                 {inds.map((ind) => {
                   const dir = directions[ind.id] || null;
-                  const weight = Number.isFinite(weights[ind.id]) ? weights[ind.id] : 10;
+                  const weight = explicitWeight(weights, ind.id);
                   return (
                     <div key={ind.id} className={`px-4 py-3 transition-colors ${dir ? '' : 'bg-slate-50/60'}`}>
                       <div className="flex flex-col lg:flex-row lg:flex-wrap lg:items-center gap-2.5 lg:gap-4">
                         <div className="flex items-center gap-2 lg:w-52 shrink-0">
                           <span
                             className="w-1.5 h-1.5 rounded-full shrink-0"
-                            style={{ backgroundColor: dir ? color : '#CBD5E1' }}
+                            style={{ backgroundColor: dir && weight ? color : '#CBD5E1' }}
                             aria-hidden
                           />
                           <span className="text-sm font-medium text-slate-800">{ind.nazev}</span>
@@ -263,31 +280,40 @@ const ScoringSettingsPanel = ({ directions, setDirections, weights, setWeights, 
                             type="range"
                             min={1}
                             max={100}
-                            value={weight}
+                            value={weight ?? 1}
                             onChange={(e) => setWeight(ind.id, Number(e.target.value))}
                             className="flex-1 accent-current h-6"
                             style={{ color }}
                             aria-label={`Váha (tažením) – ${ind.nazev}`}
                             disabled={!dir}
                           />
-                          {/* Váhu jde i napsat, ne jen natáhnout myší – přesnější pro někoho,
-                              komu nevyhovuje jemné tažení malého posuvníku. */}
                           <input
                             type="number"
                             min={1}
                             max={100}
-                            value={weight}
+                            value={weight ?? ''}
+                            placeholder="—"
                             onChange={(e) => {
-                              const v = Number(e.target.value);
+                              const raw = e.target.value.trim();
+                              if (raw === '') {
+                                setWeight(ind.id, null);
+                                return;
+                              }
+                              const v = Number(raw);
                               if (Number.isFinite(v)) setWeight(ind.id, Math.min(100, Math.max(1, v)));
                             }}
                             disabled={!dir}
                             aria-label={`Váha (číslem) – ${ind.nazev}`}
-                            className="w-16 h-9 px-2 rounded-lg border border-slate-300 text-sm font-bold tabular-nums text-center shrink-0 focus:outline-none focus:ring-2 focus:ring-accent"
+                            className="w-16 h-9 px-2 rounded-lg border border-slate-300 text-sm font-bold tabular-nums text-center shrink-0 focus:outline-none focus:ring-2 focus:ring-accent placeholder:font-normal placeholder:text-slate-400"
                             style={dir ? { borderColor: color, color } : undefined}
                           />
                         </div>
                       </div>
+                      {dir && weight === null && (
+                        <p className="mt-1.5 pl-4 text-xs text-amber-700">
+                          Zadejte váhu – bez ní se ukazatel do skóre nepočítá.
+                        </p>
+                      )}
                     </div>
                   );
                 })}
