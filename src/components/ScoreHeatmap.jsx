@@ -1,22 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { sectionNazev } from '../data/balanceSchema.js';
 
 // Heatmapa pro porotu: na první pohled má jít vidět (1) kdo vede, (2) kde má návrh díru,
 // (3) kdo je v daném ukazateli nejlepší. Barva kóduje relativní skóre (poměr k nejlepšímu),
 // ne surovou hodnotu — tu ukáže hover a volitelný režim „naměřené“.
 // Řádky = návrhy (defaultně seřazené podle váženého skóre), sloupce = ukazatele se směrem.
-
-const SECTION_LABELS = {
-  A: 'Plochy',
-  B: 'Demolice',
-  C: 'Obestavěný',
-  D: 'Nové objemy',
-  E: 'HPP',
-  F: 'Užitná',
-  G: 'Místnosti',
-  H: 'Obálka',
-  I: 'Prosklení',
-};
 
 const fmtValue = (value, unit) => {
   if (value === null || value === undefined || !Number.isFinite(value)) return '—';
@@ -179,7 +168,7 @@ const ScoreHeatmap = ({ scoredProposals, includedIndicators }) => {
                   colSpan={g.items.length}
                   className="px-1 py-1.5 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-50 border-b border-l border-slate-200"
                 >
-                  {SECTION_LABELS[g.code] || g.code}
+                  {sectionNazev(g.code)}
                 </th>
               ))}
             </tr>

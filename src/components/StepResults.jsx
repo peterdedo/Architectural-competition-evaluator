@@ -1,13 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BarChart3, File, Edit3, Plus, Trash2, ArrowRight } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
-import { BALANCE_SECTIONS, SCALAR_INPUT_FIELDS } from '../data/balanceSchema.js';
+import { FLOOR_COLLECTIONS, OFFER_PRICE, BALANCE_SECTIONS, SCALAR_INPUT_FIELDS } from '../data/balanceSchema.js';
 import {
   computeDerivedField,
   floorsTotal,
   roomsGrandTotal,
   offerPriceTotal,
   safeNum,
+  setScalarValue,
 } from '../utils/balanceCalculations.js';
 import { useProposalSelection } from '../hooks/useProposalSelection.js';
 import { generateNavrhId } from '../utils/generateId';
@@ -18,6 +19,40 @@ import ProposalFilterBar from './ProposalFilterBar';
 const fmt = (value, unit) => {
   if (value === null || value === undefined || !Number.isFinite(value)) return '—';
   return `${value.toLocaleString('cs-CZ')} ${unit}`;
+};
+
+const scalarDraft = (data, id) => {
+  const n = safeNum(data?.[id]);
+  return n === null ? '' : String(n);
+};
+
+const ScalarEditCell = ({ data, fieldId, unit, onCommit }) => {
+  const [draft, setDraft] = useState(() => scalarDraft(data, fieldId));
+  useEffect(() => {
+    setDraft(scalarDraft(data, fieldId));
+  }, [data, fieldId]);
+
+  return (
+    <div className="flex items-center justify-center gap-1">
+      <input
+        type="number"
+        min={0}
+        step="any"
+        inputMode="decimal"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          if (draft !== scalarDraft(data, fieldId)) onCommit(draft);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+        }}
+        className="w-24 px-2 py-1 border border-slate-200 rounded-md text-sm text-right tabular-nums focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+        placeholder="—"
+        aria-label={unit ? `Hodnota (${unit})` : 'Hodnota'}
+      />
+    </div>
+  );
 };
 
 // Kolik ze skalárních vstupů je vyplněno (hrubá míra kompletnosti bilance).
@@ -51,9 +86,21 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
     [navrhy, balanceModalId]
   );
 
-  const saveBalance = (newData) => {
-    setNavrhy((prev) => prev.map((n) => (n.id === balanceModalId ? { ...n, data: newData } : n)));
+  const saveBalance = (newData, extras = {}) => {
+    setNavrhy((prev) =>
+      prev.map((n) =>
+        n.id === balanceModalId
+          ? { ...n, data: newData, nazev: extras.nazev?.trim() ? extras.nazev.trim() : n.nazev }
+          : n
+      )
+    );
     setBalanceModalId(null);
+  };
+
+  const patchScalar = (navrhId, fieldId, raw) => {
+    setNavrhy((prev) =>
+      prev.map((n) => (n.id === navrhId ? { ...n, data: setScalarValue(n.data, fieldId, raw) } : n))
+    );
   };
 
   const createManualNavrh = () => {
@@ -93,7 +140,7 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
               <p className="text-white/80 text-sm">
                 {empty
                   ? 'Zatím žádná data – přidejte návrh nebo je nahrajte'
-                  : `${zpracovaneNavrhy.length} návrhů · vyplňte bilanční tabulku (P03) a nabídkovou cenu (P06)`}
+                  : `${zpracovaneNavrhy.length} návrhů · P03 a P06 lze opravit v tabulce nebo v úplném formuláři`}
               </p>
             </div>
           </div>
@@ -224,6 +271,10 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
                 Žádný návrh není vybraný k porovnání – vyberte alespoň jeden výše.
               </p>
             ) : (
+            <p className="text-xs text-slate-500 mb-2">
+              Čísla v tabulce jdou upravit přímo (oprava špatného načtení). Patra, místnosti a položky
+              nabídkové ceny otevřete tlačítkem Upravit u návrhu — tam je celá P03/P06.
+            </p>
             <div className="overflow-x-auto">
               <table className="w-full border-collapse bg-surface rounded-xl overflow-hidden shadow-card text-sm">
                 <thead>
@@ -232,8 +283,19 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
                       Ukazatel
                     </th>
                     {comparedNavrhy.map((n) => (
-                      <th key={n.id} className="table-header px-4 py-3 text-center text-xs font-semibold text-text-light uppercase tracking-wider border-b border-border min-w-32">
-                        {n.nazev}
+                      <th key={n.id} className="table-header px-3 py-3 text-center text-xs font-semibold text-text-light uppercase tracking-wider border-b border-border min-w-36">
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="normal-case text-slate-800 font-semibold truncate max-w-[10rem]" title={n.nazev}>
+                            {n.nazev}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setBalanceModalId(n.id)}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold bg-accent text-white rounded-md hover:bg-accent/90"
+                          >
+                            <Edit3 size={10} /> Celá tabulka
+                          </button>
+                        </div>
                       </th>
                     ))}
                   </tr>
@@ -248,15 +310,21 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
                       </tr>
                       {fields.map((field) => (
                         <tr key={field.id} className="table-row">
-                          <td className="px-4 py-2 text-slate-700 border-b border-border sticky left-0 bg-surface">{field.nazev}</td>
+                          <td className="px-4 py-2 text-slate-700 border-b border-border sticky left-0 bg-surface">
+                            {field.nazev}
+                          </td>
                           {comparedNavrhy.map((n) => (
-                            <td key={n.id} className="px-4 py-2 text-center border-b border-border tabular-nums">
-                              {fmt(safeNum(n.data[field.id]), section.jednotka)}
+                            <td key={n.id} className="px-2 py-1.5 text-center border-b border-border">
+                              <ScalarEditCell
+                                data={n.data}
+                                fieldId={field.id}
+                                unit={section.jednotka}
+                                onCommit={(raw) => patchScalar(n.id, field.id, raw)}
+                              />
                             </td>
                           ))}
                         </tr>
                       ))}
-                      {/* odvozený součet sekce, pokud existuje */}
                       {section.fields.filter((f) => f.kind === 'derived').map((d) => (
                         <tr key={d.id} className="bg-primary/5">
                           <td className="px-4 py-2 font-semibold text-slate-800 border-b border-border sticky left-0 bg-primary/5">{d.nazev} (auto)</td>
@@ -273,6 +341,34 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
                         </tr>
                       ))}
                     </React.Fragment>
+                  ))}
+                  <tr className="bg-slate-50">
+                    <td colSpan={comparedNavrhy.length + 1} className="px-4 py-2 text-xs font-bold text-slate-700 border-b border-border">
+                      E–G, P06 — součty (úprava po podlažích / položkách v celé tabulce)
+                    </td>
+                  </tr>
+                  {[
+                    ...FLOOR_COLLECTIONS.map((c) => ({
+                      id: c.key,
+                      nazev: `${c.code}. ${c.nazev}`,
+                      unit: c.jednotka,
+                      get: (d) => (c.kind === 'rooms' ? roomsGrandTotal(d[c.key]) : floorsTotal(d[c.key])),
+                    })),
+                    {
+                      id: 'nabidkovaCena',
+                      nazev: `${OFFER_PRICE.code}. ${OFFER_PRICE.nazev}`,
+                      unit: OFFER_PRICE.jednotka,
+                      get: (d) => offerPriceTotal(d.nabidkovaCena),
+                    },
+                  ].map((row) => (
+                    <tr key={row.id} className="table-row">
+                      <td className="px-4 py-2 text-slate-700 border-b border-border sticky left-0 bg-surface">{row.nazev}</td>
+                      {comparedNavrhy.map((n) => (
+                        <td key={n.id} className="px-4 py-2 text-center border-b border-border tabular-nums">
+                          {fmt(row.get(n.data || {}), row.unit)}
+                        </td>
+                      ))}
+                    </tr>
                   ))}
                 </tbody>
               </table>

@@ -119,6 +119,68 @@ export function makeOfferPrice() {
   };
 }
 
+/** Doplní chybějící id u pater z importu, ať jde každé pole ve formuláři upravit. */
+export function ensureFloorsCollection(stored) {
+  if (!stored || !Array.isArray(stored.floors) || stored.floors.length === 0) {
+    return makeFloorsCollection();
+  }
+  return {
+    floors: stored.floors.map((f) => ({
+      id: f?.id || uid('floor'),
+      label: f?.label ? String(f.label) : 'Podlaží',
+      value: f?.value === null || f?.value === undefined ? '' : f.value,
+    })),
+  };
+}
+
+export function ensureRoomsCollection(stored) {
+  if (!stored || !Array.isArray(stored.floors) || stored.floors.length === 0) {
+    return makeRoomsCollection();
+  }
+  return {
+    floors: stored.floors.map((f) => ({
+      id: f?.id || uid('floor'),
+      label: f?.label ? String(f.label) : 'Podlaží',
+      rooms: Array.isArray(f?.rooms)
+        ? f.rooms.map((r) => ({
+            id: r?.id || uid('room'),
+            name: r?.name ? String(r.name) : '',
+            area: r?.area === null || r?.area === undefined ? '' : r.area,
+          }))
+        : [],
+    })),
+  };
+}
+
+export function ensureOfferPrice(stored) {
+  const base = makeOfferPrice();
+  if (!stored || !Array.isArray(stored.items)) return base;
+  const byId = new Map(stored.items.map((it) => [it?.id, it]));
+  return {
+    items: base.items.map((it) => {
+      const found = byId.get(it.id);
+      if (!found) return it;
+      return {
+        ...it,
+        price: found.price === null || found.price === undefined ? '' : found.price,
+        note: found.note ? String(found.note) : '',
+      };
+    }),
+  };
+}
+
+/** Zápis skaláru do navrh.data (smaže AI obálku { value, source }). Prázdný řetězec pole odstraní. */
+export function setScalarValue(data, id, raw) {
+  const next = { ...(data || {}) };
+  const trimmed = String(raw ?? '').trim().replace(/\s/g, '').replace(',', '.');
+  if (trimmed === '' || trimmed === '-' || trimmed === '.') {
+    delete next[id];
+  } else {
+    next[id] = trimmed;
+  }
+  return next;
+}
+
 /** Součet ploch pater kolekce E/F; null pokud nic vyplněno. */
 export function floorsTotal(collection) {
   if (!collection || !Array.isArray(collection.floors)) return null;

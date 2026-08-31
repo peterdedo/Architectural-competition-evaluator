@@ -196,3 +196,14 @@ export function getSectionById(id) {
 export function getFieldById(id) {
   return ALL_BALANCE_FIELDS.find((f) => f.id === id) || null;
 }
+
+/** Oficiální název sekce P03/P06 podle kódu (A–I, P06). Jediný zdroj pro heatmapu, radar, váhy. */
+export const SECTION_NAZEV_BY_CODE = {
+  ...Object.fromEntries(BALANCE_SECTIONS.map((s) => [s.code, s.nazev])),
+  ...Object.fromEntries(FLOOR_COLLECTIONS.map((s) => [s.code, s.nazev])),
+  P06: OFFER_PRICE.nazev,
+};
+
+export function sectionNazev(code) {
+  return SECTION_NAZEV_BY_CODE[code] || code;
+}

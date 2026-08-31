@@ -1,21 +1,10 @@
 import React, { useState } from 'react';
 import { Sparkles, Loader2, Check, X as XIcon, ArrowUp, ArrowDown, Ban, Target } from 'lucide-react';
 import { SCORING_INDICATORS } from '../data/scoringIndicators.js';
+import { sectionNazev } from '../data/balanceSchema.js';
 import { DIRECTIONS } from '../utils/balanceScore.js';
 import { useWeightSuggestions } from '../hooks/useWeightSuggestions.js';
 import { colorForIndex } from '../utils/chartPalette.js';
-
-const SECTION_NAMES = {
-  A: 'Bilance ploch',
-  B: 'Demolice',
-  C: 'Obestavěný prostor',
-  D: 'Nové objemy',
-  E: 'Hrubá podlažní plocha',
-  F: 'Užitná plocha',
-  G: 'Bilance místností',
-  H: 'Plocha obálky',
-  I: 'Podíl prosklení',
-};
 
 const DirectionToggle = ({ value, onChange, color }) => {
   const options = [
@@ -248,7 +237,7 @@ const ScoringSettingsPanel = ({ directions, setDirections, weights, setWeights, 
                 >
                   {code}
                 </span>
-                <h4 className="text-sm font-bold text-slate-800">{SECTION_NAMES[code] || code}</h4>
+                <h4 className="text-sm font-bold text-slate-800">{sectionNazev(code)}</h4>
                 <span className="ml-auto text-xs font-medium text-slate-500 tabular-nums whitespace-nowrap">
                   {sectionIncluded} / {inds.length} zahrnuto
                 </span>

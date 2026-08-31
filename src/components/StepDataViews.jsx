@@ -84,22 +84,6 @@ const StepDataViews = ({ navrhy, onBack, onNext }) => {
     [directions]
   );
 
-  const RADAR_MAX_INDICATORS = 8;
-  const radarIndicators = useMemo(() => {
-    if (includedIndicators.length <= RADAR_MAX_INDICATORS) return includedIndicators;
-    const withSpread = includedIndicators.map((ind) => {
-      const values = scoredProposals
-        .map((p) => p.indicatorScores.find((s) => s.id === ind.id)?.normalized)
-        .filter((v) => Number.isFinite(v));
-      const spread = values.length > 1 ? Math.max(...values) - Math.min(...values) : 0;
-      return { ind, spread };
-    });
-    return withSpread
-      .sort((a, b) => b.spread - a.spread)
-      .slice(0, RADAR_MAX_INDICATORS)
-      .map((x) => x.ind);
-  }, [includedIndicators, scoredProposals]);
-
   const empty = zpracovaneNavrhy.length === 0;
 
   return (
@@ -204,17 +188,13 @@ const StepDataViews = ({ navrhy, onBack, onNext }) => {
                     <ViewSection
                       kicker="Vážené hodnocení"
                       title="Radarový graf"
-                      description={
-                        radarIndicators.length < includedIndicators.length
-                          ? `Doplněk k heatmapě pro rychlý tvar. Zobrazeno ${radarIndicators.length} z ${includedIndicators.length} zvolených ukazatelů – ty, které mezi návrhy nejvíc rozlišují.`
-                          : 'Doplněk k heatmapě pro rychlý tvar, ne náhrada přesných čísel.'
-                      }
+                      description="Doplněk k heatmapě pro rychlý tvar. Osy si zvolíte štítky — výchozí je osm ukazatelů s největším rozptylem mezi návrhy. Nad 6 osami jsou na paprscích čísla, názvy zůstanou ve štítcích."
                       tone="blue"
                       icon={Radar}
                     >
                       <ScoreRadar
                         scoredProposals={scoredProposals}
-                        includedIndicators={radarIndicators}
+                        includedIndicators={includedIndicators}
                         weights={weights}
                       />
                     </ViewSection>

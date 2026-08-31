@@ -15,6 +15,10 @@ import {
   roomsFloorTotal,
   roomsGrandTotal,
   offerPriceTotal,
+  setScalarValue,
+  ensureFloorsCollection,
+  ensureRoomsCollection,
+  ensureOfferPrice,
 } from './balanceCalculations.js';
 
 describe('safeNum – prázdná hodnota není nula', () => {
@@ -155,5 +159,34 @@ describe('P06 offer price total', () => {
   it('empty offer → null, not 0', () => {
     expect(offerPriceTotal(makeOfferPrice())).toBeNull();
     expect(offerPriceTotal(null)).toBeNull();
+  });
+});
+
+describe('setScalarValue / ensure collections (oprava načtení)', () => {
+  it('writes a primitive and strips the AI { value, source } envelope', () => {
+    const after = setScalarValue({ bilance_zastavena: { value: 1200, source: 'xlsx' } }, 'bilance_zastavena', '1502');
+    expect(after.bilance_zastavena).toBe('1502');
+  });
+  it('empty input removes the key', () => {
+    const after = setScalarValue({ bilance_zastavena: 10 }, 'bilance_zastavena', '  ');
+    expect(after.bilance_zastavena).toBeUndefined();
+  });
+  it('ensureFloorsCollection assigns ids when import omitted them', () => {
+    const ensured = ensureFloorsCollection({ floors: [{ label: '1. NP', value: 100 }] });
+    expect(ensured.floors).toHaveLength(1);
+    expect(ensured.floors[0].id).toBeTruthy();
+    expect(ensured.floors[0].value).toBe(100);
+  });
+  it('ensureOfferPrice keeps all nine FS items and fills known prices', () => {
+    const ensured = ensureOfferPrice({ items: [{ id: 'fs1', price: 1000, note: 'x' }] });
+    expect(ensured.items).toHaveLength(9);
+    expect(ensured.items[0].price).toBe(1000);
+    expect(ensured.items[0].label).toMatch(/^FS 1/);
+    expect(ensured.items[1].price).toBe('');
+  });
+  it('ensureRoomsCollection seeds empty rooms lists', () => {
+    const ensured = ensureRoomsCollection({ floors: [{ label: '1. NP' }] });
+    expect(ensured.floors[0].rooms).toEqual([]);
+    expect(ensured.floors[0].id).toBeTruthy();
   });
 });

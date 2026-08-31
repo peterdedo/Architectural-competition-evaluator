@@ -15,9 +15,9 @@ import {
   offerPriceTotal,
   makeFloor,
   makeRoom,
-  makeFloorsCollection,
-  makeRoomsCollection,
-  makeOfferPrice,
+  ensureFloorsCollection,
+  ensureRoomsCollection,
+  ensureOfferPrice,
 } from '../utils/balanceCalculations.js';
 
 // Bezpečné načtení hodnoty skalárního pole z navrh.data (podporuje i starý tvar { value }, tedy i AI extrakci).
@@ -59,6 +59,7 @@ const OBALKA_CODES = new Set(['H', 'I']);
 const BalanceForm = ({ navrh, onSave, onClose }) => {
   const initialData = navrh?.data || {};
   const [activeTab, setActiveTab] = useState('plochy');
+  const [nazev, setNazev] = useState(() => navrh?.nazev || '');
 
   // Skalární vstupy (A/B/C/D/H/I)
   const [scalars, setScalars] = useState(() => {
@@ -70,14 +71,10 @@ const BalanceForm = ({ navrh, onSave, onClose }) => {
   });
 
   // Dynamické kolekce
-  const [hpp, setHpp] = useState(() => initialData.hpp || makeFloorsCollection());
-  const [uzitna, setUzitna] = useState(() => initialData.uzitna || makeFloorsCollection());
-  const [mistnosti, setMistnosti] = useState(() => initialData.mistnosti || makeRoomsCollection());
-  const [nabidkovaCena, setNabidkovaCena] = useState(() => {
-    const stored = initialData.nabidkovaCena;
-    if (stored && Array.isArray(stored.items)) return stored;
-    return makeOfferPrice();
-  });
+  const [hpp, setHpp] = useState(() => ensureFloorsCollection(initialData.hpp));
+  const [uzitna, setUzitna] = useState(() => ensureFloorsCollection(initialData.uzitna));
+  const [mistnosti, setMistnosti] = useState(() => ensureRoomsCollection(initialData.mistnosti));
+  const [nabidkovaCena, setNabidkovaCena] = useState(() => ensureOfferPrice(initialData.nabidkovaCena));
 
   const setScalar = (id, value) => setScalars((prev) => ({ ...prev, [id]: value }));
 
@@ -170,7 +167,7 @@ const BalanceForm = ({ navrh, onSave, onClose }) => {
       mistnosti,
       nabidkovaCena,
     };
-    onSave(newData);
+    onSave(newData, { nazev: nazev.trim() || navrh?.nazev });
   };
 
   const floorCollectionMeta = FLOOR_COLLECTIONS.filter((c) => c.kind === 'floors');
@@ -258,8 +255,15 @@ const BalanceForm = ({ navrh, onSave, onClose }) => {
         {/* Header */}
         <div className="bg-gradient-to-r from-primary to-accent text-white px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold">Bilanční údaje návrhu</h2>
-            <p className="text-white/80 text-sm truncate max-w-md">{navrh?.nazev}</p>
+            <h2 className="text-xl font-bold">Bilanční tabulka P03 / P06</h2>
+            <input
+              type="text"
+              value={nazev}
+              onChange={(e) => setNazev(e.target.value)}
+              className="mt-1 w-full max-w-md bg-white/15 border border-white/30 rounded-lg px-3 py-1.5 text-sm text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/60"
+              placeholder="Název návrhu"
+              aria-label="Název návrhu"
+            />
           </div>
           <button
             type="button"
