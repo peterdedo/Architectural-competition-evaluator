@@ -10,6 +10,7 @@ import {
   safeNum,
 } from '../utils/balanceCalculations.js';
 import { useProposalSelection } from '../hooks/useProposalSelection.js';
+import { generateNavrhId } from '../utils/generateId';
 import BalanceForm from './BalanceForm';
 import ProposalFilterBar from './ProposalFilterBar';
 
@@ -56,7 +57,7 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
   };
 
   const createManualNavrh = () => {
-    const id = Date.now() + Math.random();
+    const id = generateNavrhId();
     const nazev = `Návrh ${navrhy.length + 1}`;
     setNavrhy((prev) => [...prev, { id, nazev, status: 'zpracován', source: 'manual', data: {} }]);
     setBalanceModalId(id);

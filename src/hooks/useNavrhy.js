@@ -80,7 +80,11 @@ export function useNavrhy() {
             })
             .catch((e) => {
               console.error('Uložení nového návrhu selhalo:', e);
-              reconcile('Uložení nového návrhu se nezdařilo – zobrazení bylo obnoveno ze serveru.');
+              reconcile(
+                r0Status(e) === 409
+                  ? `Návrh „${navrh.nazev}“ se nepodařilo uložit (kolize id) – zkuste ho nahrát znovu.`
+                  : 'Uložení nového návrhu se nezdařilo – zobrazení bylo obnoveno ze serveru.'
+              );
             });
         } else if (JSON.stringify(toApiPayload(prev)) !== JSON.stringify(payload)) {
           fetch(`/api/navrhy/${encodeURIComponent(id)}`, {

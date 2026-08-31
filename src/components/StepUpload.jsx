@@ -7,6 +7,7 @@ import { useBalanceExtractor } from '../hooks/useBalanceExtractor';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { detectFileFormat, parseFile } from '../utils/fileParser';
 import { validateFileUpload } from '../utils/validation';
+import { generateNavrhId } from '../utils/generateId';
 
 const fmtSize = (bytes) => {
   if (!bytes) return '';
@@ -91,7 +92,7 @@ const StepUpload = ({ navrhy, setNavrhy, onNext }) => {
 
       if (format === 'pdf') {
         noveNavrhy.push({
-          id: Date.now() + Math.random(),
+          id: generateNavrhId(),
           nazev: file.name.replace('.pdf', ''),
           pdfSoubor: file,
           obrazek: null,
@@ -109,7 +110,7 @@ const StepUpload = ({ navrhy, setNavrhy, onNext }) => {
             const hasUnmapped =
               Array.isArray(item.mappingInfo?.unmappedColumns) && item.mappingInfo.unmappedColumns.length > 0;
             noveNavrhy.push({
-              id: Date.now() + Math.random(),
+              id: generateNavrhId(),
               nazev: item.nazev,
               pdfSoubor: file,
               obrazek: null,

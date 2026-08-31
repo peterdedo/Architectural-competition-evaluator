@@ -54,11 +54,23 @@ export default async function handler(req, res) {
     try {
       // Jen INSERT (bez upsertu): POST vytváří NOVÝ návrh. Úpravy existujícího jdou přes PATCH.
       // Tím se zavře možnost nechtěně/škodlivě přepsat cizí návrh POSTem se stejným id.
-      await sql`
+      const { rowCount } = await sql`
         INSERT INTO navrhy (id, nazev, status, source, file_format, data, created_by)
         VALUES (${id}, ${nazev}, ${status}, ${source}, ${fileFormat}, ${JSON.stringify(data)}::jsonb, ${session.userId})
         ON CONFLICT (id) DO NOTHING
       `;
+      if (rowCount === 0) {
+        // id už existuje – ON CONFLICT DO NOTHING by jinak tiše "uspělo" a nic neuložilo
+        // (přesně tohle dřív u kolidujících id vedlo k tichému mizení návrhů). Radši nahlas.
+        sendAuthError(
+          res,
+          409,
+          `Návrh s id ${id} už existuje`,
+          'Zkuste návrh nahrát znovu (id se generuje nově při každém pokusu).',
+          'NAVRHY_ID_CONFLICT'
+        );
+        return;
+      }
       res.status(201).json({ ok: true });
     } catch (e) {
       sendAuthError(res, 500, e instanceof Error ? e.message : 'Failed to create navrh', '', 'NAVRHY_CREATE_ERROR');
