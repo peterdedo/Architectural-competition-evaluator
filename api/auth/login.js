@@ -41,7 +41,7 @@ export default async function handler(req, res) {
   const LOCK_MINUTES = 15;
 
   try {
-    const { rows } = await sql`SELECT id, jmeno, email, password_hash, role, failed_attempts, locked_until FROM users WHERE email = ${email}`;
+    const { rows } = await sql`SELECT id, jmeno, email, password_hash, role, funkce, failed_attempts, locked_until FROM users WHERE email = ${email}`;
     const user = rows[0];
     if (!user) {
       // Stejná odpověď jako u špatného hesla (žádné vyzrazení, zda účet existuje).
@@ -77,9 +77,21 @@ export default async function handler(req, res) {
       await sql`UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = ${user.id}`;
     }
 
-    const token = signSessionToken({ userId: user.id, email: user.email, jmeno: user.jmeno, role: user.role });
+    const token = signSessionToken({
+      userId: user.id,
+      email: user.email,
+      jmeno: user.jmeno,
+      role: user.role,
+      funkce: user.funkce || null,
+    });
     setSessionCookie(res, token);
-    res.status(200).json({ userId: user.id, email: user.email, jmeno: user.jmeno, role: user.role });
+    res.status(200).json({
+      userId: user.id,
+      email: user.email,
+      jmeno: user.jmeno,
+      role: user.role,
+      funkce: user.funkce || null,
+    });
   } catch (e) {
     sendError(
       500,

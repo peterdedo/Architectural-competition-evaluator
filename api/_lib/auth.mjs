@@ -23,8 +23,10 @@ export async function verifyPassword(password, hash) {
   return bcrypt.compare(password, hash);
 }
 
-export function signSessionToken({ userId, email, jmeno, role }) {
-  return jwt.sign({ userId, email, jmeno, role }, getJwtSecret(), { expiresIn: SESSION_MAX_AGE_SECONDS });
+export function signSessionToken({ userId, email, jmeno, role, funkce }) {
+  return jwt.sign({ userId, email, jmeno, role, funkce: funkce || null }, getJwtSecret(), {
+    expiresIn: SESSION_MAX_AGE_SECONDS,
+  });
 }
 
 export function verifySessionToken(token) {

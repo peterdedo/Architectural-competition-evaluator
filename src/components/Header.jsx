@@ -28,7 +28,7 @@ const Header = ({ aktualniKrok, kroky, darkMode, toggleDarkMode, onReset, user, 
     .toUpperCase();
   const porotniIdentita = {
     jmeno: user?.jmeno || user?.email || 'Porotce',
-    role: user?.role === 'admin' ? 'Admin' : 'Porotce',
+    role: user?.funkce || (user?.role === 'admin' ? 'Organizátor' : 'Porotce'),
     instituce: user?.email || '',
     hodnoceni: 'Režim hodnocení',
     avatar: initials || 'P'
