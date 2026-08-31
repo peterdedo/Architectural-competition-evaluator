@@ -271,6 +271,7 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
                 Žádný návrh není vybraný k porovnání – vyberte alespoň jeden výše.
               </p>
             ) : (
+            <>
             <p className="text-xs text-slate-500 mb-2">
               Čísla v tabulce jdou upravit přímo (oprava špatného načtení). Patra, místnosti a položky
               nabídkové ceny otevřete tlačítkem Upravit u návrhu — tam je celá P03/P06.
@@ -373,6 +374,7 @@ const StepResults = ({ navrhy, onBack, onNext, setNavrhy }) => {
                 </tbody>
               </table>
             </div>
+            </>
             )}
           </>
         )}
