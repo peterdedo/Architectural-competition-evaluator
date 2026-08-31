@@ -55,6 +55,31 @@ const isEmptyRow = (row) => !row || !row.some((c) => c !== '' && c != null);
 const countMapped = (cells, headerMap) =>
   cells.filter((c) => c !== '' && c != null && headerMap.has(normalizeHeader(c))).length;
 
+/**
+ * Skutečná hlavička (wide tvar) nebo řádek se jmény návrhů (transponovaný tvar) nemusí být
+ * nutně na 1. řádku listu – časté je, že soubor má nad ní ještě titulní řádek (např.
+ * "P03 Bilanční tabulka" osamocené v jedné buňce). Slepé použití rows[0] pak najde jen tenhle
+ * titulek jako jediný "sloupec" a namapování selže na všem.
+ *
+ * Řádek je "titulní" (a přeskočí se), jen když je ZÁROVEŇ řídký (≤ 2 vyplněné buňky) A
+ * neobsahuje žádný rozpoznaný ukazatel – to spolehlivě pozná osamocený titulek, ale nikdy
+ * nesáhne na řádek se jmény návrhů (transponovaný tvar má jich v 1. řádku vždy víc, napříč
+ * sloupci) ani na řádek se štítkem ukazatele (ten už jeden match MÁ, takže není "titulní").
+ * Přeskočí se maximálně pár řádků, ne libovolně hluboko do dat.
+ */
+const isLikelyTitleRow = (row, headerMap) => {
+  const nonEmptyCount = row.filter((c) => c !== '' && c != null).length;
+  return nonEmptyCount > 0 && nonEmptyCount <= 2 && countMapped(row, headerMap) === 0;
+};
+
+const findHeaderRowIndex = (rows, headerMap, maxSkip = 2) => {
+  let index = 0;
+  while (index < maxSkip && index < rows.length - 1 && isLikelyTitleRow(rows[index], headerMap)) {
+    index += 1;
+  }
+  return index;
+};
+
 const fileBaseName = (fileName) =>
   String(fileName || 'návrh').replace(/\.(csv|xlsx|xls|json)$/i, '');
 
@@ -172,16 +197,21 @@ export const mapAoaToProposals = (aoa, fileName = 'návrh') => {
 
   const headerMap = buildHeaderToIndicatorMap();
   const fallbackName = fileBaseName(fileName);
-  const rowMapped = countMapped(rows[0], headerMap);
+
+  // Přeskočit případný titulní řádek nad skutečnou hlavičkou (viz findHeaderRowIndex výše).
+  const headerRowIndex = findHeaderRowIndex(rows, headerMap);
+  const bodyRows = rows.slice(headerRowIndex);
+
+  const rowMapped = countMapped(bodyRows[0], headerMap);
   const colMapped = countMapped(
-    rows.slice(1).map((r) => r[0]),
+    bodyRows.slice(1).map((r) => r[0]),
     headerMap
   );
 
   const items =
     colMapped > rowMapped && colMapped >= 2
-      ? parseTransposed(rows, headerMap, fallbackName)
-      : parseWide(rows, headerMap, fallbackName);
+      ? parseTransposed(bodyRows, headerMap, fallbackName)
+      : parseWide(bodyRows, headerMap, fallbackName);
 
   return items;
 };
